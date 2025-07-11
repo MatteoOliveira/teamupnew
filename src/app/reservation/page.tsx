@@ -376,7 +376,7 @@ export default function ReservationPage() {
                           onClick={() => zoomToEvent(event.lat as number, event.lng as number)}
                           type="button"
                         >
-                          Zoomer sur l'événement
+                          Zoomer sur l&apos;événement
                         </button>
                       </div>
                     </Popup>
@@ -418,7 +418,7 @@ export default function ReservationPage() {
                     onClick={() => zoomToEvent(event.lat as number, event.lng as number)}
                     type="button"
                   >
-                    Zoomer sur l'événement
+                    Zoomer sur l&apos;événement
                   </button>
                   <Link href={`/event/${event.id}`} className="mt-2 block text-xs text-blue-700 underline">Voir le détail</Link>
                 </li>
@@ -476,7 +476,7 @@ export default function ReservationPage() {
                       onClick={() => zoomToEvent(event.lat as number, event.lng as number)}
                       type="button"
                     >
-                      Zoomer sur l'événement
+                      Zoomer sur l&apos;événement
                     </button>
                     <Link href={`/event/${event.id}`} className="mt-2 block text-xs text-blue-700 underline">Voir le détail</Link>
                   </li>

@@ -143,7 +143,7 @@ export default function HomePage() {
                 Application PWA
               </h4>
               <p className="text-black">
-                Installez l'application sur votre appareil pour un accès rapide.
+                Installez l&apos;application sur votre appareil pour un accès rapide.
               </p>
             </div>
           </div>
