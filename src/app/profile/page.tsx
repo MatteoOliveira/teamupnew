@@ -41,7 +41,13 @@ interface Event {
   city: string;
   date?: { seconds: number };
 }
-interface Registration extends Event {}
+interface Registration {
+  id: string;
+  name: string;
+  sport: string;
+  city: string;
+  date?: { seconds: number };
+}
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
@@ -225,7 +231,7 @@ export default function ProfilePage() {
                         } ${
                           activeTab === tab.key ? 'bg-blue-100 font-bold' : ''
                         } block w-full text-left px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                        onClick={() => setActiveTab(tab.key as any)}
+                        onClick={() => setActiveTab(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'settings')}
                       >
                         {tab.label}
                       </button>
@@ -249,7 +255,7 @@ export default function ProfilePage() {
                   aria-controls={`tabpanel-${tab.key}`}
                   tabIndex={activeTab === tab.key ? 0 : -1}
                   className={`px-4 py-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${activeTab === tab.key ? 'bg-blue-100 text-black font-bold' : 'bg-gray-100 text-black'}`}
-                  onClick={() => setActiveTab(tab.key as any)}
+                  onClick={() => setActiveTab(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'settings')}
                 >
                   {tab.label}
                 </button>
@@ -275,7 +281,7 @@ export default function ProfilePage() {
               updatedAt: new Date(),
             }, { merge: true });
             setMessage('Profil enregistré !');
-          } catch (err) {
+          } catch {
             setMessage('Erreur lors de l&apos;enregistrement du profil');
           }
         }}>
@@ -343,7 +349,7 @@ export default function ProfilePage() {
                     aria-checked={notifications[key as keyof typeof defaultNotifications]}
                     aria-label={key}
                   />
-                  <span className="text-black">{key}</span>
+                  <span className="text-black">{label}</span>
                 </label>
               ))}
             </div>
@@ -353,7 +359,7 @@ export default function ProfilePage() {
         {/* Dark mode */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-black mb-2">Mode sombre</h3>
-          <p className="text-sm text-gray-600 mb-2">Le mode sombre n'est activé que si vous le choisissez explicitement ci-dessous. L'application démarre toujours en mode clair par défaut.</p>
+          <p className="text-sm text-gray-600 mb-2">Le mode sombre n&apos;est activé que si vous le choisissez explicitement ci-dessous. L&apos;application démarre toujours en mode clair par défaut.</p>
           <label className="flex items-center gap-2">
             <input
               type="checkbox"

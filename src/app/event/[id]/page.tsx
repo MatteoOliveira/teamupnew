@@ -29,7 +29,6 @@ interface Participant {
 export default function EventDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
-  const router = useRouter();
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -250,7 +249,7 @@ export default function EventDetailPage() {
               disabled={registering || !contact.trim()}
               className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50"
             >
-              {registering ? 'Inscription...' : 'S\'inscrire'}
+              {registering ? 'Inscription...' : 'S&apos;inscrire'}
             </Button>
           </form>
         </div>

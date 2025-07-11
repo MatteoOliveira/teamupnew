@@ -1,16 +1,12 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Button from '@/components/Button';
 import { useState, useEffect } from 'react';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
-  const router = useRouter();
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {

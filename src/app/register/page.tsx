@@ -36,7 +36,7 @@ export default function RegisterPage() {
       await createUserWithEmailAndPassword(auth, email, password);
       router.push('/profile');
     } catch (error: unknown) {
-      if (typeof error === 'object' && error && 'code' in error && (error as any).code === 'auth/email-already-in-use') {
+      if (typeof error === 'object' && error && 'code' in error && (error as { code: string }).code === 'auth/email-already-in-use') {
         setError('Cette adresse email est déjà utilisée');
       } else {
         setError('Erreur lors de l&apos;inscription');

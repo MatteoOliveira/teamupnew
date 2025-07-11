@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { collection, addDoc, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import Link from "next/link";
-import dynamic from "next/dynamic";
+
 import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap } from 'leaflet';
 import { useMap } from 'react-leaflet';
@@ -113,7 +113,7 @@ export default function ReservationPage() {
   const Popup = Leaflet.Popup || (() => null);
 
   // Référence vers la carte Leaflet
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
   // Référence vers le conteneur de la carte pour scroll
   const mapContainerRef = useRef<HTMLDivElement>(null);
   // État pour stocker la cible de zoom
@@ -184,7 +184,7 @@ export default function ReservationPage() {
           setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           setGeoError(null);
         },
-        (err) => {
+        () => {
           setGeoError("Géolocalisation refusée ou indisponible");
         }
       );
@@ -203,7 +203,7 @@ export default function ReservationPage() {
           setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           setGeoError(null);
         },
-        (err) => {
+        () => {
           setGeoError("Géolocalisation refusée ou indisponible");
         }
       );

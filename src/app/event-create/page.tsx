@@ -19,28 +19,7 @@ const SPORTS = [
   "Autre"
 ];
 
-const CITY_DATA = [
-  { city: "Paris", department: "75", lat: 48.8566, lng: 2.3522 },
-  { city: "Marseille", department: "13", lat: 43.2965, lng: 5.3698 },
-  { city: "Lyon", department: "69", lat: 45.7640, lng: 4.8357 },
-  { city: "Toulouse", department: "31", lat: 43.6047, lng: 1.4442 },
-  { city: "Nice", department: "06", lat: 43.7102, lng: 7.2620 },
-  { city: "Nantes", department: "44", lat: 47.2184, lng: -1.5536 },
-  { city: "Strasbourg", department: "67", lat: 48.5734, lng: 7.7521 },
-  { city: "Montpellier", department: "34", lat: 43.6119, lng: 3.8777 },
-  { city: "Bordeaux", department: "33", lat: 44.8378, lng: -0.5792 },
-  { city: "Lille", department: "59", lat: 50.6292, lng: 3.0573 },
-  { city: "Rennes", department: "35", lat: 48.1173, lng: -1.6778 },
-  { city: "Reims", department: "51", lat: 49.2583, lng: 4.0317 },
-  { city: "Le Havre", department: "76", lat: 49.4944, lng: 0.1079 },
-  { city: "Saint-Étienne", department: "42", lat: 45.4397, lng: 4.3872 },
-  { city: "Toulon", department: "83", lat: 43.1242, lng: 5.9280 },
-  { city: "Grenoble", department: "38", lat: 45.1885, lng: 5.7245 },
-  { city: "Dijon", department: "21", lat: 47.3220, lng: 5.0415 },
-  { city: "Angers", department: "49", lat: 47.4784, lng: -0.5632 },
-  { city: "Nîmes", department: "30", lat: 43.8367, lng: 4.3601 },
-  { city: "Villeurbanne", department: "69", lat: 45.7719, lng: 4.8902 }
-];
+
 
 export default function EventCreatePage() {
   const { user } = useAuth();
