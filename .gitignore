@@ -1,41 +1,41 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Node modules
+node_modules/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Next.js build output
+.next/
 
-# testing
-/coverage
+# Production build
+out/
 
-# next.js
-/.next/
-/out/
+# Local env files
+.env.local
+.env.*.local
+.env
 
-# production
-/build
+# Firebase emulators and local config
+.firebase/
+.firebaserc
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Log files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Mac system files
+.DS_Store
 
-# vercel
-.vercel
+# VSCode settings
+.vscode/
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Test coverage
+coverage/
+
+# Misc
+*.log
+*.swp
+
+# Ignore public marker icons if needed (uncomment if you want to ignore them)
+# public/marker-icon.png
+# public/marker-icon-2x.png
+# public/marker-shadow.png
