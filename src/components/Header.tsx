@@ -6,6 +6,7 @@ import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function Header() {
   const { user } = useAuth();
@@ -17,7 +18,7 @@ export default function Header() {
     try {
       await signOut(auth);
       router.push('/login');
-    } catch (error) {
+    } catch {
       // Optionally handle error
     } finally {
       setIsLoggingOut(false);
@@ -29,7 +30,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/icon-192x192.png" alt="Logo TeamUp" className="h-10 w-auto" />
+            <Image src="/icon-192x192.png" alt="Logo TeamUp" width={40} height={40} className="w-auto" />
             <span className="text-xl font-bold text-black hidden sm:inline">TeamUp!</span>
           </Link>
           {user && (

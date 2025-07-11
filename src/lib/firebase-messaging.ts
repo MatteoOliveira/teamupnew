@@ -45,7 +45,7 @@ export async function getFCMToken() {
   }
 }
 
-export async function onForegroundMessage(callback: (payload: any) => void) {
+export async function onForegroundMessage(callback: (payload: unknown) => void) {
   if (!(await isSupported())) return;
   const messaging = getMessaging(app);
   onMessage(messaging, callback);

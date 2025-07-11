@@ -9,6 +9,7 @@ import Input from '@/components/Input';
 import Button from '@/components/Button';
 import { Menu } from '@headlessui/react';
 import { getFCMToken } from '@/lib/firebase-messaging';
+import Image from 'next/image';
 
 const AVATARS = [
   "/avatar1.png",
@@ -308,7 +309,7 @@ export default function ProfilePage() {
                   className={`rounded-full border-2 ${avatar === a ? 'border-blue-500' : 'border-gray-300'} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
                   onClick={() => setAvatar(a)}
                 >
-                  <img src={a} alt="Avatar" className="w-12 h-12 rounded-full" />
+                  <Image src={a} alt="Avatar" width={48} height={48} className="rounded-full" />
                 </button>
               ))}
             </div>

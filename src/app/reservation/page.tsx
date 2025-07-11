@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,7 +30,7 @@ interface Event {
   id: string;
   name: string;
   sport: string;
-  date: any;
+  date: { seconds: number } | undefined;
   location: string;
   city: string;
   description: string;
@@ -106,6 +106,7 @@ export default function ReservationPage() {
       return dateOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const Leaflet = typeof window !== "undefined" ? require("react-leaflet") : {};
   const MapContainer = Leaflet.MapContainer || (() => null);
   const TileLayer = Leaflet.TileLayer || (() => null);
@@ -126,6 +127,20 @@ export default function ReservationPage() {
     }
   };
 
+  const loadUserProfile = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
+      if (!userDoc.empty) {
+        const data = userDoc.docs[0].data() as UserProfile;
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du profil:', error);
+    }
+  }, [user]);
+
   // Redirection si non connecté
   useEffect(() => {
     if (!loading && !user) {
@@ -139,7 +154,7 @@ export default function ReservationPage() {
       loadUserProfile();
       loadReservations();
     }
-  }, [user]);
+  }, [user, loadUserProfile]);
 
   // Charger les événements sportifs (tous, pour filtrage par distance)
   const loadEvents = async () => {
@@ -212,20 +227,6 @@ export default function ReservationPage() {
     }
   };
 
-  const loadUserProfile = async () => {
-    if (!user) return;
-
-    try {
-      const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
-      if (!userDoc.empty) {
-        const data = userDoc.docs[0].data() as UserProfile;
-        setUserProfile(data);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement du profil:', error);
-    }
-  };
-
   const loadReservations = async () => {
     try {
       const reservationsQuery = await getDocs(collection(db, 'reservations'));
@@ -241,7 +242,7 @@ export default function ReservationPage() {
 
   const handleReservation = async (timeslot: string) => {
     if (!user || !userProfile) {
-      setMessage('Veuillez d\'abord compléter votre profil');
+      setMessage('Veuillez d&apos;abord compléter votre profil');
       return;
     }
 
