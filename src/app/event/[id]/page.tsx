@@ -202,7 +202,7 @@ export default function EventDetailPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-black">Chargement de l'événement...</div>;
+    return <div className="p-8 text-center text-black">Chargement de l&apos;événement...</div>;
   }
 
   if (!event) {
