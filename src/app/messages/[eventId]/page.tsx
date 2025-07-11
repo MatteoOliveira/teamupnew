@@ -12,7 +12,7 @@ interface Message {
   senderName: string;
   isOrganizer: boolean;
   content: string;
-  timestamp: any;
+  timestamp: { seconds: number } | null;
 }
 
 export default function EventChatPage() {
@@ -22,7 +22,6 @@ export default function EventChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [eventName, setEventName] = useState("");
-  const [members, setMembers] = useState<any[]>([]);
   const [eventDate, setEventDate] = useState<Date | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -101,7 +100,7 @@ export default function EventChatPage() {
         {/* Message d'avertissement si l'événement est passé */}
         {eventDate && new Date() > eventDate && (
           <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded text-center text-sm">
-            Merci d'avoir participé à l'événement ! Ce groupe se supprimera dans 2 jours.
+            Merci d&apos;avoir participé à l&apos;événement ! Ce groupe se supprimera dans 2 jours.
           </div>
         )}
         {messages.length === 0 ? (

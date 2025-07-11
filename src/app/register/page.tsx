@@ -35,13 +35,13 @@ export default function RegisterPage() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       router.push('/profile');
-    } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error && 'code' in error && (error as any).code === 'auth/email-already-in-use') {
         setError('Cette adresse email est déjà utilisée');
       } else {
-        setError('Erreur lors de l\'inscription');
+        setError('Erreur lors de l&apos;inscription');
       }
-      console.error('Erreur d\'inscription:', error);
+      console.error('Erreur d&apos;inscription:', error);
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full"
           >
-            {loading ? 'Inscription...' : 'S\'inscrire'}
+            {loading ? 'Inscription...' : 'S&apos;inscrire'}
           </Button>
 
           <div className="text-center">

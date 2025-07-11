@@ -23,7 +23,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/profile');
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError('Erreur de connexion. Vérifiez vos identifiants.');
       console.error('Erreur de connexion:', error);
     } finally {
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
           <div className="text-center">
             <Link href="/register" className="text-black hover:text-black">
-              Pas encore de compte ? S'inscrire
+              Pas encore de compte ? S&apos;inscrire
             </Link>
           </div>
         </form>

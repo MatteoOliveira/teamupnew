@@ -26,15 +26,6 @@ export default function HomePage() {
     };
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      router.push('/login');
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -84,7 +75,7 @@ export default function HomePage() {
             </Link>
             <Link href="/register">
               <Button className="w-full bg-green-500 hover:bg-green-600">
-                S'inscrire
+                S&apos;inscrire
               </Button>
             </Link>
           </div>

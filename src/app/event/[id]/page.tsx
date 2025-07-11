@@ -6,12 +6,32 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/Button";
 
+interface Event {
+  id: string;
+  name: string;
+  city: string;
+  location: string;
+  date?: { seconds: number };
+  description: string;
+  maxParticipants: number;
+  createdBy: string;
+  contactInfo: string;
+}
+
+interface Participant {
+  id: string;
+  userId: string;
+  userName: string;
+  contact: string;
+  registeredAt?: { seconds: number };
+}
+
 export default function EventDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const router = useRouter();
-  const [event, setEvent] = useState<any>(null);
-  const [participants, setParticipants] = useState<any[]>([]);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
@@ -27,7 +47,18 @@ export default function EventDetailPage() {
       try {
         const eventDoc = await getDoc(doc(db, "events", id as string));
         if (eventDoc.exists()) {
-          setEvent({ id: eventDoc.id, ...eventDoc.data() });
+          const data = eventDoc.data();
+          setEvent({
+            id: eventDoc.id,
+            name: data.name,
+            city: data.city,
+            location: data.location,
+            date: data.date,
+            description: data.description,
+            maxParticipants: data.maxParticipants,
+            createdBy: data.createdBy,
+            contactInfo: data.contactInfo,
+          });
         } else {
           setMessage("Événement non trouvé");
         }
@@ -47,7 +78,16 @@ export default function EventDetailPage() {
       try {
         const q = query(collection(db, "event_participants"), where("eventId", "==", id));
         const snap = await getDocs(q);
-        setParticipants(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setParticipants(snap.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            userId: data.userId,
+            userName: data.userName,
+            contact: data.contact,
+            registeredAt: data.registeredAt,
+          };
+        }));
       } catch (error) {
         console.error("Erreur lors du chargement des participants:", error);
       }
@@ -110,9 +150,19 @@ export default function EventDetailPage() {
       setContact("");
       
       // Recharger les participants
+      if (!event) return;
       const q = query(collection(db, "event_participants"), where("eventId", "==", event.id));
       const snap = await getDocs(q);
-      setParticipants(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setParticipants(snap.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          userId: data.userId,
+          userName: data.userName,
+          contact: data.contact,
+          registeredAt: data.registeredAt,
+        };
+      }));
       
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
@@ -124,16 +174,26 @@ export default function EventDetailPage() {
 
   const handleUnregister = async () => {
     if (!participantDocId) return;
-    
+    if (!event) return;
     setRegistering(true);
     try {
       await deleteDoc(doc(db, "event_participants", participantDocId));
       setMessage("Vous vous êtes désinscrit de l'événement.");
       
       // Refresh participants
+      if (!event) return;
       const q = query(collection(db, "event_participants"), where("eventId", "==", event.id));
       const snap = await getDocs(q);
-      setParticipants(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setParticipants(snap.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          userId: data.userId,
+          userName: data.userName,
+          contact: data.contact,
+          registeredAt: data.registeredAt,
+        };
+      }));
     } catch (error) {
       console.error("Erreur lors de la désinscription:", error);
       setMessage("Erreur lors de la désinscription. Veuillez réessayer.");
@@ -175,7 +235,7 @@ export default function EventDetailPage() {
       {/* Bouton d'inscription - toujours visible si l'utilisateur peut s'inscrire */}
       {canRegister && (
         <div className="mt-4 p-4 border border-blue-200 rounded-lg bg-blue-50">
-          <h3 className="text-lg font-semibold text-black mb-2">S'inscrire à cet événement</h3>
+          <h3 className="text-lg font-semibold text-black mb-2">S&apos;inscrire à cet événement</h3>
           <form onSubmit={e => { e.preventDefault(); handleRegister(); }} className="space-y-3">
             <input
               type="text"
@@ -218,7 +278,7 @@ export default function EventDetailPage() {
       
       {isCreator && (
         <div className="mt-4 p-3 bg-blue-100 text-blue-700 rounded text-center font-semibold">
-          Vous êtes l'organisateur de cet événement
+          Vous êtes l&apos;organisateur de cet événement
         </div>
       )}
       

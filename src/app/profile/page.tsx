@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, setDoc, getDoc, collection, getDocs, query, where, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+import { doc, setDoc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/Input';
@@ -34,6 +34,15 @@ const defaultNotifications = {
   eventChanges: true,
 };
 
+interface Event {
+  id: string;
+  name: string;
+  sport: string;
+  city: string;
+  date?: { seconds: number };
+}
+interface Registration extends Event {}
+
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -48,9 +57,9 @@ export default function ProfilePage() {
   const [pushToken, setPushToken] = useState<string | null>(null);
   const [notifications, setNotifications] = useState(defaultNotifications);
   const [darkMode, setDarkMode] = useState(false);
-  const [myEvents, setMyEvents] = useState<any[]>([]);
-  const [myRegistrations, setMyRegistrations] = useState<any[]>([]);
-  const [cityEvents, setCityEvents] = useState<any[]>([]);
+  const [myEvents, setMyEvents] = useState<Event[]>([]);
+  const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
+  const [cityEvents, setCityEvents] = useState<Event[]>([]);
 
   // Charger le profil existant
   useEffect(() => {
@@ -78,19 +87,46 @@ export default function ProfilePage() {
     if (!user) return;
     // Mes événements (créés par moi)
     getDocs(query(collection(db, 'events'), where('createdBy', '==', user.uid))).then(snap => {
-      setMyEvents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setMyEvents(snap.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name,
+          sport: data.sport,
+          city: data.city,
+          date: data.date,
+        };
+      }));
     });
     // Mes inscriptions (où je suis inscrit)
     getDocs(query(collection(db, 'event_participants'), where('userId', '==', user.uid))).then(async snap => {
       const eventIds = snap.docs.map(doc => doc.data().eventId);
       if (eventIds.length === 0) { setMyRegistrations([]); return; }
       const eventsSnap = await getDocs(query(collection(db, 'events')));
-      setMyRegistrations(eventsSnap.docs.filter(doc => eventIds.includes(doc.id)).map(doc => ({ id: doc.id, ...doc.data() })));
+      setMyRegistrations(eventsSnap.docs.filter(doc => eventIds.includes(doc.id)).map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name,
+          sport: data.sport,
+          city: data.city,
+          date: data.date,
+        };
+      }));
     });
     // Événements près de moi (même ville)
     if (city) {
       getDocs(query(collection(db, 'events'), where('city', '==', city))).then(snap => {
-        setCityEvents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setCityEvents(snap.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name,
+            sport: data.sport,
+            city: data.city,
+            date: data.date,
+          };
+        }));
       });
     }
   }, [user, city]);
@@ -240,7 +276,7 @@ export default function ProfilePage() {
             }, { merge: true });
             setMessage('Profil enregistré !');
           } catch (err) {
-            setMessage('Erreur lors de l\'enregistrement du profil');
+            setMessage('Erreur lors de l&apos;enregistrement du profil');
           }
         }}>
           <label className="block">
@@ -262,7 +298,7 @@ export default function ProfilePage() {
                 <button
                   key={a}
                   type="button"
-                  aria-label={`Choisir l'avatar ${a}`}
+                  aria-label={`Choisir l&apos;avatar ${a}`}
                   className={`rounded-full border-2 ${avatar === a ? 'border-blue-500' : 'border-gray-300'} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
                   onClick={() => setAvatar(a)}
                 >

@@ -1,14 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Link from "next/link";
 
 interface EventChat {
   eventId: string;
   eventName: string;
-  eventDate: any;
+  eventDate: { seconds: number } | null;
 }
 
 export default function MessagesPage() {

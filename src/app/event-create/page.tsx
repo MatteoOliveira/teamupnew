@@ -52,26 +52,11 @@ export default function EventCreatePage() {
   const [description, setDescription] = useState("");
   const [city, setCity] = useState("");
   const [postcode, setPostcode] = useState("");
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [address, setAddress] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
   const [contactInfo, setContactInfo] = useState("");
-
-  // Quand la ville change, on met à jour le département et les coordonnées
-  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = CITY_DATA.find(c => c.city === e.target.value);
-    setCity(e.target.value);
-    if (selected) {
-      setLat(selected.lat);
-      setLng(selected.lng);
-    } else {
-      setLat(null);
-      setLng(null);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,8 +81,6 @@ export default function EventCreatePage() {
         return;
       }
       const { coordinates } = data.features[0].geometry; // [lng, lat]
-      setLat(coordinates[1]);
-      setLng(coordinates[0]);
       // 1. Création de l'événement
       const eventRef = await addDoc(collection(db, "events"), {
         name,
@@ -244,7 +227,7 @@ export default function EventCreatePage() {
             </div>
           )}
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Création..." : "Créer l'événement"}
+            {loading ? "Création..." : "Créer l&apos;événement"}
           </Button>
           <Button type="button" className="w-full bg-gray-200 text-gray-700 mt-2" onClick={() => router.push("/reservation")}>Annuler</Button>
         </form>
