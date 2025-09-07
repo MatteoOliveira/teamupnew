@@ -31,4 +31,6 @@ const nextConfig = {
   },
 }
 
-module.exports = withPWA(nextConfig) 
+// Temporairement désactivé pour résoudre l'erreur de build
+module.exports = nextConfig
+// module.exports = withPWA(nextConfig) 
