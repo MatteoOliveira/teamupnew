@@ -11,14 +11,6 @@ import { Menu } from '@headlessui/react';
 import { getFCMToken } from '@/lib/firebase-messaging';
 // import Image from 'next/image'; // Désactivé pour éviter les erreurs 400
 
-const AVATARS = [
-  "/avatar1.png",
-  "/avatar2.png",
-  "/avatar3.png",
-  "/avatar4.png",
-  "/avatar5.png"
-];
-
 const TABS = [
   { key: 'profile', label: 'Mon profil' },
   { key: 'myevents', label: 'Mes événements' },
@@ -56,7 +48,6 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [sport, setSport] = useState('');
   const [city, setCity] = useState("");
-  const [avatar, setAvatar] = useState(AVATARS[0]);
   const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'settings'>('profile');
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [message, setMessage] = useState('');
@@ -77,7 +68,6 @@ export default function ProfilePage() {
           setName(data.name || '');
           setSport(data.sport || '');
           setCity(data.city || '');
-          setAvatar(data.avatar || AVATARS[0]);
           if (data.notifications) setNotifications({ ...defaultNotifications, ...data.notifications });
           if (data.fcmToken) {
             setPushEnabled(true);
@@ -277,7 +267,6 @@ export default function ProfilePage() {
               name,
               sport,
               city,
-              avatar,
               email: user.email || '',
               updatedAt: new Date(),
             }, { merge: true });
@@ -297,22 +286,6 @@ export default function ProfilePage() {
           <label className="block">
             <span className="text-black">Ville</span>
             <Input type="text" placeholder="Votre ville" value={city} onChange={e => setCity(e.target.value)} aria-label="Ville" />
-          </label>
-          <label className="block">
-            <span className="text-black">Avatar</span>
-            <div className="flex gap-2 mt-1">
-              {AVATARS.map((a) => (
-                <button
-                  key={a}
-                  type="button"
-                  aria-label={`Choisir l&apos;avatar ${a}`}
-                  className={`rounded-full border-2 ${avatar === a ? 'border-blue-500' : 'border-gray-300'} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
-                  onClick={() => setAvatar(a)}
-                >
-                  <img src={a} alt="Avatar" width={48} height={48} className="rounded-full" />
-                </button>
-              ))}
-            </div>
           </label>
           <Button type="submit" className="bg-blue-500 hover:bg-blue-600 mt-2">Enregistrer</Button>
         </form>
