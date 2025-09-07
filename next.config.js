@@ -1,10 +1,25 @@
-const withPWA = require('@ducanh2912/next-pwa').default({
+const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
   buildExcludes: [/middleware-manifest\.json$/],
-  publicExcludes: ['!robots.txt', '!sitemap.xml']
+  publicExcludes: ['!robots.txt', '!sitemap.xml'],
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200,
+        },
+      },
+    },
+  ],
+  fallbacks: {
+    document: '/offline',
+  },
 })
 
 /** @type {import('next').NextConfig} */
@@ -15,7 +30,6 @@ const nextConfig = {
     domains: ['teamup-fawn.vercel.app'],
     unoptimized: true, // Pour éviter les problèmes avec Vercel
   },
-  serverExternalPackages: ['@ducanh2912/next-pwa'],
   async headers() {
     return [
       {
@@ -31,6 +45,4 @@ const nextConfig = {
   },
 }
 
-// Temporairement désactivé pour résoudre l'erreur de build
-module.exports = nextConfig
-// module.exports = withPWA(nextConfig) 
+module.exports = withPWA(nextConfig) 

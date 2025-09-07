@@ -1,7 +1,7 @@
 {
-  "name": "TeamUp",
+  "name": "TeamUp - Application Sportive",
   "short_name": "TeamUp",
-  "description": "Réservez des créneaux sportifs localement",
+  "description": "Application pour organiser et rejoindre des événements sportifs",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -20,5 +20,8 @@
       "type": "image/png",
       "purpose": "maskable any"
     }
-  ]
-} 
+  ],
+  "categories": ["sports", "lifestyle", "social"],
+  "lang": "fr",
+  "dir": "ltr"
+}
