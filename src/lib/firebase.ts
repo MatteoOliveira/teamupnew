@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 
@@ -20,6 +20,12 @@ const app = initializeApp(firebaseConfig);
 // Exporter les services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Configuration Google OAuth
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 // Analytics (optionnel - seulement côté client)
 export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
