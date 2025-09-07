@@ -125,119 +125,154 @@ export default function EventCreatePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-black">
-            Créer un événement sportif
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <Input
-              type="text"
-              placeholder="Nom de l'événement *"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <select
-              value={sport}
-              onChange={(e) => setSport(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Sport *</option>
-              {SPORTS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <Input
-              type="datetime-local"
-              placeholder="Date et heure de début *"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-            <Input
-              type="datetime-local"
-              placeholder="Date et heure de fin (optionnel)"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isReserved"
-                checked={isReserved}
-                onChange={(e) => setIsReserved(e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isReserved" className="ml-2 block text-sm text-black">
-                Réserver le lieu (empêche d&apos;autres événements au même endroit)
-              </label>
-            </div>
-            <Input
-              type="text"
-              placeholder="Lieu *"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-            />
-            <Input
-              type="text"
-              placeholder="Adresse * (ex: 10 rue de Paris)"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              required
-            />
-            <Input
-              type="text"
-              placeholder="Ville *"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              required
-            />
-            <Input
-              type="text"
-              placeholder="Code postal *"
-              value={postcode}
-              onChange={(e) => setPostcode(e.target.value)}
-              required
-            />
-            <Input
-              type="number"
-              placeholder="Nombre de participants max *"
-              value={maxParticipants}
-              onChange={e => setMaxParticipants(e.target.value)}
-              required
-              className="min-w-0"
-            />
-            <Input
-              type="text"
-              placeholder="Contact organisateur (email, téléphone, ou autre) *"
-              value={contactInfo}
-              onChange={e => setContactInfo(e.target.value)}
-              required
-            />
-            <textarea
-              placeholder="Description (optionnel)"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
-              rows={3}
-            />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-gray-900 mb-2">
+              Créer un événement sportif
+            </h2>
+            <p className="text-gray-600">
+              Organisez votre événement et trouvez des participants
+            </p>
           </div>
-          {message && (
-            <div className={`text-sm text-center p-3 rounded ${message.includes("succès") ? "bg-green-100 text-black" : "bg-red-100 text-black"}`}>
-              {message}
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <Input
+                  type="text"
+                  placeholder="Nom de l'événement *"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <select
+                  value={sport}
+                  onChange={(e) => setSport(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                >
+                  <option value="">Sport *</option>
+                  {SPORTS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Input
+                  type="datetime-local"
+                  placeholder="Date et heure de début *"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Input
+                  type="datetime-local"
+                  placeholder="Date et heure de fin (optionnel)"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <div className="flex items-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <input
+                    type="checkbox"
+                    id="isReserved"
+                    checked={isReserved}
+                    onChange={(e) => setIsReserved(e.target.checked)}
+                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="isReserved" className="ml-3 block text-sm font-medium text-gray-900">
+                    Réserver le lieu (empêche d&apos;autres événements au même endroit)
+                  </label>
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  type="text"
+                  placeholder="Lieu *"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  type="text"
+                  placeholder="Adresse * (ex: 10 rue de Paris)"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Ville *"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Code postal *"
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Input
+                  type="number"
+                  placeholder="Nombre de participants max *"
+                  value={maxParticipants}
+                  onChange={e => setMaxParticipants(e.target.value)}
+                  required
+                  className="min-w-0"
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Contact organisateur (email, téléphone, ou autre) *"
+                  value={contactInfo}
+                  onChange={e => setContactInfo(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="md:col-span-2">
+                <textarea
+                  placeholder="Description (optionnel)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 resize-none"
+                  rows={4}
+                />
+              </div>
             </div>
-          )}
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Création..." : "Créer l&apos;événement"}
-          </Button>
-          <Button type="button" className="w-full bg-gray-200 text-gray-700 mt-2" onClick={() => router.push("/reservation")}>Annuler</Button>
-        </form>
+            
+            {message && (
+              <div className={`text-sm text-center p-4 rounded-lg ${message.includes("succès") ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`}>
+                {message}
+              </div>
+            )}
+            
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+              <Button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                {loading ? "Création..." : "Créer l&apos;événement"}
+              </Button>
+              <Button type="button" className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors" onClick={() => router.push("/reservation")}>
+                Annuler
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -2,7 +2,9 @@ const withPWA = require('@ducanh2912/next-pwa').default({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development'
+  disable: process.env.NODE_ENV === 'development',
+  buildExcludes: [/middleware-manifest\.json$/],
+  publicExcludes: ['!robots.txt', '!sitemap.xml']
 })
 
 /** @type {import('next').NextConfig} */
