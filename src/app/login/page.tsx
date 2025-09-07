@@ -26,21 +26,21 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/profile');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erreur de connexion:', error);
       
       // Gestion d'erreurs plus spécifique
-      if (error.code === 'auth/invalid-credential') {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/invalid-credential') {
         setError('Email ou mot de passe incorrect. Vérifiez vos identifiants.');
-      } else if (error.code === 'auth/user-not-found') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/user-not-found') {
         setError('Aucun compte trouvé avec cette adresse email.');
-      } else if (error.code === 'auth/wrong-password') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/wrong-password') {
         setError('Mot de passe incorrect.');
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/invalid-email') {
         setError('Adresse email invalide.');
-      } else if (error.code === 'auth/user-disabled') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/user-disabled') {
         setError('Ce compte a été désactivé.');
-      } else if (error.code === 'auth/too-many-requests') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/too-many-requests') {
         setError('Trop de tentatives de connexion. Réessayez plus tard.');
       } else {
         setError('Erreur de connexion. Vérifiez vos identifiants.');
@@ -57,14 +57,14 @@ export default function LoginPage() {
     try {
       await signInWithGoogle();
       router.push('/profile');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erreur de connexion Google:', error);
       
-      if (error.code === 'auth/popup-closed-by-user') {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/popup-closed-by-user') {
         setError('Connexion annulée par l&apos;utilisateur.');
-      } else if (error.code === 'auth/popup-blocked') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/popup-blocked') {
         setError('Popup bloqué par le navigateur. Autorisez les popups pour ce site.');
-      } else if (error.code === 'auth/cancelled-popup-request') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/cancelled-popup-request') {
         setError('Connexion annulée.');
       } else {
         setError('Erreur de connexion Google. Réessayez.');

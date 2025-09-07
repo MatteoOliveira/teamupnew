@@ -57,14 +57,14 @@ export default function RegisterPage() {
     try {
       await signInWithGoogle();
       router.push('/profile');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erreur de connexion Google:', error);
       
-      if (error.code === 'auth/popup-closed-by-user') {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/popup-closed-by-user') {
         setError('Connexion annulée par l&apos;utilisateur.');
-      } else if (error.code === 'auth/popup-blocked') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/popup-blocked') {
         setError('Popup bloqué par le navigateur. Autorisez les popups pour ce site.');
-      } else if (error.code === 'auth/cancelled-popup-request') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/cancelled-popup-request') {
         setError('Connexion annulée.');
       } else {
         setError('Erreur de connexion Google. Réessayez.');
