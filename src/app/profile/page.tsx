@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { doc, setDoc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,6 +16,9 @@ const TABS = [
   { key: 'myevents', label: 'Mes événements' },
   { key: 'cityevents', label: 'Événements près de moi' },
   { key: 'myregistrations', label: 'Mes inscriptions' },
+  { key: 'pastevents', label: 'Événements passés' },
+  { key: 'history', label: 'Historique' },
+  { key: 'stats', label: 'Statistiques' },
   { key: 'settings', label: 'Réglages' },
 ];
 
@@ -33,6 +36,9 @@ interface Event {
   sport: string;
   city: string;
   date?: { seconds: number };
+  endDate?: { seconds: number };
+  eventType?: 'created' | 'joined';
+  isReserved?: boolean;
 }
 interface Registration {
   id: string;
@@ -48,7 +54,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [sport, setSport] = useState('');
   const [city, setCity] = useState("");
-  const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'settings'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings'>('profile');
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [message, setMessage] = useState('');
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -58,6 +64,17 @@ export default function ProfilePage() {
   const [myEvents, setMyEvents] = useState<Event[]>([]);
   const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
   const [cityEvents, setCityEvents] = useState<Event[]>([]);
+  
+  // Nouveaux états pour les fonctionnalités restaurées
+  const [pastEvents, setPastEvents] = useState<Event[]>([]);
+  const [pastEventsFilter, setPastEventsFilter] = useState<'all' | 'created' | 'joined'>('all');
+  const [activityHistory, setActivityHistory] = useState<{id: string; type: string; description: string; date: Date}[]>([]);
+  const [userStats, setUserStats] = useState<{totalEvents: number; eventsCreated: number; eventsJoined: number; favoriteSport: string}>({
+    totalEvents: 0,
+    eventsCreated: 0,
+    eventsJoined: 0,
+    favoriteSport: ''
+  });
 
   // Charger le profil existant
   useEffect(() => {
@@ -127,6 +144,131 @@ export default function ProfilePage() {
       });
     }
   }, [user, city]);
+
+  // Fonctions pour charger les données des onglets manquants
+  const loadPastEvents = useCallback(async () => {
+    if (!user) return;
+    try {
+      const now = new Date();
+      const eventsQuery = query(collection(db, 'events'));
+      const participantsQuery = query(collection(db, 'event_participants'), where('userId', '==', user.uid));
+      
+      const [eventsSnap, participantsSnap] = await Promise.all([
+        getDocs(eventsQuery),
+        getDocs(participantsQuery)
+      ]);
+      
+      const participantEventIds = participantsSnap.docs.map(doc => doc.data().eventId);
+      
+      const pastEventsList = eventsSnap.docs
+        .map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name,
+            sport: data.sport,
+            city: data.city,
+            date: data.date,
+            endDate: data.endDate,
+            isReserved: data.isReserved,
+            eventType: data.createdBy === user.uid ? 'created' as const : 
+                      participantEventIds.includes(doc.id) ? 'joined' as const : undefined
+          };
+        })
+        .filter(event => {
+          if (!event.date?.seconds) return false;
+          const eventDate = new Date(event.date.seconds * 1000);
+          return eventDate < now;
+        });
+      
+      setPastEvents(pastEventsList);
+    } catch (error) {
+      console.error('Erreur lors du chargement des événements passés:', error);
+    }
+  }, [user]);
+
+  const loadActivityHistory = useCallback(async () => {
+    if (!user) return;
+    try {
+      // Simuler un historique d'activité basé sur les événements
+      const history: {id: string; type: string; description: string; date: Date}[] = [];
+      
+      // Événements créés
+      const createdEvents = pastEvents.filter(e => e.eventType === 'created');
+      createdEvents.forEach(event => {
+        if (event.date?.seconds) {
+          history.push({
+            id: `created-${event.id}`,
+            type: 'created',
+            description: `Vous avez créé l'événement "${event.name}"`,
+            date: new Date(event.date.seconds * 1000)
+          });
+        }
+      });
+      
+      // Événements rejoints
+      const joinedEvents = pastEvents.filter(e => e.eventType === 'joined');
+      joinedEvents.forEach(event => {
+        if (event.date?.seconds) {
+          history.push({
+            id: `joined-${event.id}`,
+            type: 'joined',
+            description: `Vous avez rejoint l'événement "${event.name}"`,
+            date: new Date(event.date.seconds * 1000)
+          });
+        }
+      });
+      
+      // Trier par date décroissante
+      history.sort((a, b) => b.date.getTime() - a.date.getTime());
+      setActivityHistory(history);
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'historique:', error);
+    }
+  }, [pastEvents, user]);
+
+  const loadUserStats = useCallback(async () => {
+    if (!user) return;
+    try {
+      const createdCount = pastEvents.filter(e => e.eventType === 'created').length;
+      const joinedCount = pastEvents.filter(e => e.eventType === 'joined').length;
+      
+      // Calculer le sport favori
+      const sportCounts: {[key: string]: number} = {};
+      pastEvents.forEach(event => {
+        if (event.sport) {
+          sportCounts[event.sport] = (sportCounts[event.sport] || 0) + 1;
+        }
+      });
+      
+      const favoriteSport = Object.keys(sportCounts).reduce((a, b) => 
+        sportCounts[a] > sportCounts[b] ? a : b, 'Aucun'
+      );
+      
+      setUserStats({
+        totalEvents: createdCount + joinedCount,
+        eventsCreated: createdCount,
+        eventsJoined: joinedCount,
+        favoriteSport
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error);
+    }
+  }, [pastEvents, user]);
+
+  // Charger les données des nouveaux onglets
+  useEffect(() => {
+    if (user && profileLoaded) {
+      loadPastEvents();
+    }
+  }, [user, profileLoaded, loadPastEvents]);
+
+  useEffect(() => {
+    if (pastEvents.length > 0) {
+      loadActivityHistory();
+      loadUserStats();
+    }
+  }, [pastEvents, loadActivityHistory, loadUserStats]);
 
   // Redirection si non connecté
   useEffect(() => {
@@ -391,6 +533,137 @@ export default function ProfilePage() {
             ))}
           </ul>
         )}
+      </section>
+
+      {/* Onglet Événements passés */}
+      <section id="tabpanel-pastevents" role="tabpanel" hidden={activeTab !== 'pastevents'} aria-labelledby="tab-pastevents">
+        <h2 className="text-xl font-semibold mb-4 text-black">Événements passés</h2>
+        
+        {/* Filtres */}
+        <div className="mb-4">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPastEventsFilter('all')}
+              className={`px-3 py-1 rounded text-sm ${
+                pastEventsFilter === 'all' 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-200 text-black hover:bg-gray-300'
+              }`}
+            >
+              Tous
+            </button>
+            <button
+              onClick={() => setPastEventsFilter('created')}
+              className={`px-3 py-1 rounded text-sm ${
+                pastEventsFilter === 'created' 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-200 text-black hover:bg-gray-300'
+              }`}
+            >
+              Créés
+            </button>
+            <button
+              onClick={() => setPastEventsFilter('joined')}
+              className={`px-3 py-1 rounded text-sm ${
+                pastEventsFilter === 'joined' 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-200 text-black hover:bg-gray-300'
+              }`}
+            >
+              Rejoints
+            </button>
+          </div>
+        </div>
+
+        {/* Liste des événements passés */}
+        {pastEvents.length === 0 ? (
+          <div className="text-black">Aucun événement passé.</div>
+        ) : (
+          <ul className="space-y-3">
+            {pastEvents
+              .filter(event => {
+                if (pastEventsFilter === 'all') return true;
+                return event.eventType === pastEventsFilter;
+              })
+              .map(event => (
+                <li key={event.id} className="p-4 border rounded-lg bg-gray-50">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <div className="font-bold text-black">{event.name}</div>
+                      <div className="text-sm text-gray-600">{event.sport} - {event.city}</div>
+                      <div className="text-xs text-gray-500">
+                        {event.date?.seconds ? new Date(event.date.seconds * 1000).toLocaleString() : ''}
+                        {event.endDate?.seconds && (
+                          <span> → {new Date(event.endDate.seconds * 1000).toLocaleString()}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        event.eventType === 'created' 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'bg-green-100 text-green-700'
+                      }`}>
+                        {event.eventType === 'created' ? 'Créé' : 'Rejoint'}
+                      </span>
+                      {event.isReserved && (
+                        <span className="px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-700">
+                          Lieu réservé
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Onglet Historique */}
+      <section id="tabpanel-history" role="tabpanel" hidden={activeTab !== 'history'} aria-labelledby="tab-history">
+        <h2 className="text-xl font-semibold mb-4 text-black">Historique d&apos;activité</h2>
+        
+        {activityHistory.length === 0 ? (
+          <div className="text-black">Aucune activité récente.</div>
+        ) : (
+          <div className="space-y-3">
+            {activityHistory.map(activity => (
+              <div key={activity.id} className="p-3 border-l-4 border-blue-500 bg-gray-50 rounded-r">
+                <div className="text-sm text-black">{activity.description}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {activity.date.toLocaleDateString()} à {activity.date.toLocaleTimeString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Onglet Statistiques */}
+      <section id="tabpanel-stats" role="tabpanel" hidden={activeTab !== 'stats'} aria-labelledby="tab-stats">
+        <h2 className="text-xl font-semibold mb-4 text-black">Mes statistiques</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 bg-blue-50 rounded-lg">
+            <h3 className="font-semibold text-black mb-2">Événements totaux</h3>
+            <div className="text-2xl font-bold text-blue-600">{userStats.totalEvents}</div>
+          </div>
+          
+          <div className="p-4 bg-green-50 rounded-lg">
+            <h3 className="font-semibold text-black mb-2">Événements créés</h3>
+            <div className="text-2xl font-bold text-green-600">{userStats.eventsCreated}</div>
+          </div>
+          
+          <div className="p-4 bg-purple-50 rounded-lg">
+            <h3 className="font-semibold text-black mb-2">Événements rejoints</h3>
+            <div className="text-2xl font-bold text-purple-600">{userStats.eventsJoined}</div>
+          </div>
+          
+          <div className="p-4 bg-yellow-50 rounded-lg">
+            <h3 className="font-semibold text-black mb-2">Sport favori</h3>
+            <div className="text-lg font-bold text-yellow-600">{userStats.favoriteSport}</div>
+          </div>
+        </div>
       </section>
 
       {/* Message utilisateur */}

@@ -13,6 +13,7 @@ const nextConfig = {
     domains: ['teamup-fawn.vercel.app'],
     unoptimized: true, // Pour éviter les problèmes avec Vercel
   },
+  serverExternalPackages: ['@ducanh2912/next-pwa'],
   async headers() {
     return [
       {
