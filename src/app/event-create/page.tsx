@@ -36,6 +36,8 @@ export default function EventCreatePage() {
   const [address, setAddress] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
   const [contactInfo, setContactInfo] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [isReserved, setIsReserved] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +48,12 @@ export default function EventCreatePage() {
     }
     if (!name || !sport || !date || !location || !city || !postcode || !address || !maxParticipants || Number(maxParticipants) < 2 || !contactInfo) {
       setMessage("Tous les champs obligatoires doivent être remplis, le nombre de participants doit être au moins 2, et un moyen de contact doit être fourni.");
+      return;
+    }
+    
+    // Validation de la date de fin si réservation activée
+    if (isReserved && (!endDate || new Date(endDate) <= new Date(date))) {
+      setMessage("Si vous réservez le lieu, la date de fin doit être renseignée et postérieure à la date de début.");
       return;
     }
     setLoading(true);
@@ -65,6 +73,7 @@ export default function EventCreatePage() {
         name,
         sport,
         date: Timestamp.fromDate(new Date(date)),
+        endDate: endDate ? Timestamp.fromDate(new Date(endDate)) : null,
         location,
         city,
         postcode,
@@ -76,6 +85,7 @@ export default function EventCreatePage() {
         createdAt: new Date(),
         maxParticipants: Number(maxParticipants),
         contactInfo,
+        isReserved: isReserved,
       });
       // 2. Inscrire automatiquement l'organisateur comme participant (et membre du groupe)
       await addDoc(collection(db, "event_participants"), {
@@ -144,11 +154,29 @@ export default function EventCreatePage() {
             </select>
             <Input
               type="datetime-local"
-              placeholder="Date et heure *"
+              placeholder="Date et heure de début *"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
             />
+            <Input
+              type="datetime-local"
+              placeholder="Date et heure de fin (optionnel)"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isReserved"
+                checked={isReserved}
+                onChange={(e) => setIsReserved(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isReserved" className="ml-2 block text-sm text-black">
+                Réserver le lieu (empêche d&apos;autres événements au même endroit)
+              </label>
+            </div>
             <Input
               type="text"
               placeholder="Lieu *"

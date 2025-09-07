@@ -336,13 +336,13 @@ export default function ReservationPage() {
         </div>
         {/* Carte Leaflet */}
         {position && (
-          <div className="mb-8" ref={mapContainerRef}>
+          <div className="mb-8 relative z-10" ref={mapContainerRef}>
             <h2 className="text-lg font-bold mb-2 text-gray-900">Carte des événements</h2>
-            <div style={{ height: 350, width: "100%" }}>
+            <div style={{ height: 350, width: "100%", zIndex: 1 }}>
               <MapContainer
                 center={[position.lat, position.lng]}
                 zoom={8}
-                style={{ height: "100%", width: "100%" }}
+                style={{ height: "100%", width: "100%", zIndex: 1 }}
                 scrollWheelZoom={true}
                 whenCreated={(mapInstance: LeafletMap) => { mapRef.current = mapInstance; }}
               >
