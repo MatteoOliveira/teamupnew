@@ -127,9 +127,9 @@ export default function EventCreatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-2 md:py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-1 md:py-12 px-2 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-3 md:p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-2 md:p-8">
           {/* Header Desktop */}
           <div className="hidden md:block text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl mb-4 shadow-lg">
@@ -161,10 +161,10 @@ export default function EventCreatePage() {
               Déconnexion
             </button>
           </div>
-          <form className="space-y-3 md:space-y-6" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+          <form className="space-y-2 md:space-y-6" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Nom de l'événement *
                 </label>
                 <Input
@@ -173,18 +173,18 @@ export default function EventCreatePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Sport *
                 </label>
                 <select
                   value={sport}
                   onChange={(e) => setSport(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 >
                   <option value="">Sélectionnez un sport</option>
                   {SPORTS.map((s) => (
@@ -193,7 +193,7 @@ export default function EventCreatePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Date et heure de début *
                 </label>
                 <Input
@@ -202,11 +202,11 @@ export default function EventCreatePage() {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Date et heure de fin (optionnel)
                 </label>
                 <Input
@@ -214,25 +214,25 @@ export default function EventCreatePage() {
                   placeholder=""
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
               </div>
               <div className="md:col-span-2">
-                <div className="flex items-center p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center p-2 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <input
                     type="checkbox"
                     id="isReserved"
                     checked={isReserved}
                     onChange={(e) => setIsReserved(e.target.checked)}
-                    className="h-4 w-4 md:h-5 md:w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-3 w-3 md:h-5 md:w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="isReserved" className="ml-2 md:ml-3 block text-xs md:text-sm font-medium text-gray-900">
+                  <label htmlFor="isReserved" className="ml-1 md:ml-3 block text-xs font-medium text-gray-900">
                     Réserver le lieu (empêche d'autres événements au même endroit)
                   </label>
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Lieu *
                 </label>
                 <Input
@@ -241,11 +241,11 @@ export default function EventCreatePage() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Adresse complète *
                 </label>
                 <Input
@@ -254,11 +254,11 @@ export default function EventCreatePage() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Ville *
                 </label>
                 <Input
@@ -267,11 +267,11 @@ export default function EventCreatePage() {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Code postal *
                 </label>
                 <Input
@@ -280,11 +280,11 @@ export default function EventCreatePage() {
                   value={postcode}
                   onChange={(e) => setPostcode(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Nombre de participants max *
                 </label>
                 <Input
@@ -293,12 +293,12 @@ export default function EventCreatePage() {
                   value={maxParticipants}
                   onChange={e => setMaxParticipants(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                   min="2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Contact organisateur *
                 </label>
                 <Input
@@ -307,19 +307,19 @@ export default function EventCreatePage() {
                   value={contactInfo}
                   onChange={e => setContactInfo(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Description (optionnel)
                 </label>
                 <textarea
                   placeholder="Décrivez votre événement, les règles, l'équipement nécessaire..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 resize-none"
-                  rows={3}
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 resize-none text-sm"
+                  rows={2}
                 />
               </div>
             </div>
@@ -330,11 +330,11 @@ export default function EventCreatePage() {
               </div>
             )}
             
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4 md:pt-6">
-              <Button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 md:py-3 px-4 md:px-6 rounded-lg transition-colors text-sm md:text-base">
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-4 pt-2 md:pt-6">
+              <Button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 md:py-3 px-3 md:px-6 rounded-lg transition-colors text-xs md:text-base">
                 {loading ? "Création..." : "Créer l&apos;événement"}
               </Button>
-              <Button type="button" className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 md:py-3 px-4 md:px-6 rounded-lg transition-colors text-sm md:text-base" onClick={() => router.push("/reservation")}>
+              <Button type="button" className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1.5 md:py-3 px-3 md:px-6 rounded-lg transition-colors text-xs md:text-base" onClick={() => router.push("/reservation")}>
                 Annuler
               </Button>
             </div>
