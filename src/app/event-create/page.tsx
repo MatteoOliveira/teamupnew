@@ -329,7 +329,7 @@ export default function EventCreatePage() {
             
             <div className="flex flex-col sm:flex-row gap-2 md:gap-4 pt-2 md:pt-6">
               <Button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 md:py-3 px-3 md:px-6 rounded-lg transition-colors text-xs md:text-base">
-                {loading ? "Création..." : "Créer l&apos;événement"}
+                {loading ? "Création..." : "Créer l'événement"}
               </Button>
               <Button type="button" className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1.5 md:py-3 px-3 md:px-6 rounded-lg transition-colors text-xs md:text-base" onClick={() => router.push("/reservation")}>
                 Annuler
