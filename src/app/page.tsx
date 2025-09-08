@@ -4,10 +4,13 @@ import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import Button from '@/components/Button';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
   const [isOnline, setIsOnline] = useState(true);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -22,7 +25,20 @@ export default function HomePage() {
     };
   }, []);
 
-  if (loading) {
+  // Redirection vers la page de choix sur mobile si pas en mode PWA
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !loading) {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      
+      if (isMobile && !isStandalone) {
+        setShouldRedirect(true);
+        router.push('/choose-experience');
+      }
+    }
+  }, [loading, router]);
+
+  if (loading || shouldRedirect) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg">Chargement...</div>
