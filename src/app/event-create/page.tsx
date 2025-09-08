@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const dynamic = 'force-dynamic';
-import { collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
+import { collection, addDoc, Timestamp, doc, setDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,15 @@ const SPORTS = [
   "Running",
   "Autre"
 ];
+
+interface EventData {
+  id: string;
+  date?: { seconds: number };
+  endDate?: { seconds: number };
+  location?: string;
+  city?: string;
+  isReserved?: boolean;
+}
 
 
 
@@ -40,6 +49,103 @@ export default function EventCreatePage() {
   const [contactInfo, setContactInfo] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isReserved, setIsReserved] = useState(false);
+  
+  // États pour la vérification des conflits
+  const [conflictStatus, setConflictStatus] = useState<'available' | 'partial' | 'occupied'>('available');
+  const [conflictMessage, setConflictMessage] = useState("");
+  const [checkingConflicts, setCheckingConflicts] = useState(false);
+
+  // Fonction de vérification des conflits de réservation
+  const checkReservationConflicts = async (eventDate: string, eventEndDate: string, eventLocation: string, eventCity: string) => {
+    if (!eventDate || !eventLocation || !eventCity) {
+      setConflictStatus('available');
+      setConflictMessage("");
+      return;
+    }
+
+    setCheckingConflicts(true);
+    
+    try {
+      // Chercher tous les événements réservés au même lieu
+      const eventsQuery = query(
+        collection(db, "events"),
+        where("location", "==", eventLocation),
+        where("city", "==", eventCity),
+        where("isReserved", "==", true)
+      );
+      
+      const eventsSnapshot = await getDocs(eventsQuery);
+      const existingEvents: EventData[] = eventsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as EventData));
+
+      const newEventStart = new Date(eventDate);
+      const newEventEnd = eventEndDate ? new Date(eventEndDate) : new Date(newEventStart.getTime() + 2 * 60 * 60 * 1000); // +2h par défaut
+      
+      // Ajouter 5 minutes de buffer après chaque événement existant
+      const bufferMinutes = 5;
+      
+      let conflicts = 0;
+      let totalReservations = 0;
+      
+      for (const event of existingEvents) {
+        if (!event.date?.seconds) continue;
+        
+        const existingStart = new Date(event.date.seconds * 1000);
+        const existingEnd = event.endDate?.seconds 
+          ? new Date(event.endDate.seconds * 1000)
+          : new Date(existingStart.getTime() + 2 * 60 * 60 * 1000); // +2h par défaut
+        
+        // Ajouter 5 minutes de buffer
+        const existingEndWithBuffer = new Date(existingEnd.getTime() + bufferMinutes * 60 * 1000);
+        
+        totalReservations++;
+        
+        // Vérifier les chevauchements
+        const hasConflict = (
+          (newEventStart < existingEndWithBuffer && newEventEnd > existingStart)
+        );
+        
+        if (hasConflict) {
+          conflicts++;
+        }
+      }
+      
+      // Déterminer le statut
+      if (totalReservations === 0) {
+        setConflictStatus('available');
+        setConflictMessage("✅ Aucune réservation sur ce lieu aujourd'hui. Encore des disponibilités de réservation sur le lieu.");
+      } else if (conflicts === 0) {
+        setConflictStatus('partial');
+        setConflictMessage(`⚠️ ${totalReservations} réservation(s) existante(s) mais créneaux disponibles. Encore des disponibilités de réservation sur le lieu.`);
+      } else {
+        setConflictStatus('occupied');
+        setConflictMessage(`❌ Impossible de réserver, lieu occupé toute la journée. ${conflicts} conflit(s) détecté(s).`);
+      }
+      
+    } catch (error) {
+      console.error("Erreur lors de la vérification des conflits:", error);
+      setConflictStatus('available');
+      setConflictMessage("⚠️ Impossible de vérifier les disponibilités. Vérification manuelle recommandée.");
+    } finally {
+      setCheckingConflicts(false);
+    }
+  };
+
+  // Vérification en temps réel des conflits
+  useEffect(() => {
+    if (isReserved && date && location && city) {
+      const timeoutId = setTimeout(() => {
+        checkReservationConflicts(date, endDate, location, city);
+      }, 500); // Délai de 500ms pour éviter trop de requêtes
+      
+      return () => clearTimeout(timeoutId);
+    } else {
+      setConflictStatus('available');
+      setConflictMessage("");
+    }
+  }, [date, endDate, location, city, isReserved]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +163,15 @@ export default function EventCreatePage() {
     if (isReserved && (!endDate || new Date(endDate) <= new Date(date))) {
       setMessage("Si vous réservez le lieu, la date de fin doit être renseignée et postérieure à la date de début.");
       return;
+    }
+    
+    // Vérification des conflits si réservation activée
+    if (isReserved) {
+      await checkReservationConflicts(date, endDate, location, city);
+      if (conflictStatus === 'occupied') {
+        setMessage("Impossible de créer l'événement : le lieu est déjà occupé à cette heure. Veuillez choisir un autre créneau ou un autre lieu.");
+        return;
+      }
     }
     setLoading(true);
     try {
@@ -199,7 +314,15 @@ export default function EventCreatePage() {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
-                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
+                  className={`w-full px-3 py-2 md:px-4 md:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent bg-white text-gray-900 text-sm transition-colors ${
+                    isReserved 
+                      ? conflictStatus === 'available'
+                        ? 'border-green-300 focus:ring-green-500'
+                        : conflictStatus === 'partial'
+                        ? 'border-yellow-300 focus:ring-yellow-500'
+                        : 'border-red-300 focus:ring-red-500'
+                      : 'border-gray-300 focus:ring-blue-500'
+                  }`}
                 />
               </div>
               <div>
@@ -211,7 +334,15 @@ export default function EventCreatePage() {
                   placeholder=""
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
+                  className={`w-full px-3 py-2 md:px-4 md:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent bg-white text-gray-900 text-sm transition-colors ${
+                    isReserved 
+                      ? conflictStatus === 'available'
+                        ? 'border-green-300 focus:ring-green-500'
+                        : conflictStatus === 'partial'
+                        ? 'border-yellow-300 focus:ring-yellow-500'
+                        : 'border-red-300 focus:ring-red-500'
+                      : 'border-gray-300 focus:ring-blue-500'
+                  }`}
                 />
               </div>
               <div className="md:col-span-2">
@@ -227,6 +358,45 @@ export default function EventCreatePage() {
                     Réserver le lieu (empêche d&apos;autres événements au même endroit)
                   </label>
                 </div>
+                
+                {/* Affichage du statut de disponibilité */}
+                {isReserved && (date || location || city) && (
+                  <div className={`mt-3 p-3 rounded-lg border-2 transition-all duration-300 ${
+                    conflictStatus === 'available' 
+                      ? 'bg-green-50 border-green-200' 
+                      : conflictStatus === 'partial'
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      {checkingConflicts ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-sm text-gray-600">Vérification des disponibilités...</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className={`w-3 h-3 rounded-full ${
+                            conflictStatus === 'available' 
+                              ? 'bg-green-500' 
+                              : conflictStatus === 'partial'
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
+                          }`}></div>
+                          <span className={`text-sm font-medium ${
+                            conflictStatus === 'available' 
+                              ? 'text-green-700' 
+                              : conflictStatus === 'partial'
+                              ? 'text-yellow-700'
+                              : 'text-red-700'
+                          }`}>
+                            {conflictMessage}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="md:col-span-2">
                 <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
@@ -238,7 +408,15 @@ export default function EventCreatePage() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   required
-                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
+                  className={`w-full px-3 py-2 md:px-4 md:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent bg-white text-gray-900 text-sm transition-colors ${
+                    isReserved 
+                      ? conflictStatus === 'available'
+                        ? 'border-green-300 focus:ring-green-500'
+                        : conflictStatus === 'partial'
+                        ? 'border-yellow-300 focus:ring-yellow-500'
+                        : 'border-red-300 focus:ring-red-500'
+                      : 'border-gray-300 focus:ring-blue-500'
+                  }`}
                 />
               </div>
               <div className="md:col-span-2">
