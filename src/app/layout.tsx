@@ -28,10 +28,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/icon-192x192.webp", sizes: "192x192", type: "image/webp" },
       { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.webp", sizes: "512x512", type: "image/webp" },
       { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
+      { url: "/icon-192x192.webp", sizes: "192x192", type: "image/webp" },
       { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
     ],
   },
@@ -57,11 +60,13 @@ export default function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#3b82f6" />
 
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icon-192x192.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icon-192x192.webp" />
+        <link rel="icon" type="image/webp" sizes="32x32" href="/icon-192x192.webp" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/webp" sizes="16x16" href="/icon-192x192.webp" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="mask-icon" href="/icon-192x192.png" color="#3b82f6" />
+        <link rel="mask-icon" href="/icon-192x192.webp" color="#3b82f6" />
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>

@@ -59,8 +59,8 @@ export function useAuth() {
     } catch (error) {
       console.error('Erreur de connexion Google:', error);
       console.error('Détails de l\'erreur:', {
-        code: error.code,
-        message: error.message,
+        code: error && typeof error === 'object' && 'code' in error ? error.code : 'unknown',
+        message: error && typeof error === 'object' && 'message' in error ? error.message : 'unknown',
         isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
       });
       throw error;
