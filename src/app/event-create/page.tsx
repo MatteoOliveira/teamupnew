@@ -224,7 +224,7 @@ export default function EventCreatePage() {
                     className="h-3 w-3 md:h-5 md:w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label htmlFor="isReserved" className="ml-1 md:ml-3 block text-xs font-medium text-gray-900">
-                    Réserver le lieu (empêche d&apos;autres événements au même endroit)
+                    Réserver le lieu (empêche d'autres événements au même endroit)
                   </label>
                 </div>
               </div>
@@ -329,7 +329,7 @@ export default function EventCreatePage() {
             
             <div className="flex flex-col sm:flex-row gap-2 md:gap-4 pt-2 md:pt-6">
               <Button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 md:py-3 px-3 md:px-6 rounded-lg transition-colors text-xs md:text-base">
-                {loading ? "Création..." : "Créer l&apos;événement"}
+                {loading ? "Création..." : "Créer l'événement"}
               </Button>
               <Button type="button" className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1.5 md:py-3 px-3 md:px-6 rounded-lg transition-colors text-xs md:text-base" onClick={() => router.push("/reservation")}>
                 Annuler
