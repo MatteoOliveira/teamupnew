@@ -102,9 +102,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-black">
-            Connexion à TeamUp
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Bienvenue sur <span className="text-blue-600">TeamUp</span>
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Connectez-vous pour rejoindre la communauté sportive
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
