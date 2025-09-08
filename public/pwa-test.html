@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PWA - TeamUp</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test PWA - TeamUp</h1>
+    
+    <div class="test-item">
+        <h3>📱 Manifest</h3>
+        <p id="manifest-status">Vérification en cours...</p>
+    </div>
+    
+    <div class="test-item">
+        <h3>🔧 Service Worker</h3>
+        <p id="sw-status">Vérification en cours...</p>
+    </div>
+    
+    <div class="test-item">
+        <h3>🖼️ Icônes</h3>
+        <p id="icons-status">Vérification en cours...</p>
+    </div>
+    
+    <div class="test-item">
+        <h3>📱 Installation</h3>
+        <p id="install-status">Vérification en cours...</p>
+        <button id="install-btn" style="display: none;">Installer l'app</button>
+    </div>
+    
+    <div class="test-item">
+        <h3>🌐 Mode hors ligne</h3>
+        <p id="offline-status">Vérification en cours...</p>
+    </div>
+
+    <script>
+        // Test du manifest
+        function testManifest() {
+            if ('serviceWorker' in navigator) {
+                document.getElementById('manifest-status').innerHTML = 
+                    '<span class="success">✅ Manifest détecté</span>';
+            } else {
+                document.getElementById('manifest-status').innerHTML = 
+                    '<span class="error">❌ Service Worker non supporté</span>';
+            }
+        }
+
+        // Test du Service Worker
+        function testServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        document.getElementById('sw-status').innerHTML = 
+                            '<span class="success">✅ Service Worker enregistré</span>';
+                    })
+                    .catch(error => {
+                        document.getElementById('sw-status').innerHTML = 
+                            '<span class="error">❌ Erreur Service Worker: ' + error.message + '</span>';
+                    });
+            } else {
+                document.getElementById('sw-status').innerHTML = 
+                    '<span class="error">❌ Service Worker non supporté</span>';
+            }
+        }
+
+        // Test des icônes
+        function testIcons() {
+            const icon192 = new Image();
+            const icon512 = new Image();
+            
+            icon192.onload = () => {
+                icon512.onload = () => {
+                    document.getElementById('icons-status').innerHTML = 
+                        '<span class="success">✅ Icônes chargées (192x192, 512x512)</span>';
+                };
+                icon512.onerror = () => {
+                    document.getElementById('icons-status').innerHTML = 
+                        '<span class="error">❌ Erreur icône 512x512</span>';
+                };
+                icon512.src = '/icon-512x512.png';
+            };
+            icon192.onerror = () => {
+                document.getElementById('icons-status').innerHTML = 
+                    '<span class="error">❌ Erreur icône 192x192</span>';
+            };
+            icon192.src = '/icon-192x192.png';
+        }
+
+        // Test d'installation
+        function testInstallation() {
+            let deferredPrompt;
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                document.getElementById('install-btn').style.display = 'block';
+                document.getElementById('install-status').innerHTML = 
+                    '<span class="success">✅ App installable</span>';
+            });
+
+            document.getElementById('install-btn').addEventListener('click', () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            document.getElementById('install-status').innerHTML = 
+                                '<span class="success">✅ App installée !</span>';
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            });
+
+            // Vérifier si déjà installée
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                document.getElementById('install-status').innerHTML = 
+                    '<span class="success">✅ App déjà installée</span>';
+            } else {
+                document.getElementById('install-status').innerHTML = 
+                    '<span class="warning">⚠️ App non installée</span>';
+            }
+        }
+
+        // Test mode hors ligne
+        function testOffline() {
+            if (navigator.onLine) {
+                document.getElementById('offline-status').innerHTML = 
+                    '<span class="success">✅ En ligne</span>';
+            } else {
+                document.getElementById('offline-status').innerHTML = 
+                    '<span class="warning">⚠️ Hors ligne</span>';
+            }
+
+            window.addEventListener('online', () => {
+                document.getElementById('offline-status').innerHTML = 
+                    '<span class="success">✅ En ligne</span>';
+            });
+
+            window.addEventListener('offline', () => {
+                document.getElementById('offline-status').innerHTML = 
+                    '<span class="warning">⚠️ Hors ligne</span>';
+            });
+        }
+
+        // Lancer tous les tests
+        window.addEventListener('load', () => {
+            testManifest();
+            testServiceWorker();
+            testIcons();
+            testInstallation();
+            testOffline();
+        });
+    </script>
+</body>
+</html>
