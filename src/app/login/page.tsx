@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -16,7 +16,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, user, loading: authLoading } = useAuth();
+
+  // Redirection automatique après connexion Google sur mobile
+  useEffect(() => {
+    if (user && !authLoading) {
+      console.log('Utilisateur connecté, redirection vers /profile');
+      router.push('/profile');
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,8 +73,18 @@ export default function LoginPage() {
         return;
       }
       
-      await signInWithGoogle();
-      router.push('/profile');
+      // Détecter si on est sur mobile
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Sur mobile, utiliser signInWithRedirect (pas de redirection immédiate)
+        await signInWithGoogle();
+        // La redirection sera gérée par le hook useAuth
+      } else {
+        // Sur desktop, utiliser signInWithPopup avec redirection immédiate
+        await signInWithGoogle();
+        router.push('/profile');
+      }
     } catch (error: unknown) {
       console.error('Erreur de connexion Google:', error);
       
@@ -143,10 +161,10 @@ export default function LoginPage() {
           <Button
             type="button"
             onClick={handleGoogleSignIn}
-            disabled={googleLoading}
+            disabled={googleLoading || authLoading}
             className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center justify-center"
           >
-            {googleLoading ? (
+            {googleLoading || authLoading ? (
               'Connexion...'
             ) : (
               <>

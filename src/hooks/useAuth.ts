@@ -7,23 +7,35 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
+    let isMounted = true;
 
-    // Vérifier s'il y a un résultat de redirection (pour mobile)
+    // D'abord vérifier s'il y a un résultat de redirection (pour mobile)
     getRedirectResult(auth).then((result) => {
-      if (result) {
+      if (result && isMounted) {
+        console.log('Résultat de redirection Google:', result.user);
         setUser(result.user);
         setLoading(false);
       }
     }).catch((error) => {
       console.error('Erreur lors de la récupération du résultat de redirection:', error);
-      setLoading(false);
+      if (isMounted) {
+        setLoading(false);
+      }
     });
 
-    return () => unsubscribe();
+    // Ensuite écouter les changements d'état d'authentification
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (isMounted) {
+        console.log('État d\'authentification changé:', user);
+        setUser(user);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
