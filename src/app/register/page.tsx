@@ -78,16 +78,16 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 py-4 px-4">
       <div className="w-full max-w-sm mx-auto">
         <div className="bg-white rounded-3xl shadow-2xl p-6 border border-gray-100">
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-600 to-blue-600 rounded-xl mb-3 shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-xl font-bold text-gray-900 mb-1">
               Rejoignez <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">TeamUp</span>
             </h1>
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 text-xs">
               Créez votre compte et commencez votre aventure sportive
             </p>
           </div>
