@@ -55,6 +55,16 @@ export default function LoginPage() {
     setGoogleLoading(true);
 
     try {
+      // Détecter si c'est un iPhone
+      const isIPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      
+      if (isIPhone && !isStandalone) {
+        setError('📱 Pour une meilleure expérience sur iPhone, installez l\'app PWA : Tapez sur l\'icône "Partager" puis "Ajouter à l\'écran d\'accueil".');
+        setGoogleLoading(false);
+        return;
+      }
+      
       await signInWithGoogle();
       router.push('/profile');
     } catch (error: unknown) {
@@ -85,6 +95,9 @@ export default function LoginPage() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-black">
             Connexion à TeamUp
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            📱 Sur iPhone : Installez l&apos;app PWA pour une meilleure expérience
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
