@@ -13,6 +13,7 @@ export function useAuth() {
     getRedirectResult(auth).then((result) => {
       if (result && isMounted) {
         console.log('Résultat de redirection Google:', result.user);
+        alert('✅ Retour de redirection Google - Connexion réussie !');
         setUser(result.user);
         setLoading(false);
       }
@@ -46,11 +47,21 @@ export function useAuth() {
       console.log('Tentative de connexion Google:', { isMobile, userAgent: navigator.userAgent });
       
       if (isMobile) {
-        // Utiliser signInWithRedirect sur mobile
-        console.log('Utilisation de signInWithRedirect pour mobile');
-        alert('🔍 Mobile détecté - Utilisation de signInWithRedirect');
-        await signInWithRedirect(auth, googleProvider);
-        // Note: Le résultat sera géré dans useEffect avec getRedirectResult
+        // Sur mobile, essayer d'abord signInWithPopup, puis signInWithRedirect si échec
+        console.log('Utilisation de signInWithPopup pour mobile (fallback redirect)');
+        alert('🔍 Mobile détecté - Tentative avec popup');
+        
+        try {
+          // Essayer d'abord avec popup sur mobile
+          const result = await signInWithPopup(auth, googleProvider);
+          alert('✅ Connexion Google réussie avec popup !');
+          return result.user;
+        } catch (popupError) {
+          console.log('Popup échoué, tentative avec redirect:', popupError);
+          alert('⚠️ Popup échoué, redirection vers Google...');
+          // Si popup échoue, utiliser redirect
+          await signInWithRedirect(auth, googleProvider);
+        }
       } else {
         // Utiliser signInWithPopup sur desktop
         console.log('Utilisation de signInWithPopup pour desktop');
