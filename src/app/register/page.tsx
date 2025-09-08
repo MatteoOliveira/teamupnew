@@ -93,14 +93,18 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {/* Header Mobile minimal */}
-          <div className="md:hidden flex items-center justify-between mb-4">
-            <h1 className="text-lg font-bold text-gray-900">
-              <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">TeamUp</span>
-            </h1>
-            <button className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-md hover:bg-gray-100 transition-colors">
-              Déconnexion
-            </button>
+          {/* Header Mobile minimal - Pas de bouton déconnexion car pas connecté */}
+          <div className="md:hidden flex items-center justify-center mb-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              </div>
+              <h1 className="text-lg font-bold text-gray-900">
+                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">TeamUp</span>
+              </h1>
+            </div>
           </div>
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-4">
