@@ -151,7 +151,7 @@ export default function ReservationPage() {
   // Filtrage par distance après chargement de la position et des événements
   const PROXIMITY_RADIUS_KM = 30;
   useEffect(() => {
-    if (position && events.length > 0) {
+    if (events.length > 0) {
       // Filtrer les événements : futurs uniquement et pas créés par l'utilisateur connecté
       const now = new Date();
       const filteredEvents = events.filter(e => {
@@ -160,20 +160,27 @@ export default function ReservationPage() {
         const eventDate = new Date(e.date.seconds * 1000);
         if (eventDate <= now) return false;
         
-        // Événements créés par d'autres utilisateurs uniquement
-        if (user && e.createdBy === user.uid) return false;
+        // Événements créés par d'autres utilisateurs uniquement (si createdBy existe)
+        if (user && e.createdBy && e.createdBy === user.uid) return false;
         
         return true;
       });
       
-      const withCoords = filteredEvents.filter(e => typeof e.lat === 'number' && typeof e.lng === 'number');
-      const eventsWithDistance = withCoords.map(e => ({
-        ...e,
-        distance: getDistanceFromLatLonInKm(position.lat, position.lng, e.lat as number, e.lng as number)
-      }));
-      eventsWithDistance.sort((a, b) => a.distance - b.distance);
-      setNearbyEvents(eventsWithDistance.filter(e => e.distance <= PROXIMITY_RADIUS_KM).slice(0, 5));
-      setOtherCityEvents(eventsWithDistance.filter(e => e.distance > PROXIMITY_RADIUS_KM));
+      if (position) {
+        // Si position disponible, calculer les distances
+        const withCoords = filteredEvents.filter(e => typeof e.lat === 'number' && typeof e.lng === 'number');
+        const eventsWithDistance = withCoords.map(e => ({
+          ...e,
+          distance: getDistanceFromLatLonInKm(position.lat, position.lng, e.lat as number, e.lng as number)
+        }));
+        eventsWithDistance.sort((a, b) => a.distance - b.distance);
+        setNearbyEvents(eventsWithDistance.filter(e => e.distance <= PROXIMITY_RADIUS_KM).slice(0, 5));
+        setOtherCityEvents(eventsWithDistance.filter(e => e.distance > PROXIMITY_RADIUS_KM));
+      } else {
+        // Si pas de position, afficher tous les événements filtrés
+        setNearbyEvents([]);
+        setOtherCityEvents(filteredEvents.map(e => ({ ...e, distance: 0 })));
+      }
     } else {
       setNearbyEvents([]);
       setOtherCityEvents([]);
@@ -307,7 +314,7 @@ export default function ReservationPage() {
                   const eventDate = new Date(e.date.seconds * 1000);
                   const now = new Date();
                   if (eventDate <= now) return false;
-                  if (user && e.createdBy === user.uid) return false;
+                  if (user && e.createdBy && e.createdBy === user.uid) return false;
                   return typeof e.lat === 'number' && typeof e.lng === 'number';
                 }).map(event => (
                   <Marker key={event.id} position={[event.lat as number, event.lng as number]}>
