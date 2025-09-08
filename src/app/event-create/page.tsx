@@ -59,6 +59,7 @@ export default function EventCreatePage() {
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
+  const [isAddressSelected, setIsAddressSelected] = useState(false);
   
   // États pour les popups de confirmation
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -94,8 +95,17 @@ export default function EventCreatePage() {
     setCity(properties.city);
     setPostcode(properties.postcode);
     setSelectedAddress(suggestion);
+    setIsAddressSelected(true);
     setShowSuggestions(false);
     setAddressSuggestions([]);
+  };
+
+  // Fonction pour réinitialiser la sélection d'adresse
+  const resetAddressSelection = () => {
+    setIsAddressSelected(false);
+    setSelectedAddress(null);
+    setCity("");
+    setPostcode("");
   };
 
   // Fonction de vérification des conflits de réservation
@@ -511,6 +521,11 @@ export default function EventCreatePage() {
               <div className="md:col-span-2">
                 <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Adresse complète *
+                  {isAddressSelected && (
+                    <span className="ml-2 text-xs text-green-600 font-normal">
+                      ✓ Adresse sélectionnée
+                    </span>
+                  )}
                 </label>
                 <div className="relative">
                   <input
@@ -520,11 +535,28 @@ export default function EventCreatePage() {
                     onChange={(e) => {
                       setAddress(e.target.value);
                       searchAddress(e.target.value);
+                      if (isAddressSelected) {
+                        resetAddressSelection();
+                      }
                     }}
                     onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
                     required
                     className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                   />
+                  
+                  {/* Bouton de réinitialisation */}
+                  {isAddressSelected && (
+                    <button
+                      type="button"
+                      onClick={resetAddressSelection}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Réinitialiser l'adresse"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                   
                   {/* Suggestions d'adresses */}
                   {showSuggestions && addressSuggestions.length > 0 && (
@@ -550,27 +582,47 @@ export default function EventCreatePage() {
               <div>
                 <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Ville *
+                  {isAddressSelected && (
+                    <span className="ml-2 text-xs text-green-600 font-normal">
+                      ✓ Auto-remplie
+                    </span>
+                  )}
                 </label>
-                <Input
+                <input
                   type="text"
                   placeholder="Ex: Paris"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   required
-                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
+                  readOnly={isAddressSelected}
+                  className={`w-full px-3 py-2 md:px-4 md:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-gray-900 text-sm ${
+                    isAddressSelected
+                      ? 'border-green-300 bg-green-50 text-green-800 cursor-not-allowed'
+                      : 'border-gray-300 bg-white focus:ring-blue-500'
+                  }`}
                 />
               </div>
               <div>
                 <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Code postal *
+                  {isAddressSelected && (
+                    <span className="ml-2 text-xs text-green-600 font-normal">
+                      ✓ Auto-rempli
+                    </span>
+                  )}
                 </label>
-                <Input
+                <input
                   type="text"
                   placeholder="Ex: 75001"
                   value={postcode}
                   onChange={(e) => setPostcode(e.target.value)}
                   required
-                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
+                  readOnly={isAddressSelected}
+                  className={`w-full px-3 py-2 md:px-4 md:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-gray-900 text-sm ${
+                    isAddressSelected
+                      ? 'border-green-300 bg-green-50 text-green-800 cursor-not-allowed'
+                      : 'border-gray-300 bg-white focus:ring-blue-500'
+                  }`}
                 />
               </div>
               <div>
