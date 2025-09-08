@@ -75,51 +75,78 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-black">
-            Inscription à TeamUp
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Adresse email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Input
-              type="password"
-              placeholder="Mot de passe"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <Input
-              type="password"
-              placeholder="Confirmer le mot de passe"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="text-black text-sm text-center">
-              {error}
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 py-4 px-4">
+      <div className="w-full max-w-sm mx-auto">
+        <div className="bg-white rounded-3xl shadow-2xl p-6 border border-gray-100">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl mb-4 shadow-lg">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
             </div>
-          )}
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Rejoignez <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">TeamUp</span>
+            </h1>
+            <p className="text-gray-600 text-sm">
+              Créez votre compte et commencez votre aventure sportive
+            </p>
+          </div>
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Adresse email
+                </label>
+                <Input
+                  type="email"
+                  placeholder="votre@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-4 py-4 text-base border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mot de passe
+                </label>
+                <Input
+                  type="password"
+                  placeholder="Minimum 6 caractères"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-4 text-base border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirmer le mot de passe
+                </label>
+                <Input
+                  type="password"
+                  placeholder="Répétez votre mot de passe"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-4 text-base border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+            </div>
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? 'Inscription...' : 'S&apos;inscrire'}
-          </Button>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                {error}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-4 px-4 rounded-2xl transition-all duration-200 text-base disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+            >
+              {loading ? 'Inscription...' : 'S\'inscrire'}
+            </Button>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -130,14 +157,14 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <Button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={googleLoading}
-            className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center justify-center"
-          >
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={googleLoading}
+              className="w-full px-4 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-2xl hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-semibold transition-all duration-200 text-base transform hover:scale-105"
+            >
             {googleLoading ? (
-              'Connexion...'
+              'Inscription...'
             ) : (
               <>
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -161,14 +188,18 @@ export default function RegisterPage() {
                 Continuer avec Google
               </>
             )}
-          </Button>
+          </button>
 
-          <div className="text-center">
-            <Link href="/login" className="text-black hover:text-black">
-              Déjà un compte ? Se connecter
-            </Link>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Déjà un compte ?{' '}
+              <Link href="/login" className="font-semibold text-green-600 hover:text-green-700 transition-colors">
+                Se connecter
+              </Link>
+            </p>
           </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
