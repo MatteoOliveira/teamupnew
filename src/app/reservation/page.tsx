@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -12,13 +12,6 @@ import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap } from 'leaflet';
 import { useMap } from 'react-leaflet';
 
-interface Reservation {
-  uid: string;
-  name: string;
-  sport: string;
-  timeslot: string;
-  timestamp: Date;
-}
 
 interface UserProfile {
   name: string;
@@ -39,17 +32,6 @@ interface Event {
   createdBy?: string; // Added createdBy to identify event creator
 }
 
-// Créneaux statiques
-const TIMESLOTS = [
-  '10h00 - 11h00',
-  '11h00 - 12h00',
-  '14h00 - 15h00',
-  '15h00 - 16h00',
-  '16h00 - 17h00',
-  '17h00 - 18h00',
-  '18h00 - 19h00',
-  '19h00 - 20h00'
-];
 
 // Fonction utilitaire pour calculer la distance entre deux points GPS (Haversine)
 function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -81,8 +63,6 @@ export default function ReservationPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [booking, setBooking] = useState(false);
   const [message, setMessage] = useState('');
   // Ajout géolocalisation
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
@@ -149,11 +129,10 @@ export default function ReservationPage() {
     }
   }, [user, loading, router]);
 
-  // Charger le profil utilisateur et les réservations
+  // Charger le profil utilisateur
   useEffect(() => {
     if (user) {
       loadUserProfile();
-      loadReservations();
     }
   }, [user, loadUserProfile]);
 
@@ -242,55 +221,6 @@ export default function ReservationPage() {
     }
   };
 
-  const loadReservations = async () => {
-    try {
-      const reservationsQuery = await getDocs(collection(db, 'reservations'));
-      const reservationsData = reservationsQuery.docs.map(doc => ({
-        ...doc.data(),
-        timestamp: doc.data().timestamp?.toDate()
-      })) as Reservation[];
-      setReservations(reservationsData);
-    } catch (error) {
-      console.error('Erreur lors du chargement des réservations:', error);
-    }
-  };
-
-  const handleReservation = async (timeslot: string) => {
-    if (!user || !userProfile) {
-      setMessage('Veuillez d&apos;abord compléter votre profil');
-      return;
-    }
-
-    setBooking(true);
-    setMessage('');
-
-    try {
-      await addDoc(collection(db, 'reservations'), {
-        uid: user.uid,
-        name: userProfile.name,
-        sport: userProfile.sport,
-        timeslot,
-        timestamp: new Date()
-      });
-
-      setMessage('Créneau réservé avec succès !');
-      loadReservations(); // Recharger les réservations
-    } catch (error) {
-      console.error('Erreur lors de la réservation:', error);
-      setMessage('Erreur lors de la réservation');
-    } finally {
-      setBooking(false);
-    }
-  };
-
-  const isSlotBooked = (timeslot: string) => {
-    return reservations.some(reservation => reservation.timeslot === timeslot);
-  };
-
-  const getBookedBy = (timeslot: string) => {
-    const reservation = reservations.find(reservation => reservation.timeslot === timeslot);
-    return reservation ? `${reservation.name} (${reservation.sport})` : '';
-  };
 
   if (loading) {
     return (
@@ -309,7 +239,7 @@ export default function ReservationPage() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Réservation de créneaux
+            Événements sportifs
           </h1>
           {userProfile && (
             <p className="text-gray-600">
@@ -509,46 +439,6 @@ export default function ReservationPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {TIMESLOTS.map((timeslot) => {
-            const isBooked = isSlotBooked(timeslot);
-            const bookedBy = getBookedBy(timeslot);
-
-            return (
-              <div
-                key={timeslot}
-                className={`p-6 rounded-lg border-2 ${
-                  isBooked
-                    ? 'border-red-200 bg-red-50'
-                    : 'border-green-200 bg-white hover:border-green-300'
-                }`}
-              >
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {timeslot}
-                </h3>
-                
-                {isBooked ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-red-600 font-medium">
-                      Créneau réservé
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      Par : {bookedBy}
-                    </p>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={() => handleReservation(timeslot)}
-                    disabled={booking || !userProfile}
-                    className="w-full bg-green-500 hover:bg-green-600"
-                  >
-                    {booking ? 'Réservation...' : 'Réserver'}
-                  </Button>
-                )}
-              </div>
-            );
-          })}
-        </div>
 
         <div className="mt-8 text-center">
           <Button
