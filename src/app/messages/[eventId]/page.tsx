@@ -91,9 +91,9 @@ export default function EventChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header Mobile minimal */}
-      <div className="md:hidden flex items-center justify-between py-3 px-4 bg-white border-b border-gray-200">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      {/* Header Mobile minimal - FIXE */}
+      <div className="md:hidden flex items-center justify-between py-3 px-4 bg-white border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => router.push("/messages")}
@@ -117,8 +117,8 @@ export default function EventChatPage() {
         <div className="w-5 h-5"></div> {/* Spacer pour centrer */}
       </div>
 
-      {/* Header Desktop */}
-      <div className="hidden md:block py-4 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-200">
+      {/* Header Desktop - FIXE */}
+      <div className="hidden md:block py-4 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-200 flex-shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center space-x-4">
             <button
@@ -142,9 +142,9 @@ export default function EventChatPage() {
         </div>
       </div>
 
-      {/* Zone de chat */}
-      <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col">
-        <div className="flex-1 bg-white m-4 rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
+      {/* Zone de chat - FLEXIBLE */}
+      <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col px-4 py-4">
+        <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
           {/* Zone des messages */}
           <div className="flex-1 overflow-y-auto p-4">
             {/* Message d'avertissement si l'événement est passé */}
@@ -200,8 +200,8 @@ export default function EventChatPage() {
               </div>
             )}
           </div>
-          {/* Zone de saisie */}
-          <div className="border-t border-gray-200 p-4">
+          {/* Zone de saisie - FIXE */}
+          <div className="border-t border-gray-200 p-4 flex-shrink-0">
             <form onSubmit={handleSend} className="flex gap-3">
               <div className="flex-1 relative">
                 <input
