@@ -54,6 +54,45 @@ export default function EventCreatePage() {
   const [conflictStatus, setConflictStatus] = useState<'available' | 'partial' | 'occupied'>('available');
   const [conflictMessage, setConflictMessage] = useState("");
   const [checkingConflicts, setCheckingConflicts] = useState(false);
+  
+  // États pour l'autocomplétion Google Maps
+  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
+
+  // Fonction d'autocomplétion Google Maps
+  const searchAddress = async (query: string) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`
+      );
+      const data = await response.json();
+      
+      if (data.features) {
+        setAddressSuggestions(data.features);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la recherche d'adresse:", error);
+    }
+  };
+
+  // Fonction pour sélectionner une adresse
+  const selectAddress = (suggestion: any) => {
+    const { properties, geometry } = suggestion;
+    setAddress(properties.label);
+    setCity(properties.city);
+    setPostcode(properties.postcode);
+    setSelectedAddress(suggestion);
+    setShowSuggestions(false);
+    setAddressSuggestions([]);
+  };
 
   // Fonction de vérification des conflits de réservation
   const checkReservationConflicts = async (eventDate: string, eventEndDate: string, eventLocation: string, eventCity: string) => {
@@ -146,6 +185,19 @@ export default function EventCreatePage() {
       setConflictMessage("");
     }
   }, [date, endDate, location, city, isReserved]);
+
+  // Fermer les suggestions d'adresse quand on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.address-suggestions')) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -346,59 +398,6 @@ export default function EventCreatePage() {
                 />
               </div>
               <div className="md:col-span-2">
-                <div className="flex items-center p-2 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <input
-                    type="checkbox"
-                    id="isReserved"
-                    checked={isReserved}
-                    onChange={(e) => setIsReserved(e.target.checked)}
-                    className="h-3 w-3 md:h-5 md:w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="isReserved" className="ml-1 md:ml-3 block text-xs font-medium text-gray-900">
-                    Réserver le lieu (empêche d&apos;autres événements au même endroit)
-                  </label>
-                </div>
-                
-                {/* Affichage du statut de disponibilité */}
-                {isReserved && (date || location || city) && (
-                  <div className={`mt-3 p-3 rounded-lg border-2 transition-all duration-300 ${
-                    conflictStatus === 'available' 
-                      ? 'bg-green-50 border-green-200' 
-                      : conflictStatus === 'partial'
-                      ? 'bg-yellow-50 border-yellow-200'
-                      : 'bg-red-50 border-red-200'
-                  }`}>
-                    <div className="flex items-center space-x-2">
-                      {checkingConflicts ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                          <span className="text-sm text-gray-600">Vérification des disponibilités...</span>
-                        </>
-                      ) : (
-                        <>
-                          <div className={`w-3 h-3 rounded-full ${
-                            conflictStatus === 'available' 
-                              ? 'bg-green-500' 
-                              : conflictStatus === 'partial'
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                          }`}></div>
-                          <span className={`text-sm font-medium ${
-                            conflictStatus === 'available' 
-                              ? 'text-green-700' 
-                              : conflictStatus === 'partial'
-                              ? 'text-yellow-700'
-                              : 'text-red-700'
-                          }`}>
-                            {conflictMessage}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="md:col-span-2">
                 <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Lieu *
                 </label>
@@ -423,14 +422,40 @@ export default function EventCreatePage() {
                 <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                   Adresse complète *
                 </label>
-                <Input
-                  type="text"
-                  placeholder="Ex: 10 rue de Paris"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Ex: 10 rue de Paris"
+                    value={address}
+                    onChange={(e) => {
+                      setAddress(e.target.value);
+                      searchAddress(e.target.value);
+                    }}
+                    onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
+                    required
+                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
+                  />
+                  
+                  {/* Suggestions d'adresses */}
+                  {showSuggestions && addressSuggestions.length > 0 && (
+                    <div className="address-suggestions absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {addressSuggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          onClick={() => selectAddress(suggestion)}
+                        >
+                          <div className="text-sm font-medium text-gray-900">
+                            {suggestion.properties.label}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {suggestion.properties.city} {suggestion.properties.postcode}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
