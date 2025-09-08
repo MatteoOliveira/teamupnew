@@ -28,15 +28,15 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/icon-192x192.png" alt="Logo TeamUp" width={40} height={40} className="w-auto" />
-            <span className="text-xl font-bold text-black hidden sm:inline">TeamUp!</span>
+        <div className="flex justify-between items-center py-2 md:py-4">
+          <Link href="/" className="flex items-center gap-1 md:gap-2">
+            <Image src="/icon-192x192.png" alt="Logo TeamUp" width={24} height={24} className="w-6 h-6 md:w-10 md:h-10" />
+            <span className="text-sm md:text-xl font-bold text-black hidden sm:inline">TeamUp!</span>
           </Link>
           {user && (
             <Button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-red-500 hover:bg-red-600 text-xs md:text-sm px-2 py-1 md:px-4 md:py-2"
               disabled={isLoggingOut}
             >
               {isLoggingOut ? 'Déconnexion...' : 'Se déconnecter'}
