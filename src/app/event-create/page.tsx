@@ -105,12 +105,11 @@ export default function EventCreatePage() {
     setCheckingConflicts(true);
     
     try {
-      // Chercher tous les événements réservés au même lieu
+      // Chercher TOUS les événements au même lieu (réservés ou non)
       const eventsQuery = query(
         collection(db, "events"),
         where("location", "==", eventLocation),
-        where("city", "==", eventCity),
-        where("isReserved", "==", true)
+        where("city", "==", eventCity)
       );
       
       const eventsSnapshot = await getDocs(eventsQuery);
@@ -126,7 +125,8 @@ export default function EventCreatePage() {
       const bufferMinutes = 5;
       
       let conflicts = 0;
-      let totalReservations = 0;
+      let totalEvents = 0;
+      let hasExistingEvent = false;
       
       for (const event of existingEvents) {
         if (!event.date?.seconds) continue;
@@ -136,31 +136,29 @@ export default function EventCreatePage() {
           ? new Date(event.endDate.seconds * 1000)
           : new Date(existingStart.getTime() + 2 * 60 * 60 * 1000); // +2h par défaut
         
-        // Ajouter 5 minutes de buffer
-        const existingEndWithBuffer = new Date(existingEnd.getTime() + bufferMinutes * 60 * 1000);
+        totalEvents++;
         
-        totalReservations++;
-        
-        // Vérifier les chevauchements
+        // Vérifier les chevauchements (sans buffer pour la détection d'événements existants)
         const hasConflict = (
-          (newEventStart < existingEndWithBuffer && newEventEnd > existingStart)
+          (newEventStart < existingEnd && newEventEnd > existingStart)
         );
         
         if (hasConflict) {
+          hasExistingEvent = true;
           conflicts++;
         }
       }
       
       // Déterminer le statut
-      if (totalReservations === 0) {
+      if (totalEvents === 0) {
         setConflictStatus('available');
-        setConflictMessage("✅ Aucune réservation sur ce lieu aujourd'hui. Encore des disponibilités de réservation sur le lieu.");
-      } else if (conflicts === 0) {
-        setConflictStatus('partial');
-        setConflictMessage(`⚠️ ${totalReservations} réservation(s) existante(s) mais créneaux disponibles. Encore des disponibilités de réservation sur le lieu.`);
-      } else {
+        setConflictMessage("✅ Aucun événement sur ce lieu aujourd'hui. Encore des disponibilités de réservation sur le lieu.");
+      } else if (hasExistingEvent) {
         setConflictStatus('occupied');
-        setConflictMessage(`❌ Impossible de réserver, lieu occupé toute la journée. ${conflicts} conflit(s) détecté(s).`);
+        setConflictMessage(`❌ Lieu non réservable à cette date et à ces horaires car il y a déjà un événement.`);
+      } else {
+        setConflictStatus('partial');
+        setConflictMessage(`⚠️ ${totalEvents} événement(s) existant(s) mais créneaux disponibles. Encore des disponibilités de réservation sur le lieu.`);
       }
       
     } catch (error) {
@@ -174,7 +172,7 @@ export default function EventCreatePage() {
 
   // Vérification en temps réel des conflits
   useEffect(() => {
-    if (isReserved && date && location && city) {
+    if (date && location && city) {
       const timeoutId = setTimeout(() => {
         checkReservationConflicts(date, endDate, location, city);
       }, 500); // Délai de 500ms pour éviter trop de requêtes
@@ -184,7 +182,7 @@ export default function EventCreatePage() {
       setConflictStatus('available');
       setConflictMessage("");
     }
-  }, [date, endDate, location, city, isReserved]);
+  }, [date, endDate, location, city]);
 
   // Fermer les suggestions d'adresse quand on clique ailleurs
   useEffect(() => {
@@ -217,13 +215,11 @@ export default function EventCreatePage() {
       return;
     }
     
-    // Vérification des conflits si réservation activée
-    if (isReserved) {
-      await checkReservationConflicts(date, endDate, location, city);
-      if (conflictStatus === 'occupied') {
-        setMessage("Impossible de créer l'événement : le lieu est déjà occupé à cette heure. Veuillez choisir un autre créneau ou un autre lieu.");
-        return;
-      }
+    // Vérification des conflits
+    await checkReservationConflicts(date, endDate, location, city);
+    if (conflictStatus === 'occupied') {
+      setMessage("Impossible de créer l'événement : le lieu est déjà occupé à cette heure. Veuillez choisir un autre créneau ou un autre lieu.");
+      return;
     }
     setLoading(true);
     try {
@@ -525,21 +521,37 @@ export default function EventCreatePage() {
             
             {/* Section de réservation du lieu */}
             <div className="md:col-span-2 mt-4">
-              <div className="flex items-center p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className={`flex items-center p-3 md:p-4 rounded-lg border ${
+                conflictStatus === 'occupied' 
+                  ? 'bg-red-50 border-red-200' 
+                  : 'bg-blue-50 border-blue-200'
+              }`}>
                 <input
                   type="checkbox"
                   id="isReserved"
                   checked={isReserved}
                   onChange={(e) => setIsReserved(e.target.checked)}
-                  className="h-3 w-3 md:h-5 md:w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  disabled={conflictStatus === 'occupied'}
+                  className={`h-3 w-3 md:h-5 md:w-5 focus:ring-blue-500 border-gray-300 rounded ${
+                    conflictStatus === 'occupied'
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-blue-600'
+                  }`}
                 />
-                <label htmlFor="isReserved" className="ml-2 md:ml-3 block text-xs md:text-sm font-medium text-gray-900">
-                  Réserver le lieu (empêche d&apos;autres événements au même endroit)
+                <label htmlFor="isReserved" className={`ml-2 md:ml-3 block text-xs md:text-sm font-medium ${
+                  conflictStatus === 'occupied'
+                    ? 'text-gray-500'
+                    : 'text-gray-900'
+                }`}>
+                  {conflictStatus === 'occupied' 
+                    ? 'Lieu non réservable (événement existant à ces horaires)'
+                    : 'Réserver le lieu (empêche d\'autres événements au même endroit)'
+                  }
                 </label>
               </div>
               
               {/* Affichage du statut de disponibilité */}
-              {isReserved && (date || location || city) && (
+              {(date && location && city) && (
                 <div className={`mt-3 p-3 rounded-lg border-2 transition-all duration-300 ${
                   conflictStatus === 'available' 
                     ? 'bg-green-50 border-green-200' 
