@@ -5,17 +5,27 @@ import { doc, getDoc, collection, addDoc, getDocs, query, where, deleteDoc, setD
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/Button";
+import { MapPinIcon, CalendarIcon, UsersIcon, UserIcon, ClockIcon, PhoneIcon } from "@heroicons/react/24/outline";
 
 interface Event {
   id: string;
   name: string;
   city: string;
   location: string;
+  address?: string;
+  postcode?: string;
+  sport?: string;
+  sportEmoji?: string;
+  sportColor?: string;
   date?: { seconds: number };
+  endDate?: { seconds: number };
   description: string;
   maxParticipants: number;
+  currentParticipants?: number;
   createdBy: string;
+  createdByName?: string;
   contactInfo: string;
+  isReserved?: boolean;
 }
 
 interface Participant {
@@ -52,11 +62,20 @@ export default function EventDetailPage() {
             name: data.name,
             city: data.city,
             location: data.location,
+            address: data.address,
+            postcode: data.postcode,
+            sport: data.sport,
+            sportEmoji: data.sportEmoji,
+            sportColor: data.sportColor,
             date: data.date,
+            endDate: data.endDate,
             description: data.description,
             maxParticipants: data.maxParticipants,
+            currentParticipants: data.currentParticipants,
             createdBy: data.createdBy,
+            createdByName: data.createdByName,
             contactInfo: data.contactInfo,
+            isReserved: data.isReserved,
           });
         } else {
           setMessage("Événement non trouvé");
@@ -202,130 +221,291 @@ export default function EventDetailPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-black">Chargement de l&apos;événement...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement de l&apos;événement...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!event) {
-    return <div className="p-8 text-center text-black">Événement non trouvé</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">❌</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Événement non trouvé</h1>
+          <p className="text-gray-600">Cet événement n&apos;existe pas ou a été supprimé.</p>
+        </div>
+      </div>
+    );
   }
 
   const isEventFull = participants.length >= event.maxParticipants;
   const canRegister = user && !alreadyRegistered && !isCreator && !isEventFull;
+  
+  const formatDate = (date: { seconds: number }) => {
+    const d = new Date(date.seconds * 1000);
+    return d.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatTime = (date: { seconds: number }) => {
+    const d = new Date(date.seconds * 1000);
+    return d.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-white rounded shadow mt-6 mb-24">
-      <h1 className="text-2xl font-bold text-black mb-2">{event.name}</h1>
-      <div className="text-black mb-1">{event.city} - {event.location}</div>
-      <div className="text-black mb-1">{event.date?.seconds ? new Date(event.date.seconds * 1000).toLocaleString() : ""}</div>
-      <div className="text-black mb-1">{event.description}</div>
-      <div className="text-black mb-1 font-semibold">Participants : {participants.length} / {event.maxParticipants}</div>
-      <div className="text-black mb-1">Contact organisateur : <span className="font-semibold">{event.contactInfo}</span></div>
-      
-      {message && (
-        <div className={`text-sm text-center p-3 rounded my-2 ${
-          message.includes("réussie") || message.includes("désinscrit") 
-            ? "bg-green-100 text-green-700" 
-            : "bg-red-100 text-red-700"
-        }`}>
-          {message}
-        </div>
-      )}
-      
-      {/* Bouton d'inscription - toujours visible si l'utilisateur peut s'inscrire */}
-      {canRegister && (
-        <div className="mt-4 p-4 border border-blue-200 rounded-lg bg-blue-50">
-          <h3 className="text-lg font-semibold text-black mb-2">S&apos;inscrire à cet événement</h3>
-          <form onSubmit={e => { e.preventDefault(); handleRegister(); }} className="space-y-3">
-            <input
-              type="text"
-              placeholder="Votre contact (email, téléphone, etc.) *"
-              value={contact}
-              onChange={e => setContact(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <Button 
-              type="submit"
-              disabled={registering || !contact.trim()}
-              className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50"
-            >
-              {registering ? 'Inscription...' : 'S&apos;inscrire'}
-            </Button>
-          </form>
-        </div>
-      )}
-      
-      {/* Messages d'état */}
-      {!user && (
-        <div className="mt-4 p-3 bg-yellow-100 text-yellow-700 rounded text-center">
-          Connectez-vous pour vous inscrire à cet événement
-        </div>
-      )}
-      
-      {alreadyRegistered && !isCreator && (
-        <div className="mt-4 p-3 bg-green-100 text-green-700 rounded text-center">
-          <div className="font-semibold mb-2">Vous êtes inscrit à cet événement</div>
-          <Button
-            className="w-full bg-red-500 hover:bg-red-600"
-            onClick={handleUnregister}
-            disabled={registering}
-          >
-            {registering ? 'Désinscription...' : 'Se désinscrire'}
-          </Button>
-        </div>
-      )}
-      
-      {isCreator && (
-        <div className="mt-4 p-3 bg-blue-100 text-blue-700 rounded text-center font-semibold">
-          Vous êtes l&apos;organisateur de cet événement
-        </div>
-      )}
-      
-      {isEventFull && !alreadyRegistered && (
-        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded text-center font-semibold">
-          Événement complet
-        </div>
-      )}
-      
-      {/* Liste des inscrits : visible pour tous les inscrits et le créateur */}
-      {canSeeParticipants && (
-        <div className="mt-6">
-          <h2 className="text-lg font-bold text-black mb-2">Participants inscrits</h2>
-          {participants.length === 0 ? (
-            <div className="text-black">Aucun inscrit pour le moment.</div>
-          ) : (
-            <ul className="space-y-2">
-              {/* Trier les participants : organisateur en premier, puis les autres par ordre d'inscription */}
-              {participants
-                .sort((a, b) => {
-                  // L'organisateur toujours en premier
-                  if (event.createdBy === a.userId) return -1;
-                  if (event.createdBy === b.userId) return 1;
-                  // Les autres par ordre d'inscription (plus récent en premier)
-                  return new Date(b.registeredAt?.seconds ? b.registeredAt.seconds * 1000 : 0).getTime() - 
-                         new Date(a.registeredAt?.seconds ? a.registeredAt.seconds * 1000 : 0).getTime();
-                })
-                .map(p => (
-                  <li key={p.id} className={`p-3 border rounded flex flex-col md:flex-row md:items-center md:justify-between ${
-                    event.createdBy === p.userId ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-black">
-                        {p.userName}
-                      </span>
-                      {event.createdBy === p.userId && (
-                        <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full font-medium">
-                          Organisateur
-                        </span>
-                      )}
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header avec image de sport */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+          <div className={`h-32 ${event.sportColor || 'bg-gradient-to-r from-purple-500 to-blue-500'} flex items-center justify-center`}>
+            <div className="text-center text-white">
+              <div className="text-6xl mb-2">{event.sportEmoji || '🏃'}</div>
+              <h1 className="text-2xl font-bold">{event.sport || 'Sport'}</h1>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">{event.name}</h1>
+            
+            {/* Informations principales */}
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <MapPinIcon className="h-6 w-6 text-purple-600 mt-1" />
+                  <div>
+                    <p className="font-semibold text-gray-800">{event.location}</p>
+                    <p className="text-gray-600">{event.address || `${event.city} ${event.postcode}`}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <CalendarIcon className="h-6 w-6 text-purple-600 mt-1" />
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      {event.date ? formatDate(event.date) : 'Date non définie'}
+                    </p>
+                    {event.endDate && (
+                      <p className="text-gray-600">
+                        {formatTime(event.date!)} - {formatTime(event.endDate)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <UsersIcon className="h-6 w-6 text-purple-600 mt-1" />
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      {participants.length} / {event.maxParticipants} participants
+                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div 
+                        className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min((participants.length / event.maxParticipants) * 100, 100)}%` }}
+                      ></div>
                     </div>
-                    <span className="text-black text-xs mt-1 md:mt-0">{p.contact}</span>
-                  </li>
-                ))}
-            </ul>
-          )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <UserIcon className="h-6 w-6 text-purple-600 mt-1" />
+                  <div>
+                    <p className="font-semibold text-gray-800">Organisateur</p>
+                    <p className="text-gray-600">{event.createdByName || 'Anonyme'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <PhoneIcon className="h-6 w-6 text-purple-600 mt-1" />
+                  <div>
+                    <p className="font-semibold text-gray-800">Contact</p>
+                    <p className="text-gray-600">{event.contactInfo}</p>
+                  </div>
+                </div>
+                
+                {event.isReserved && (
+                  <div className="flex items-center gap-2">
+                    <ClockIcon className="h-5 w-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-700 bg-green-100 px-3 py-1 rounded-full">
+                      Lieu réservé
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Description */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-gray-800 mb-2">Description</h3>
+              <p className="text-gray-700 leading-relaxed">{event.description}</p>
+            </div>
+            
+            {/* Messages d'état */}
+            {message && (
+              <div className={`p-4 rounded-lg mb-6 ${
+                message.includes("réussie") || message.includes("désinscrit") 
+                  ? "bg-green-100 border border-green-200 text-green-800" 
+                  : "bg-red-100 border border-red-200 text-red-800"
+              }`}>
+                <p className="font-medium">{message}</p>
+              </div>
+            )}
+            
+            {/* Section d'inscription */}
+            {canRegister && (
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200 mb-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <UserIcon className="h-6 w-6 text-purple-600" />
+                  S&apos;inscrire à cet événement
+                </h3>
+                <form onSubmit={e => { e.preventDefault(); handleRegister(); }} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Votre contact (email, téléphone, etc.) *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ex: jean.dupont@email.com ou 06 12 34 56 78"
+                      value={contact}
+                      onChange={e => setContact(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      required
+                    />
+                  </div>
+                  <Button 
+                    type="submit"
+                    disabled={registering || !contact.trim()}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {registering ? 'Inscription en cours...' : 'S&apos;inscrire maintenant'}
+                  </Button>
+                </form>
+              </div>
+            )}
+            
+            {/* Messages d'état pour l'inscription */}
+            {!user && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="text-yellow-600">⚠️</div>
+                  <p className="text-yellow-800 font-medium">Connectez-vous pour vous inscrire à cet événement</p>
+                </div>
+              </div>
+            )}
+            
+            {alreadyRegistered && !isCreator && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                <div className="text-center">
+                  <div className="text-4xl mb-3">✅</div>
+                  <h3 className="text-lg font-bold text-green-800 mb-4">Vous êtes inscrit à cet événement</h3>
+                  <Button
+                    className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200"
+                    onClick={handleUnregister}
+                    disabled={registering}
+                  >
+                    {registering ? 'Désinscription...' : 'Se désinscrire'}
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {isCreator && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="text-blue-600">👑</div>
+                  <p className="text-blue-800 font-semibold">Vous êtes l&apos;organisateur de cet événement</p>
+                </div>
+              </div>
+            )}
+            
+            {isEventFull && !alreadyRegistered && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="text-red-600">🚫</div>
+                  <p className="text-red-800 font-semibold">Événement complet - Plus de places disponibles</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+        
+        {/* Liste des participants */}
+        {canSeeParticipants && (
+          <div className="bg-white rounded-2xl shadow-xl p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <UsersIcon className="h-6 w-6 text-purple-600" />
+              Participants inscrits ({participants.length})
+            </h2>
+            
+            {participants.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3">👥</div>
+                <p className="text-gray-600">Aucun participant inscrit pour le moment.</p>
+                <p className="text-sm text-gray-500 mt-1">Soyez le premier à vous inscrire !</p>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {participants
+                  .sort((a, b) => {
+                    if (event.createdBy === a.userId) return -1;
+                    if (event.createdBy === b.userId) return 1;
+                    return new Date(b.registeredAt?.seconds ? b.registeredAt.seconds * 1000 : 0).getTime() - 
+                           new Date(a.registeredAt?.seconds ? a.registeredAt.seconds * 1000 : 0).getTime();
+                  })
+                  .map(p => (
+                    <div key={p.id} className={`p-4 rounded-lg border transition-all duration-200 ${
+                      event.createdBy === p.userId 
+                        ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200' 
+                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                            event.createdBy === p.userId ? 'bg-blue-600' : 'bg-purple-600'
+                          }`}>
+                            {p.userName.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-800">{p.userName}</span>
+                              {event.createdBy === p.userId && (
+                                <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full font-medium">
+                                  Organisateur
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{p.contact}</p>
+                          </div>
+                        </div>
+                        {p.registeredAt && (
+                          <div className="text-xs text-gray-500">
+                            Inscrit le {new Date(p.registeredAt.seconds * 1000).toLocaleDateString('fr-FR')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 } 
