@@ -109,8 +109,8 @@ export default function EventCreatePage() {
   };
 
   // Fonction de vérification des conflits de réservation
-  const checkReservationConflicts = async (eventDate: string, eventEndDate: string, eventLocation: string, eventCity: string) => {
-    if (!eventDate || !eventLocation || !eventCity) {
+  const checkReservationConflicts = async (eventDate: string, eventEndDate: string, eventAddress: string, eventCity: string, eventPostcode: string) => {
+    if (!eventDate || !eventAddress || !eventCity || !eventPostcode) {
       setConflictStatus('available');
       setConflictMessage("");
       return;
@@ -119,11 +119,12 @@ export default function EventCreatePage() {
     setCheckingConflicts(true);
     
     try {
-      // Chercher TOUS les événements au même lieu (réservés ou non)
+      // Chercher TOUS les événements au même endroit (adresse + ville + code postal)
       const eventsQuery = query(
         collection(db, "events"),
-        where("location", "==", eventLocation),
-        where("city", "==", eventCity)
+        where("address", "==", eventAddress),
+        where("city", "==", eventCity),
+        where("postcode", "==", eventPostcode)
       );
       
       const eventsSnapshot = await getDocs(eventsQuery);
@@ -166,13 +167,13 @@ export default function EventCreatePage() {
       // Déterminer le statut
       if (totalEvents === 0) {
         setConflictStatus('available');
-        setConflictMessage("✅ Aucun événement sur ce lieu aujourd'hui. Encore des disponibilités de réservation sur le lieu.");
+        setConflictMessage("✅ Aucun événement à cette adresse aujourd'hui. Encore des disponibilités de réservation.");
       } else if (hasExistingEvent) {
         setConflictStatus('occupied');
-        setConflictMessage(`❌ Lieu non réservable à cette date et à ces horaires car il y a déjà un événement.`);
+        setConflictMessage(`❌ Endroit non réservable à cette date et à ces horaires car il y a déjà un événement.`);
       } else {
         setConflictStatus('partial');
-        setConflictMessage(`⚠️ ${totalEvents} événement(s) existant(s) mais créneaux disponibles. Encore des disponibilités de réservation sur le lieu.`);
+        setConflictMessage(`⚠️ ${totalEvents} événement(s) existant(s) à cette adresse mais créneaux disponibles.`);
       }
       
     } catch (error) {
@@ -186,9 +187,9 @@ export default function EventCreatePage() {
 
   // Vérification en temps réel des conflits
   useEffect(() => {
-    if (date && location && city) {
+    if (date && address && city && postcode) {
       const timeoutId = setTimeout(() => {
-        checkReservationConflicts(date, endDate, location, city);
+        checkReservationConflicts(date, endDate, address, city, postcode);
       }, 500); // Délai de 500ms pour éviter trop de requêtes
       
       return () => clearTimeout(timeoutId);
@@ -196,7 +197,7 @@ export default function EventCreatePage() {
       setConflictStatus('available');
       setConflictMessage("");
     }
-  }, [date, endDate, location, city]);
+  }, [date, endDate, address, city, postcode]);
 
   // Fermer les suggestions d'adresse quand on clique ailleurs
   useEffect(() => {
@@ -230,9 +231,9 @@ export default function EventCreatePage() {
     }
     
     // Vérification des conflits
-    await checkReservationConflicts(date, endDate, location, city);
+    await checkReservationConflicts(date, endDate, address, city, postcode);
     if (conflictStatus === 'occupied') {
-      setMessage("Impossible de créer l'événement : le lieu est déjà occupé à cette heure. Veuillez choisir un autre créneau ou un autre lieu.");
+      setMessage("Impossible de créer l'événement : ce lieu est déjà occupé à cette heure. Veuillez choisir un autre créneau ou un autre endroit.");
       return;
     }
     
@@ -697,7 +698,7 @@ export default function EventCreatePage() {
               </div>
               
               {/* Affichage du statut de disponibilité */}
-              {(date && location && city) && (
+              {(date && address && city && postcode) && (
                 <div className={`mt-3 p-3 rounded-lg border-2 transition-all duration-300 ${
                   conflictStatus === 'available' 
                     ? 'bg-green-50 border-green-200' 

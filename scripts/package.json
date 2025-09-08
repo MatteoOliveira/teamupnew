@@ -1,0 +1,14 @@
+{
+  "name": "teamup-test-scripts",
+  "version": "1.0.0",
+  "description": "Scripts de test pour TeamUp",
+  "main": "index.js",
+  "scripts": {
+    "create-events": "node create-test-events.js",
+    "cleanup-events": "node cleanup-test-events.js",
+    "test": "npm run create-events && echo 'Événements créés. Testez maintenant l application, puis exécutez: npm run cleanup-events'"
+  },
+  "dependencies": {
+    "firebase": "^10.7.1"
+  }
+}
