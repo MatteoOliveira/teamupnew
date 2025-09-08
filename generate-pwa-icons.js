@@ -1,49 +1,43 @@
+const sharp = require('sharp');
+const path = require('path');
 const fs = require('fs');
-const { createCanvas } = require('canvas');
 
-// Fonction pour créer une icône PNG
-function createIcon(size) {
-  const canvas = createCanvas(size, size);
-  const ctx = canvas.getContext('2d');
-  
-  // Arrière-plan bleu avec coins arrondis
-  ctx.fillStyle = '#3b82f6';
-  ctx.beginPath();
-  ctx.roundRect(0, 0, size, size, size * 0.125);
-  ctx.fill();
-  
-  // Cercle blanc au centre
-  const centerX = size / 2;
-  const centerY = size / 2;
-  const circleSize = size * 0.4;
-  
-  ctx.fillStyle = 'white';
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, circleSize / 2, 0, 2 * Math.PI);
-  ctx.fill();
-  
-  // Lettre "T" pour TeamUp
-  ctx.fillStyle = '#3b82f6';
-  ctx.font = `bold ${circleSize * 0.6}px Arial`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('T', centerX, centerY);
-  
-  return canvas.toBuffer('image/png');
+const inputWebp192 = path.join(__dirname, 'public', 'icon-192x192.webp');
+const inputWebp512 = path.join(__dirname, 'public', 'icon-512x512.webp');
+const outputDir = path.join(__dirname, 'public');
+
+async function generateIcons() {
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  try {
+    // Convertir 192x192 WebP vers PNG
+    if (fs.existsSync(inputWebp192)) {
+      const outputPath192 = path.join(outputDir, 'icon-192x192.png');
+      await sharp(inputWebp192)
+        .png()
+        .toFile(outputPath192);
+      console.log(`✅ Généré ${outputPath192}`);
+    } else {
+      console.log('❌ Fichier icon-192x192.webp non trouvé');
+    }
+
+    // Convertir 512x512 WebP vers PNG
+    if (fs.existsSync(inputWebp512)) {
+      const outputPath512 = path.join(outputDir, 'icon-512x512.png');
+      await sharp(inputWebp512)
+        .png()
+        .toFile(outputPath512);
+      console.log(`✅ Généré ${outputPath512}`);
+    } else {
+      console.log('❌ Fichier icon-512x512.webp non trouvé');
+    }
+
+    console.log('🎉 Icônes PWA générées avec succès à partir des WebP !');
+  } catch (error) {
+    console.error('❌ Erreur lors de la génération des icônes:', error);
+  }
 }
 
-// Générer les icônes
-try {
-  const icon192 = createIcon(192);
-  const icon512 = createIcon(512);
-  
-  fs.writeFileSync('public/icon-192x192.png', icon192);
-  fs.writeFileSync('public/icon-512x512.png', icon512);
-  
-  console.log('✅ Icônes PWA générées avec succès !');
-  console.log('- icon-192x192.png');
-  console.log('- icon-512x512.png');
-} catch (error) {
-  console.error('❌ Erreur lors de la génération des icônes:', error.message);
-  console.log('💡 Installation de canvas nécessaire: npm install canvas');
-}
+generateIcons();
