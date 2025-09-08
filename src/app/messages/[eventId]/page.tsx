@@ -91,53 +91,141 @@ export default function EventChatPage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto p-4 bg-white rounded shadow mt-6 mb-24 flex flex-col h-[80vh]">
-      <div className="flex items-center gap-2 mb-4">
-        <Button onClick={() => router.push("/messages")} className="bg-gray-200 text-gray-700 px-3 py-1">← Retour</Button>
-        <h1 className="text-xl font-bold text-black flex-1 text-center">{eventName}</h1>
-      </div>
-      <div className="flex-1 overflow-y-auto bg-gray-50 rounded p-2 mb-2">
-        {/* Message d'avertissement si l'événement est passé */}
-        {eventDate && new Date() > eventDate && (
-          <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded text-center text-sm">
-            Merci d&apos;avoir participé à l&apos;événement ! Ce groupe se supprimera dans 2 jours.
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header Mobile minimal */}
+      <div className="md:hidden flex items-center justify-between py-3 px-4 bg-white border-b border-gray-200">
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => router.push("/messages")}
+            className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <div className="flex items-center space-x-1">
+            <div className="w-6 h-6 bg-gradient-to-r from-green-600 to-blue-600 rounded-md flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <h2 className="text-sm font-bold text-gray-900 truncate max-w-48">
+              {eventName}
+            </h2>
           </div>
-        )}
-        {messages.length === 0 ? (
-          <div className="text-gray-500 text-center mt-8">Aucun message pour le moment.</div>
-        ) : (
-          <ul className="space-y-2">
-            {messages.map(msg => {
-              const isMine = user && msg.senderId === user.uid;
-              return (
-                <li key={msg.id} className={`flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
-                  <div className={`flex items-center gap-2 mb-1 ${isMine ? 'flex-row-reverse' : ''}`}>
-                    <span className="font-semibold text-black text-sm">{msg.senderName}</span>
-                    {msg.isOrganizer && (
-                      <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full font-medium">Organisateur</span>
-                    )}
-                    <span className="text-xs text-gray-400">{msg.timestamp?.seconds ? new Date(msg.timestamp.seconds * 1000).toLocaleTimeString() : ""}</span>
-                  </div>
-                  <div className={`${isMine ? 'bg-blue-100 text-black self-end' : 'bg-gray-200 text-black self-start'} border rounded px-3 py-2 max-w-xs break-words shadow-sm`}>
-                    {msg.content}
-                  </div>
-                </li>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </ul>
-        )}
+        </div>
+        <div className="w-5 h-5"></div> {/* Spacer pour centrer */}
       </div>
-      <form onSubmit={handleSend} className="flex gap-2 mt-2">
-        <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-          placeholder="Écrire un message..."
-        />
-        <Button type="submit" className="bg-blue-500 hover:bg-blue-600">Envoyer</Button>
-      </form>
+
+      {/* Header Desktop */}
+      <div className="hidden md:block py-4 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.push("/messages")}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span>Retour</span>
+            </button>
+            <div className="flex-1">
+              <h1 className="text-xl font-bold text-gray-900">{eventName}</h1>
+              {eventDate && (
+                <p className="text-sm text-gray-600">
+                  {eventDate.toLocaleDateString()} à {eventDate.toLocaleTimeString()}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Zone de chat */}
+      <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col">
+        <div className="flex-1 bg-white m-4 rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
+          {/* Zone des messages */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {/* Message d'avertissement si l'événement est passé */}
+            {eventDate && new Date() > eventDate && (
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg text-center text-sm">
+                <div className="flex items-center justify-center space-x-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <span>Merci d'avoir participé à l'événement ! Ce groupe se supprimera dans 2 jours.</span>
+                </div>
+              </div>
+            )}
+            
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun message</h3>
+                <p className="text-gray-600">Soyez le premier à écrire dans cette discussion !</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map(msg => {
+                  const isMine = user && msg.senderId === user.uid;
+                  return (
+                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex flex-col max-w-xs lg:max-w-md ${isMine ? 'items-end' : 'items-start'}`}>
+                        <div className={`flex items-center space-x-2 mb-1 ${isMine ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                          <span className="font-semibold text-gray-900 text-sm">{msg.senderName}</span>
+                          {msg.isOrganizer && (
+                            <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full font-medium">Organisateur</span>
+                          )}
+                          <span className="text-xs text-gray-500">
+                            {msg.timestamp?.seconds ? new Date(msg.timestamp.seconds * 1000).toLocaleTimeString() : ""}
+                          </span>
+                        </div>
+                        <div className={`px-4 py-2 rounded-2xl ${
+                          isMine 
+                            ? 'bg-blue-500 text-white rounded-br-md' 
+                            : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                        } shadow-sm`}>
+                          <p className="text-sm break-words">{msg.content}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+          {/* Zone de saisie */}
+          <div className="border-t border-gray-200 p-4">
+            <form onSubmit={handleSend} className="flex gap-3">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+                  placeholder="Écrire un message..."
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={!input.trim()}
+                className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-3 rounded-full font-medium transition-colors flex items-center space-x-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                <span className="hidden sm:inline">Envoyer</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 } 
