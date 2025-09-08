@@ -162,7 +162,7 @@ export default function EventCreatePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
               <div className="md:col-span-2">
                 <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                  Nom de l'événement *
+                  Nom de l&apos;événement *
                 </label>
                 <Input
                   type="text"
@@ -224,7 +224,7 @@ export default function EventCreatePage() {
                     className="h-3 w-3 md:h-5 md:w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label htmlFor="isReserved" className="ml-1 md:ml-3 block text-xs font-medium text-gray-900">
-                    Réserver le lieu (empêche d'autres événements au même endroit)
+                    Réserver le lieu (empêche d&apos;autres événements au même endroit)
                   </label>
                 </div>
               </div>
@@ -291,7 +291,6 @@ export default function EventCreatePage() {
                   onChange={e => setMaxParticipants(e.target.value)}
                   required
                   className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
-                  min="2"
                 />
               </div>
               <div>

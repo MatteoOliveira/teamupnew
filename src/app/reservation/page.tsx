@@ -63,7 +63,7 @@ export default function ReservationPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [message, setMessage] = useState('');
+  const [message] = useState('');
   // Ajout géolocalisation
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);

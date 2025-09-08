@@ -75,7 +75,7 @@ export default function MessagesPage() {
             Mes groupes de discussion
           </h1>
           <p className="text-gray-600">
-            Gérez vos conversations d'événements sportifs
+            Gérez vos conversations d&apos;événements sportifs
           </p>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function MessagesPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune discussion</h3>
-                <p className="text-gray-600">Vous n'avez pas encore de groupes de discussion.</p>
+                <p className="text-gray-600">Vous n&apos;avez pas encore de groupes de discussion.</p>
                 <p className="text-sm text-gray-500 mt-1">Rejoignez un événement pour commencer à discuter !</p>
               </div>
             </div>
