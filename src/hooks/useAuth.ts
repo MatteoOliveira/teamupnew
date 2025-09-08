@@ -43,17 +43,26 @@ export function useAuth() {
       // Détecter si on est sur mobile
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
+      console.log('Tentative de connexion Google:', { isMobile, userAgent: navigator.userAgent });
+      
       if (isMobile) {
         // Utiliser signInWithRedirect sur mobile
+        console.log('Utilisation de signInWithRedirect pour mobile');
         await signInWithRedirect(auth, googleProvider);
         // Note: Le résultat sera géré dans useEffect avec getRedirectResult
       } else {
         // Utiliser signInWithPopup sur desktop
+        console.log('Utilisation de signInWithPopup pour desktop');
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;
       }
     } catch (error) {
       console.error('Erreur de connexion Google:', error);
+      console.error('Détails de l\'erreur:', {
+        code: error.code,
+        message: error.message,
+        isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      });
       throw error;
     }
   };

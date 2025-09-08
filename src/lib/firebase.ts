@@ -24,8 +24,9 @@ export const db = getFirestore(app);
 // Configuration Google OAuth
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
-  prompt: 'select_account'
-  // Configuration pour mobile - les autres paramètres sont gérés automatiquement
+  prompt: 'select_account',
+  // Configuration spécifique pour mobile
+  hd: '', // Permet tous les domaines
 });
 
 // Analytics (optionnel - seulement côté client)
