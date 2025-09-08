@@ -123,7 +123,7 @@
             let deferredPrompt;
             
             window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
+                // Ne pas prévenir le comportement par défaut pour éviter le warning
                 deferredPrompt = e;
                 document.getElementById('install-btn').style.display = 'block';
                 document.getElementById('install-status').innerHTML = 
