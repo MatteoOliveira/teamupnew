@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from '@/components/NavBar';
 import Header from '@/components/Header';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -70,6 +71,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <PWAInstallPrompt />
         <Header />
         <div className="pb-20">
           {children}
