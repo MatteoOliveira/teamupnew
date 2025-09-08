@@ -48,6 +48,7 @@ export function useAuth() {
       if (isMobile) {
         // Utiliser signInWithRedirect sur mobile
         console.log('Utilisation de signInWithRedirect pour mobile');
+        alert('🔍 Mobile détecté - Utilisation de signInWithRedirect');
         await signInWithRedirect(auth, googleProvider);
         // Note: Le résultat sera géré dans useEffect avec getRedirectResult
       } else {
@@ -58,11 +59,18 @@ export function useAuth() {
       }
     } catch (error) {
       console.error('Erreur de connexion Google:', error);
+      const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : 'unknown';
+      const errorMessage = error && typeof error === 'object' && 'message' in error ? error.message : 'unknown';
+      
       console.error('Détails de l\'erreur:', {
-        code: error && typeof error === 'object' && 'code' in error ? error.code : 'unknown',
-        message: error && typeof error === 'object' && 'message' in error ? error.message : 'unknown',
+        code: errorCode,
+        message: errorMessage,
         isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
       });
+      
+      // Afficher l'erreur dans une alerte pour mobile
+      alert(`❌ Erreur Google OAuth:\nCode: ${errorCode}\nMessage: ${errorMessage}`);
+      
       throw error;
     }
   };
