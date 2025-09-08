@@ -146,18 +146,18 @@ export default function EventCreatePage() {
           </div>
 
           {/* Header Mobile minimal - Utilisateur connecté */}
-          <div className="md:hidden flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="md:hidden flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-1">
+              <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-md flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </div>
-              <h2 className="text-lg font-bold text-gray-900">
+              <h2 className="text-sm font-bold text-gray-900">
                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">TeamUp</span>
               </h2>
             </div>
-            <button className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-md hover:bg-gray-100 transition-colors">
+            <button className="text-xs text-gray-500 hover:text-gray-700 px-1 py-1 rounded-md hover:bg-gray-100 transition-colors">
               Déconnexion
             </button>
           </div>
