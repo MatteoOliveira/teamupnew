@@ -523,6 +523,61 @@ export default function EventCreatePage() {
               </div>
             </div>
             
+            {/* Section de réservation du lieu */}
+            <div className="md:col-span-2 mt-4">
+              <div className="flex items-center p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <input
+                  type="checkbox"
+                  id="isReserved"
+                  checked={isReserved}
+                  onChange={(e) => setIsReserved(e.target.checked)}
+                  className="h-3 w-3 md:h-5 md:w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="isReserved" className="ml-2 md:ml-3 block text-xs md:text-sm font-medium text-gray-900">
+                  Réserver le lieu (empêche d&apos;autres événements au même endroit)
+                </label>
+              </div>
+              
+              {/* Affichage du statut de disponibilité */}
+              {isReserved && (date || location || city) && (
+                <div className={`mt-3 p-3 rounded-lg border-2 transition-all duration-300 ${
+                  conflictStatus === 'available' 
+                    ? 'bg-green-50 border-green-200' 
+                    : conflictStatus === 'partial'
+                    ? 'bg-yellow-50 border-yellow-200'
+                    : 'bg-red-50 border-red-200'
+                }`}>
+                  <div className="flex items-center space-x-2">
+                    {checkingConflicts ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm text-gray-600">Vérification des disponibilités...</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className={`w-3 h-3 rounded-full ${
+                          conflictStatus === 'available' 
+                            ? 'bg-green-500' 
+                            : conflictStatus === 'partial'
+                            ? 'bg-yellow-500'
+                            : 'bg-red-500'
+                        }`}></div>
+                        <span className={`text-sm font-medium ${
+                          conflictStatus === 'available' 
+                            ? 'text-green-700' 
+                            : conflictStatus === 'partial'
+                            ? 'text-yellow-700'
+                            : 'text-red-700'
+                        }`}>
+                          {conflictMessage}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            
             {message && (
               <div className={`text-sm text-center p-4 rounded-lg ${message.includes("succès") ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`}>
                 {message}
