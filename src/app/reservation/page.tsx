@@ -36,6 +36,7 @@ interface Event {
   description: string;
   lat?: number; // Added lat and lng for Haversine calculation
   lng?: number;
+  createdBy?: string; // Added createdBy to identify event creator
 }
 
 // Créneaux statiques
@@ -172,7 +173,21 @@ export default function ReservationPage() {
   const PROXIMITY_RADIUS_KM = 30;
   useEffect(() => {
     if (position && events.length > 0) {
-      const withCoords = events.filter(e => typeof e.lat === 'number' && typeof e.lng === 'number');
+      // Filtrer les événements : futurs uniquement et pas créés par l'utilisateur connecté
+      const now = new Date();
+      const filteredEvents = events.filter(e => {
+        // Événements futurs uniquement
+        if (!e.date?.seconds) return false;
+        const eventDate = new Date(e.date.seconds * 1000);
+        if (eventDate <= now) return false;
+        
+        // Événements créés par d'autres utilisateurs uniquement
+        if (user && e.createdBy === user.uid) return false;
+        
+        return true;
+      });
+      
+      const withCoords = filteredEvents.filter(e => typeof e.lat === 'number' && typeof e.lng === 'number');
       const eventsWithDistance = withCoords.map(e => ({
         ...e,
         distance: getDistanceFromLatLonInKm(position.lat, position.lng, e.lat as number, e.lng as number)
@@ -184,7 +199,7 @@ export default function ReservationPage() {
       setNearbyEvents([]);
       setOtherCityEvents([]);
     }
-  }, [position, events]);
+  }, [position, events, user]);
 
   // Charger la ville de l'utilisateur (si profil chargé)
   useEffect(() => {
@@ -356,7 +371,15 @@ export default function ReservationPage() {
                   <Popup>Vous êtes ici</Popup>
                 </Marker>
                 {/* Marqueurs événements */}
-                {events.filter(e => typeof e.lat === 'number' && typeof e.lng === 'number').map(event => (
+                {events.filter(e => {
+                  // Même filtrage que pour les listes : futurs uniquement et pas créés par l'utilisateur
+                  if (!e.date?.seconds) return false;
+                  const eventDate = new Date(e.date.seconds * 1000);
+                  const now = new Date();
+                  if (eventDate <= now) return false;
+                  if (user && e.createdBy === user.uid) return false;
+                  return typeof e.lat === 'number' && typeof e.lng === 'number';
+                }).map(event => (
                   <Marker key={event.id} position={[event.lat as number, event.lng as number]}>
                     <Popup>
                       <div>
