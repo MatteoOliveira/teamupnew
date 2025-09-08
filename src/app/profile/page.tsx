@@ -335,103 +335,178 @@ export default function ProfilePage() {
 
   // --- UI ---
   return (
-    <main className="max-w-2xl mx-auto py-8 px-4 bg-white text-black min-h-screen" aria-label="Page profil utilisateur">
-      <h1 className="text-3xl font-bold mb-6 text-black">Mon profil</h1>
-      {/* Navigation par onglets accessible avec menu burger sur mobile */}
-      <nav aria-label="Navigation profil" className="mb-6">
-        {/* Menu burger pour mobile */}
-        <div className="md:hidden">
-          <Menu as="div" className="relative">
-            <Menu.Button className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-black bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <span>{TABS.find(tab => tab.key === activeTab)?.label}</span>
-              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </Menu.Button>
-            <Menu.Items className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg focus:outline-none">
-              <div className="py-1">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Mobile minimal */}
+      <div className="md:hidden flex items-center justify-center py-3 px-4 bg-white border-b border-gray-200">
+        <div className="flex items-center space-x-1">
+          <div className="w-6 h-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-md flex items-center justify-center">
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h2 className="text-sm font-bold text-gray-900">
+            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">TeamUp</span>
+          </h2>
+        </div>
+      </div>
+
+      {/* Header Desktop */}
+      <div className="hidden md:block py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mon profil</h1>
+          <p className="text-gray-600">Gérez vos informations et préférences</p>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto py-4 md:py-8 px-4 sm:px-6 lg:px-8">
+        <main className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6" aria-label="Page profil utilisateur">
+          {/* Navigation par onglets accessible avec menu burger sur mobile */}
+          <nav aria-label="Navigation profil" className="mb-6">
+            {/* Menu burger pour mobile */}
+            <div className="md:hidden">
+              <Menu as="div" className="relative">
+                <Menu.Button className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <span className="flex items-center space-x-2">
+                    <div className="w-4 h-4 text-purple-500">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                      </svg>
+                    </div>
+                    <span>{TABS.find(tab => tab.key === activeTab)?.label}</span>
+                  </span>
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </Menu.Button>
+                <Menu.Items className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg focus:outline-none">
+                  <div className="py-2">
+                    {TABS.map(tab => (
+                      <Menu.Item key={tab.key}>
+                        {({ active }) => (
+                          <button
+                            id={`tab-${tab.key}`}
+                            role="tab"
+                            aria-selected={activeTab === tab.key}
+                            aria-controls={`tabpanel-${tab.key}`}
+                            tabIndex={activeTab === tab.key ? 0 : -1}
+                            className={`${
+                              active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                            } ${
+                              activeTab === tab.key ? 'bg-purple-50 text-purple-700 font-semibold' : ''
+                            } flex items-center space-x-3 w-full text-left px-4 py-3 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-md mx-2`}
+                            onClick={() => setActiveTab(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings')}
+                          >
+                            <div className={`w-2 h-2 rounded-full ${activeTab === tab.key ? 'bg-purple-500' : 'bg-gray-300'}`}></div>
+                            <span>{tab.label}</span>
+                          </button>
+                        )}
+                      </Menu.Item>
+                    ))}
+                  </div>
+                </Menu.Items>
+              </Menu>
+            </div>
+            
+            {/* Onglets horizontaux pour desktop */}
+            <div className="hidden md:block">
+              <div className="flex flex-wrap gap-2" role="tablist">
                 {TABS.map(tab => (
-                  <Menu.Item key={tab.key}>
-                    {({ active }) => (
-                      <button
-                        id={`tab-${tab.key}`}
-                        role="tab"
-                        aria-selected={activeTab === tab.key}
-                        aria-controls={`tabpanel-${tab.key}`}
-                        tabIndex={activeTab === tab.key ? 0 : -1}
-                        className={`${
-                          active ? 'bg-gray-100 text-black' : 'text-black'
-                        } ${
-                          activeTab === tab.key ? 'bg-blue-100 font-bold' : ''
-                        } block w-full text-left px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                        onClick={() => setActiveTab(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'settings')}
-                      >
-                        {tab.label}
-                      </button>
-                    )}
-                  </Menu.Item>
+                  <button
+                    key={tab.key}
+                    id={`tab-${tab.key}`}
+                    role="tab"
+                    aria-selected={activeTab === tab.key}
+                    aria-controls={`tabpanel-${tab.key}`}
+                    tabIndex={activeTab === tab.key ? 0 : -1}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ${
+                      activeTab === tab.key 
+                        ? 'bg-purple-100 text-purple-700 border border-purple-200' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+                    }`}
+                    onClick={() => setActiveTab(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings')}
+                  >
+                    {tab.label}
+                  </button>
                 ))}
               </div>
-            </Menu.Items>
-          </Menu>
-        </div>
-        
-        {/* Onglets horizontaux pour desktop */}
-        <div className="hidden md:block">
-          <ul className="flex flex-wrap gap-2" role="tablist">
-            {TABS.map(tab => (
-              <li key={tab.key} role="presentation">
-                <button
-                  id={`tab-${tab.key}`}
-                  role="tab"
-                  aria-selected={activeTab === tab.key}
-                  aria-controls={`tabpanel-${tab.key}`}
-                  tabIndex={activeTab === tab.key ? 0 : -1}
-                  className={`px-4 py-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${activeTab === tab.key ? 'bg-blue-100 text-black font-bold' : 'bg-gray-100 text-black'}`}
-                  onClick={() => setActiveTab(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'settings')}
-                >
-                  {tab.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
+            </div>
+          </nav>
 
-      {/* Contenu des onglets */}
-      <section id="tabpanel-profile" role="tabpanel" hidden={activeTab !== 'profile'} aria-labelledby="tab-profile">
-        <h2 className="text-xl font-semibold mb-4 text-black">Informations personnelles</h2>
-        <form className="flex flex-col gap-4" onSubmit={async (e) => {
-          e.preventDefault();
-          if (!user) return;
-          try {
-            await setDoc(doc(db, 'users', user.uid), {
-              name,
-              sport,
-              city,
-              email: user.email || '',
-              updatedAt: new Date(),
-            }, { merge: true });
-            setMessage('Profil enregistré !');
-          } catch {
-            setMessage('Erreur lors de l&apos;enregistrement du profil');
-          }
-        }}>
-          <label className="block">
-            <span className="text-black">Nom</span>
-            <Input type="text" placeholder="Votre nom" value={name} onChange={e => setName(e.target.value)} aria-label="Nom" />
-          </label>
-          <label className="block">
-            <span className="text-black">Sport favori</span>
-            <Input type="text" placeholder="Votre sport favori" value={sport} onChange={e => setSport(e.target.value)} aria-label="Sport favori" />
-          </label>
-          <label className="block">
-            <span className="text-black">Ville</span>
-            <Input type="text" placeholder="Votre ville" value={city} onChange={e => setCity(e.target.value)} aria-label="Ville" />
-          </label>
-          <Button type="submit" className="bg-blue-500 hover:bg-blue-600 mt-2">Enregistrer</Button>
-        </form>
-      </section>
+          {/* Contenu des onglets */}
+          <section id="tabpanel-profile" role="tabpanel" hidden={activeTab !== 'profile'} aria-labelledby="tab-profile">
+            <div className="flex items-center space-x-2 mb-6">
+              <div className="w-5 h-5 text-purple-500">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Informations personnelles</h2>
+            </div>
+            
+            <form className="space-y-6" onSubmit={async (e) => {
+              e.preventDefault();
+              if (!user) return;
+              try {
+                await setDoc(doc(db, 'users', user.uid), {
+                  name,
+                  sport,
+                  city,
+                  email: user.email || '',
+                  updatedAt: new Date(),
+                }, { merge: true });
+                setMessage('Profil enregistré !');
+              } catch {
+                setMessage('Erreur lors de l&apos;enregistrement du profil');
+              }
+            }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nom complet
+                  </label>
+                  <Input 
+                    type="text" 
+                    placeholder="Votre nom complet" 
+                    value={name} 
+                    onChange={e => setName(e.target.value)} 
+                    aria-label="Nom complet"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sport favori
+                  </label>
+                  <Input 
+                    type="text" 
+                    placeholder="Votre sport favori" 
+                    value={sport} 
+                    onChange={e => setSport(e.target.value)} 
+                    aria-label="Sport favori"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Ville
+                </label>
+                <Input 
+                  type="text" 
+                  placeholder="Votre ville" 
+                  value={city} 
+                  onChange={e => setCity(e.target.value)} 
+                  aria-label="Ville"
+                  className="w-full"
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200">
+                  Enregistrer les modifications
+                </Button>
+              </div>
+            </form>
+          </section>
 
       {/* Onglet Réglages */}
       <section id="tabpanel-settings" role="tabpanel" hidden={activeTab !== 'settings'} aria-labelledby="tab-settings">
@@ -489,36 +564,94 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Onglet Mes événements */}
-      <section id="tabpanel-myevents" role="tabpanel" hidden={activeTab !== 'myevents'} aria-labelledby="tab-myevents">
-        <h2 className="text-xl font-semibold mb-4 text-black">Mes événements créés</h2>
-        {myEvents.length === 0 ? <div className="text-black">Aucun événement créé.</div> : (
-          <ul className="space-y-2">
-            {myEvents.map(ev => (
-              <li key={ev.id} className="p-2 border rounded text-black">
-                <div className="font-bold">{ev.name}</div>
-                <div>{ev.sport} - {ev.city}</div>
-                <div>{ev.date ? new Date(ev.date.seconds * 1000).toLocaleDateString() : ''}</div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-      {/* Onglet Mes inscriptions */}
-      <section id="tabpanel-myregistrations" role="tabpanel" hidden={activeTab !== 'myregistrations'} aria-labelledby="tab-myregistrations">
-        <h2 className="text-xl font-semibold mb-4 text-black">Mes inscriptions</h2>
-        {myRegistrations.length === 0 ? <div className="text-black">Aucune inscription.</div> : (
-          <ul className="space-y-2">
-            {myRegistrations.map(ev => (
-              <li key={ev.id} className="p-2 border rounded text-black">
-                <div className="font-bold">{ev.name}</div>
-                <div>{ev.sport} - {ev.city}</div>
-                <div>{ev.date ? new Date(ev.date.seconds * 1000).toLocaleDateString() : ''}</div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+          {/* Onglet Mes événements */}
+          <section id="tabpanel-myevents" role="tabpanel" hidden={activeTab !== 'myevents'} aria-labelledby="tab-myevents">
+            <div className="flex items-center space-x-2 mb-6">
+              <div className="w-5 h-5 text-blue-500">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Mes événements créés</h2>
+              <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{myEvents.length}</span>
+            </div>
+            
+            {myEvents.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun événement créé</h3>
+                <p className="text-gray-600">Créez votre premier événement sportif !</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {myEvents.map(ev => (
+                  <div key={ev.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">{ev.name}</h3>
+                        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
+                          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">{ev.sport}</span>
+                          <span>{ev.city}</span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {ev.date ? new Date(ev.date.seconds * 1000).toLocaleDateString() : 'Date non définie'}
+                        </div>
+                      </div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+          {/* Onglet Mes inscriptions */}
+          <section id="tabpanel-myregistrations" role="tabpanel" hidden={activeTab !== 'myregistrations'} aria-labelledby="tab-myregistrations">
+            <div className="flex items-center space-x-2 mb-6">
+              <div className="w-5 h-5 text-green-500">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Mes inscriptions</h2>
+              <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">{myRegistrations.length}</span>
+            </div>
+            
+            {myRegistrations.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune inscription</h3>
+                <p className="text-gray-600">Rejoignez des événements sportifs !</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {myRegistrations.map(ev => (
+                  <div key={ev.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">{ev.name}</h3>
+                        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">{ev.sport}</span>
+                          <span>{ev.city}</span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {ev.date ? new Date(ev.date.seconds * 1000).toLocaleDateString() : 'Date non définie'}
+                        </div>
+                      </div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
       {/* Onglet Événements près de moi */}
       <section id="tabpanel-cityevents" role="tabpanel" hidden={activeTab !== 'cityevents'} aria-labelledby="tab-cityevents">
         <h2 className="text-xl font-semibold mb-4 text-black">Événements près de moi</h2>
@@ -666,10 +799,18 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Message utilisateur */}
-      {message && (
-        <div className={`mt-4 p-3 rounded text-center ${message.includes('activées') || message.includes('Enregistr') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{message}</div>
-      )}
-    </main>
+          {/* Message utilisateur */}
+          {message && (
+            <div className={`mt-4 p-3 rounded-lg text-center border ${
+              message.includes('activées') || message.includes('Enregistr') 
+                ? 'bg-green-100 text-green-700 border-green-200' 
+                : 'bg-red-100 text-red-700 border-red-200'
+            }`}>
+              {message}
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
   );
 } 
