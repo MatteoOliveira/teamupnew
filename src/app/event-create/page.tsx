@@ -59,6 +59,10 @@ export default function EventCreatePage() {
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
+  
+  // États pour les popups de confirmation
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [confirmationType, setConfirmationType] = useState<'reserved' | 'not-reserved'>('not-reserved');
 
   // Fonction d'autocomplétion Google Maps
   const searchAddress = async (query: string) => {
@@ -221,7 +225,22 @@ export default function EventCreatePage() {
       setMessage("Impossible de créer l'événement : le lieu est déjà occupé à cette heure. Veuillez choisir un autre créneau ou un autre lieu.");
       return;
     }
+    
+    // Afficher le popup de confirmation
+    setConfirmationType(isReserved ? 'reserved' : 'not-reserved');
+    setShowConfirmationModal(true);
+  };
+
+  const handleConfirmCreation = async () => {
+    setShowConfirmationModal(false);
     setLoading(true);
+    
+    if (!user) {
+      setMessage("Vous devez être connecté pour créer un événement.");
+      setLoading(false);
+      return;
+    }
+    
     try {
       // Géocodage précis via API adresse.data.gouv.fr
       const fullAddress = `${address}, ${postcode} ${city}`;
@@ -290,7 +309,82 @@ export default function EventCreatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-1 md:py-12 px-2 sm:px-6 lg:px-8">
+    <>
+      {/* Modal de confirmation */}
+      {showConfirmationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                confirmationType === 'reserved' 
+                  ? 'bg-blue-100' 
+                  : 'bg-yellow-100'
+              }`}>
+                <svg className={`w-5 h-5 ${
+                  confirmationType === 'reserved' 
+                    ? 'text-blue-600' 
+                    : 'text-yellow-600'
+                }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Confirmation de création
+              </h3>
+            </div>
+            
+            <div className="mb-6">
+              {confirmationType === 'reserved' ? (
+                <div>
+                  <p className="text-gray-700 mb-3">
+                    <strong>Êtes-vous sûr de réserver le lieu ?</strong>
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                    <p className="text-sm text-blue-800">
+                      • Personne ne pourra créer d'événement pendant ces horaires le même jour.
+                    </p>
+                    <p className="text-sm text-blue-800">
+                      • Ils pourront créer un autre événement 5 min après la fin de votre événement.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-gray-700 mb-3">
+                    <strong>Êtes-vous sûr de ne pas réserver le lieu ?</strong>
+                  </p>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                    <p className="text-sm text-yellow-800">
+                      • D'autres personnes pourront créer un événement au même endroit et à la même heure.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowConfirmationModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleConfirmCreation}
+                className={`flex-1 px-4 py-2 rounded-lg text-white font-medium transition-colors ${
+                  confirmationType === 'reserved'
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-yellow-600 hover:bg-yellow-700'
+                }`}
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-1 md:py-12 px-2 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl p-2 md:p-8">
           {/* Header Desktop */}
@@ -608,5 +702,6 @@ export default function EventCreatePage() {
         </div>
       </div>
     </div>
+    </>
   );
 } 
