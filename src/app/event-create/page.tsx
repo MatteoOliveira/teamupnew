@@ -164,120 +164,162 @@ export default function EventCreatePage() {
           <form className="space-y-3 md:space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
               <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nom de l'événement *
+                </label>
                 <Input
                   type="text"
-                  placeholder="Nom de l'événement *"
+                  placeholder="Ex: Match de football samedi"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sport *
+                </label>
                 <select
                   value={sport}
                   onChange={(e) => setSport(e.target.value)}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 >
-                  <option value="">Sport *</option>
+                  <option value="">Sélectionnez un sport</option>
                   {SPORTS.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date et heure de début *
+                </label>
                 <Input
                   type="datetime-local"
-                  placeholder="Date et heure de début *"
+                  placeholder=""
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date et heure de fin (optionnel)
+                </label>
                 <Input
                   type="datetime-local"
-                  placeholder="Date et heure de fin (optionnel)"
+                  placeholder=""
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
               </div>
               <div className="md:col-span-2">
-                <div className="flex items-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <input
                     type="checkbox"
                     id="isReserved"
                     checked={isReserved}
                     onChange={(e) => setIsReserved(e.target.checked)}
-                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 md:h-5 md:w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="isReserved" className="ml-3 block text-sm font-medium text-gray-900">
-                    Réserver le lieu (empêche d&apos;autres événements au même endroit)
+                  <label htmlFor="isReserved" className="ml-2 md:ml-3 block text-xs md:text-sm font-medium text-gray-900">
+                    Réserver le lieu (empêche d'autres événements au même endroit)
                   </label>
                 </div>
               </div>
               <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Lieu *
+                </label>
                 <Input
                   type="text"
-                  placeholder="Lieu *"
+                  placeholder="Ex: Stade municipal, Salle de sport..."
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
               </div>
               <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Adresse complète *
+                </label>
                 <Input
                   type="text"
-                  placeholder="Adresse * (ex: 10 rue de Paris)"
+                  placeholder="Ex: 10 rue de Paris"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Ville *
+                </label>
                 <Input
                   type="text"
-                  placeholder="Ville *"
+                  placeholder="Ex: Paris"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Code postal *
+                </label>
                 <Input
                   type="text"
-                  placeholder="Code postal *"
+                  placeholder="Ex: 75001"
                   value={postcode}
                   onChange={(e) => setPostcode(e.target.value)}
                   required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre de participants max *
+                </label>
                 <Input
                   type="number"
-                  placeholder="Nombre de participants max *"
+                  placeholder="Ex: 10"
                   value={maxParticipants}
                   onChange={e => setMaxParticipants(e.target.value)}
                   required
-                  className="min-w-0"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                  min="2"
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Contact organisateur *
+                </label>
                 <Input
                   type="text"
-                  placeholder="Contact organisateur (email, téléphone, ou autre) *"
+                  placeholder="Ex: jean@email.com ou 06 12 34 56 78"
                   value={contactInfo}
                   onChange={e => setContactInfo(e.target.value)}
                   required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 />
               </div>
               <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description (optionnel)
+                </label>
                 <textarea
-                  placeholder="Description (optionnel)"
+                  placeholder="Décrivez votre événement, les règles, l'équipement nécessaire..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 resize-none"
-                  rows={4}
+                  rows={3}
                 />
               </div>
             </div>
