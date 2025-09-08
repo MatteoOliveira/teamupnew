@@ -45,4 +45,6 @@ const nextConfig = {
   },
 }
 
-module.exports = withPWA(nextConfig) 
+// Temporairement désactivé pour tester OAuth mobile
+module.exports = nextConfig
+// module.exports = withPWA(nextConfig) 

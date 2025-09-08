@@ -66,6 +66,10 @@ export default function LoginPage() {
         setError('Popup bloqué par le navigateur. Autorisez les popups pour ce site.');
       } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/cancelled-popup-request') {
         setError('Connexion annulée.');
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/operation-not-allowed') {
+        setError('Connexion Google non autorisée. Contactez l&apos;administrateur.');
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/unauthorized-domain') {
+        setError('Domaine non autorisé pour la connexion Google.');
       } else {
         setError('Erreur de connexion Google. Réessayez.');
       }
