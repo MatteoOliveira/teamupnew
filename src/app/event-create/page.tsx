@@ -146,7 +146,7 @@ export default function EventCreatePage() {
           </div>
 
           {/* Header Mobile minimal - Utilisateur connecté */}
-          <div className="md:hidden flex items-center justify-between mb-2">
+          <div className="md:hidden flex items-center justify-center mb-2">
             <div className="flex items-center space-x-1">
               <div className="w-5 h-5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-md flex items-center justify-center">
                 <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,9 +157,6 @@ export default function EventCreatePage() {
                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">TeamUp</span>
               </h2>
             </div>
-            <button className="text-xs text-gray-500 hover:text-gray-700 px-1 py-0.5 rounded-md hover:bg-gray-100 transition-colors">
-              Déconnexion
-            </button>
           </div>
           <form className="space-y-2 md:space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
