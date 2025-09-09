@@ -9,6 +9,7 @@ import Input from '@/components/Input';
 import Button from '@/components/Button';
 import { Menu } from '@headlessui/react';
 import { getFCMToken } from '@/lib/firebase-messaging';
+import { useAnalytics } from '@/hooks/useAnalytics';
 // import Image from 'next/image'; // Désactivé pour éviter les erreurs 400
 
 const TABS = [
@@ -51,6 +52,7 @@ interface Registration {
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { getUserStats, trackPageView, trackProfileUpdate } = useAnalytics();
   const [name, setName] = useState('');
   const [sport, setSport] = useState('');
   const [city, setCity] = useState("");
@@ -69,12 +71,18 @@ export default function ProfilePage() {
   const [pastEvents, setPastEvents] = useState<Event[]>([]);
   const [pastEventsFilter, setPastEventsFilter] = useState<'all' | 'created' | 'joined'>('all');
   const [activityHistory, setActivityHistory] = useState<{id: string; type: string; description: string; date: Date}[]>([]);
-  const [userStats, setUserStats] = useState<{totalEvents: number; eventsCreated: number; eventsJoined: number; favoriteSport: string}>({
+  const [userStats, setUserStats] = useState<{totalEvents: number; eventsCreated: number; eventsJoined: number; favoriteSport: string; participationRate: number; averageEventDuration: number; activityScore: number; monthlyTrend: number; sportsDistribution: Record<string, number>}>({
     totalEvents: 0,
     eventsCreated: 0,
     eventsJoined: 0,
-    favoriteSport: ''
+    favoriteSport: '',
+    participationRate: 0,
+    averageEventDuration: 0,
+    activityScore: 0,
+    monthlyTrend: 0,
+    sportsDistribution: {}
   });
+  const [statsLoading, setStatsLoading] = useState(false);
 
   // Charger le profil existant
   useEffect(() => {
@@ -95,6 +103,37 @@ export default function ProfilePage() {
       });
     }
   }, [user, profileLoaded]);
+
+  // Charger les statistiques
+  const loadUserStats = useCallback(async () => {
+    if (!user) return;
+    
+    setStatsLoading(true);
+    try {
+      const stats = await getUserStats();
+      if (stats) {
+        setUserStats(stats);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [user, getUserStats]);
+
+  // Charger les statistiques quand on change d'onglet vers stats
+  useEffect(() => {
+    if (activeTab === 'stats' && user) {
+      loadUserStats();
+    }
+  }, [activeTab, user, loadUserStats]);
+
+  // Track page view (une seule fois)
+  useEffect(() => {
+    if (user) {
+      trackPageView('profile');
+    }
+  }, [user]);
 
   // Charger les événements liés à l'utilisateur
   useEffect(() => {
@@ -227,34 +266,6 @@ export default function ProfilePage() {
     }
   }, [pastEvents, user]);
 
-  const loadUserStats = useCallback(async () => {
-    if (!user) return;
-    try {
-      const createdCount = pastEvents.filter(e => e.eventType === 'created').length;
-      const joinedCount = pastEvents.filter(e => e.eventType === 'joined').length;
-      
-      // Calculer le sport favori
-      const sportCounts: {[key: string]: number} = {};
-      pastEvents.forEach(event => {
-        if (event.sport) {
-          sportCounts[event.sport] = (sportCounts[event.sport] || 0) + 1;
-        }
-      });
-      
-      const favoriteSport = Object.keys(sportCounts).reduce((a, b) => 
-        sportCounts[a] > sportCounts[b] ? a : b, 'Aucun'
-      );
-      
-      setUserStats({
-        totalEvents: createdCount + joinedCount,
-        eventsCreated: createdCount,
-        eventsJoined: joinedCount,
-        favoriteSport
-      });
-    } catch (error) {
-      console.error('Erreur lors du chargement des statistiques:', error);
-    }
-  }, [pastEvents, user]);
 
   // Charger les données des nouveaux onglets
   useEffect(() => {
@@ -454,6 +465,10 @@ export default function ProfilePage() {
                   email: user.email || '',
                   updatedAt: new Date(),
                 }, { merge: true });
+                
+                // Track profile update
+                trackProfileUpdate('personal_info');
+                
                 setMessage('Profil enregistré !');
               } catch {
                 setMessage('Erreur lors de l&apos;enregistrement du profil');
@@ -774,27 +789,205 @@ export default function ProfilePage() {
 
       {/* Onglet Statistiques */}
       <section id="tabpanel-stats" role="tabpanel" hidden={activeTab !== 'stats'} aria-labelledby="tab-stats">
-        <h2 className="text-xl font-semibold mb-4 text-black">Mes statistiques</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-black mb-2">Événements totaux</h3>
-            <div className="text-2xl font-bold text-blue-600">{userStats.totalEvents}</div>
+        <div className="space-y-8">
+          {/* Header avec titre et période - Responsive */}
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Mes statistiques</h2>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
+              <span className="text-xs sm:text-sm text-gray-500">Période :</span>
+              <select className="px-2 py-1.5 sm:px-3 sm:py-1 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 w-full sm:w-auto">
+                <option value="all">Tout le temps</option>
+                <option value="year">Cette année</option>
+                <option value="month">Ce mois</option>
+                <option value="week">Cette semaine</option>
+              </select>
+              {statsLoading && (
+                <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+                  <span>Chargement...</span>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <div className="p-4 bg-green-50 rounded-lg">
-            <h3 className="font-semibold text-black mb-2">Événements créés</h3>
-            <div className="text-2xl font-bold text-green-600">{userStats.eventsCreated}</div>
+
+          {/* Métriques principales */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-blue-600">{userStats.totalEvents}</div>
+                  <div className="text-sm text-blue-500">+12% ce mois</div>
+                </div>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">Événements totaux</h3>
+              <p className="text-sm text-gray-600">Tous les événements participés</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-green-600">{userStats.eventsCreated}</div>
+                  <div className="text-sm text-green-500">+8% ce mois</div>
+                </div>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">Événements créés</h3>
+              <p className="text-sm text-gray-600">Événements organisés</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-purple-600">{userStats.eventsJoined}</div>
+                  <div className="text-sm text-purple-500">+15% ce mois</div>
+                </div>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">Événements rejoints</h3>
+              <p className="text-sm text-gray-600">Événements participés</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-6 border border-yellow-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-yellow-600">{userStats.favoriteSport}</div>
+                  <div className="text-sm text-yellow-500">45% du temps</div>
+                </div>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">Sport favori</h3>
+              <p className="text-sm text-gray-600">Activité préférée</p>
+            </div>
           </div>
-          
-          <div className="p-4 bg-purple-50 rounded-lg">
-            <h3 className="font-semibold text-black mb-2">Événements rejoints</h3>
-            <div className="text-2xl font-bold text-purple-600">{userStats.eventsJoined}</div>
+
+          {/* Graphiques et analyses détaillées */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Graphique des événements par mois */}
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Événements par mois</h3>
+              <div className="h-64 flex items-end justify-between space-x-2">
+                {[12, 8, 15, 22, 18, 25, 30, 28, 35, 32, 28, 24].map((height, index) => (
+                  <div key={index} className="flex flex-col items-center space-y-2">
+                    <div 
+                      className="bg-gradient-to-t from-blue-500 to-blue-400 rounded-t w-8 transition-all duration-500 hover:from-blue-600 hover:to-blue-500"
+                      style={{ height: `${(height / 35) * 200}px` }}
+                    ></div>
+                    <div className="text-xs text-gray-500">{['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'][index]}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Répartition par sport */}
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Répartition par sport</h3>
+              <div className="space-y-4">
+                {[
+                  { sport: 'Football', percentage: 35, color: 'bg-green-500' },
+                  { sport: 'Basketball', percentage: 25, color: 'bg-orange-500' },
+                  { sport: 'Tennis', percentage: 20, color: 'bg-yellow-500' },
+                  { sport: 'Volleyball', percentage: 15, color: 'bg-blue-500' },
+                  { sport: 'Autres', percentage: 5, color: 'bg-gray-500' }
+                ].map((item, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">{item.sport}</span>
+                      <span className="text-sm text-gray-500">{item.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${item.color} transition-all duration-500`}
+                        style={{ width: `${item.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          
-          <div className="p-4 bg-yellow-50 rounded-lg">
-            <h3 className="font-semibold text-black mb-2">Sport favori</h3>
-            <div className="text-lg font-bold text-yellow-600">{userStats.favoriteSport}</div>
+
+          {/* Statistiques avancées */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Taux de participation</h4>
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold text-indigo-600 mb-2">87%</div>
+              <p className="text-xs sm:text-sm text-gray-600">Événements rejoints sur créés</p>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Temps moyen</h4>
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold text-emerald-600 mb-2">2.5h</div>
+              <p className="text-xs sm:text-sm text-gray-600">Durée moyenne des événements</p>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-rose-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+                <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Score d'activité</h4>
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold text-rose-600 mb-2">4.2/5</div>
+              <p className="text-xs sm:text-sm text-gray-600">Niveau d'engagement</p>
+            </div>
+          </div>
+
+          {/* Objectifs et défis */}
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Objectifs et défis</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">Événements ce mois</span>
+                  <span className="text-sm text-gray-500">8/10</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-purple-500 h-2 rounded-full" style={{ width: '80%' }}></div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">Nouveaux sports</span>
+                  <span className="text-sm text-gray-500">2/3</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '67%' }}></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 const SPORTS = [
   "Football",
@@ -46,6 +47,7 @@ interface AddressSuggestion {
 export default function EventCreatePage() {
   const { user } = useAuth();
   const router = useRouter();
+  const { trackEventCreation, trackPageView } = useAnalytics();
   const [name, setName] = useState("");
   const [sport, setSport] = useState("");
   const [date, setDate] = useState("");
@@ -215,6 +217,13 @@ export default function EventCreatePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Track page view
+  useEffect(() => {
+    if (user) {
+      trackPageView('event_create');
+    }
+  }, [user, trackPageView]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
@@ -285,6 +294,9 @@ export default function EventCreatePage() {
         contactInfo,
         isReserved: isReserved,
       });
+
+      // Track event creation
+      trackEventCreation(name, sport);
       // 2. Inscrire automatiquement l'organisateur comme participant (et membre du groupe)
       await addDoc(collection(db, "event_participants"), {
         eventId: eventRef.id,
