@@ -5,7 +5,8 @@ import { doc, getDoc, collection, addDoc, getDocs, query, where, deleteDoc, setD
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/Button";
-import { MapPinIcon, CalendarIcon, UsersIcon, UserIcon, ClockIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { MapPinIcon, CalendarIcon, UsersIcon, UserIcon, ClockIcon, PhoneIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
 
 interface Event {
   id: string;
@@ -39,6 +40,7 @@ interface Participant {
 export default function EventDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const router = useRouter();
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -269,6 +271,17 @@ export default function EventDetailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Bouton de retour */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors duration-200 group"
+          >
+            <ArrowLeftIcon className="h-5 w-5 group-hover:-translate-x-1 transition-transform duration-200" />
+            <span className="font-medium">Retour aux événements</span>
+          </button>
+        </div>
+        
         {/* Header avec image de sport */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
           <div className={`h-32 ${event.sportColor || 'bg-gradient-to-r from-purple-500 to-blue-500'} flex items-center justify-center`}>

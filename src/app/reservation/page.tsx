@@ -436,49 +436,55 @@ export default function ReservationPage() {
               </div>
               <div className="grid gap-3">
                 {nearbyEvents.map(event => (
-                  <div key={event.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1">{event.name}</h3>
-                        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
-                          <span>{event.city} - {event.location}</span>
-                          {typeof event.distance === 'number' && (
-                            <span className="text-green-600 font-medium">{event.distance.toFixed(1)} km</span>
-                          )}
+                  <Link key={event.id} href={`/event/${event.id}`} className="block">
+                    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors">{event.name}</h3>
+                          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
+                            <span>{event.city} - {event.location}</span>
+                            {typeof event.distance === 'number' && (
+                              <span className="text-green-600 font-medium">{event.distance.toFixed(1)} km</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 mb-2">
+                            {event.date?.seconds ? new Date(event.date.seconds * 1000).toLocaleString() : ""}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500 mb-2">
-                          {event.date?.seconds ? new Date(event.date.seconds * 1000).toLocaleString() : ""}
+                        <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{event.sport}</span>
+                      </div>
+                      {event.description && (
+                        <div className="text-sm text-gray-600 mb-3 line-clamp-2">{event.description}</div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap gap-2">
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&origin=${position?.lat},${position?.lng}&destination=${event.lat},${event.lng}&travelmode=driving`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Itinéraire
+                          </a>
+                          <button
+                            className="text-xs bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              zoomToEvent(event.lat as number, event.lng as number);
+                            }}
+                            type="button"
+                          >
+                            Voir sur carte
+                          </button>
+                        </div>
+                        <div className="text-xs text-gray-400 group-hover:text-purple-500 transition-colors">
+                          Cliquer pour voir les détails →
                         </div>
                       </div>
-                      <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{event.sport}</span>
                     </div>
-                    {event.description && (
-                      <div className="text-sm text-gray-600 mb-3">{event.description}</div>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&origin=${position?.lat},${position?.lng}&destination=${event.lat},${event.lng}&travelmode=driving`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
-                      >
-                        Itinéraire
-                      </a>
-                      <button
-                        className="text-xs bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors"
-                        onClick={() => zoomToEvent(event.lat as number, event.lng as number)}
-                        type="button"
-                      >
-                        Voir sur carte
-                      </button>
-                      <Link 
-                        href={`/event/${event.id}`} 
-                        className="text-xs bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors"
-                      >
-                        Détails
-                      </Link>
-                    </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -522,53 +528,59 @@ export default function ReservationPage() {
               
               <div className="grid gap-3">
                 {filteredOtherCityEvents.map(event => (
-                  <div key={event.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1">{event.name}</h3>
-                        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
-                          <span>{event.city} - {event.location}</span>
-                          {typeof event.distance === 'number' && event.distance > 0 && (
-                            <span className="text-purple-600 font-medium">{event.distance.toFixed(1)} km</span>
+                  <Link key={event.id} href={`/event/${event.id}`} className="block">
+                    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors">{event.name}</h3>
+                          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
+                            <span>{event.city} - {event.location}</span>
+                            {typeof event.distance === 'number' && event.distance > 0 && (
+                              <span className="text-purple-600 font-medium">{event.distance.toFixed(1)} km</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 mb-2">
+                            {event.date?.seconds ? new Date(event.date.seconds * 1000).toLocaleString() : ""}
+                          </div>
+                        </div>
+                        <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">{event.sport}</span>
+                      </div>
+                      {event.description && (
+                        <div className="text-sm text-gray-600 mb-3 line-clamp-2">{event.description}</div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap gap-2">
+                          {position && (
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&origin=${position.lat},${position.lng}&destination=${event.lat},${event.lng}&travelmode=driving`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Itinéraire
+                            </a>
+                          )}
+                          {position && (
+                            <button
+                              className="text-xs bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                zoomToEvent(event.lat as number, event.lng as number);
+                              }}
+                              type="button"
+                            >
+                              Voir sur carte
+                            </button>
                           )}
                         </div>
-                        <div className="text-xs text-gray-500 mb-2">
-                          {event.date?.seconds ? new Date(event.date.seconds * 1000).toLocaleString() : ""}
+                        <div className="text-xs text-gray-400 group-hover:text-purple-500 transition-colors">
+                          Cliquer pour voir les détails →
                         </div>
                       </div>
-                      <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">{event.sport}</span>
                     </div>
-                    {event.description && (
-                      <div className="text-sm text-gray-600 mb-3">{event.description}</div>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      {position && (
-                        <a
-                          href={`https://www.google.com/maps/dir/?api=1&origin=${position.lat},${position.lng}&destination=${event.lat},${event.lng}&travelmode=driving`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
-                        >
-                          Itinéraire
-                        </a>
-                      )}
-                      {position && (
-                        <button
-                          className="text-xs bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors"
-                          onClick={() => zoomToEvent(event.lat as number, event.lng as number)}
-                          type="button"
-                        >
-                          Voir sur carte
-                        </button>
-                      )}
-                      <Link 
-                        href={`/event/${event.id}`} 
-                        className="text-xs bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors"
-                      >
-                        Détails
-                      </Link>
-                    </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
