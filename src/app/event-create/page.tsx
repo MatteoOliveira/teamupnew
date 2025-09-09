@@ -30,6 +30,17 @@ interface EventData {
   isReserved?: boolean;
 }
 
+interface AddressSuggestion {
+  properties: {
+    label: string;
+    city: string;
+    postcode: string;
+  };
+  geometry: {
+    coordinates: [number, number];
+  };
+}
+
 
 
 export default function EventCreatePage() {
@@ -56,9 +67,8 @@ export default function EventCreatePage() {
   const [checkingConflicts, setCheckingConflicts] = useState(false);
   
   // États pour l'autocomplétion Google Maps
-  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [isAddressSelected, setIsAddressSelected] = useState(false);
   
   // États pour les popups de confirmation
@@ -80,7 +90,7 @@ export default function EventCreatePage() {
       const data = await response.json();
       
       if (data.features) {
-        setAddressSuggestions(data.features);
+        setAddressSuggestions(data.features as AddressSuggestion[]);
         setShowSuggestions(true);
       }
     } catch (error) {
@@ -89,12 +99,11 @@ export default function EventCreatePage() {
   };
 
   // Fonction pour sélectionner une adresse
-  const selectAddress = (suggestion: any) => {
-    const { properties, geometry } = suggestion;
+  const selectAddress = (suggestion: AddressSuggestion) => {
+    const { properties } = suggestion;
     setAddress(properties.label);
     setCity(properties.city);
     setPostcode(properties.postcode);
-    setSelectedAddress(suggestion);
     setIsAddressSelected(true);
     setShowSuggestions(false);
     setAddressSuggestions([]);
@@ -103,7 +112,6 @@ export default function EventCreatePage() {
   // Fonction pour réinitialiser la sélection d'adresse
   const resetAddressSelection = () => {
     setIsAddressSelected(false);
-    setSelectedAddress(null);
     setCity("");
     setPostcode("");
   };
@@ -136,10 +144,6 @@ export default function EventCreatePage() {
       const newEventStart = new Date(eventDate);
       const newEventEnd = eventEndDate ? new Date(eventEndDate) : new Date(newEventStart.getTime() + 2 * 60 * 60 * 1000); // +2h par défaut
       
-      // Ajouter 5 minutes de buffer après chaque événement existant
-      const bufferMinutes = 5;
-      
-      let conflicts = 0;
       let totalEvents = 0;
       let hasExistingEvent = false;
       
@@ -160,7 +164,6 @@ export default function EventCreatePage() {
         
         if (hasConflict) {
           hasExistingEvent = true;
-          conflicts++;
         }
       }
       
@@ -352,7 +355,7 @@ export default function EventCreatePage() {
                   </p>
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
                     <p className="text-sm text-blue-800">
-                      • Personne ne pourra créer d'événement pendant ces horaires le même jour.
+                      • Personne ne pourra créer d&apos;événement pendant ces horaires le même jour.
                     </p>
                     <p className="text-sm text-blue-800">
                       • Ils pourront créer un autre événement 5 min après la fin de votre événement.
@@ -366,7 +369,7 @@ export default function EventCreatePage() {
                   </p>
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
                     <p className="text-sm text-yellow-800">
-                      • D'autres personnes pourront créer un événement au même endroit et à la même heure.
+                      • D&apos;autres personnes pourront créer un événement au même endroit et à la même heure.
                     </p>
                   </div>
                 </div>
