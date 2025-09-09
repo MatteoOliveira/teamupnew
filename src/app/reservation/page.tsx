@@ -458,15 +458,17 @@ export default function ReservationPage() {
                       )}
                       <div className="flex items-center justify-between">
                         <div className="flex flex-wrap gap-2">
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&origin=${position?.lat},${position?.lng}&destination=${event.lat},${event.lng}&travelmode=driving`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
                             className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              window.open(`https://www.google.com/maps/dir/?api=1&origin=${position?.lat},${position?.lng}&destination=${event.lat},${event.lng}&travelmode=driving`, '_blank');
+                            }}
+                            type="button"
                           >
                             Itinéraire
-                          </a>
+                          </button>
                           <button
                             className="text-xs bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors"
                             onClick={(e) => {
@@ -551,15 +553,17 @@ export default function ReservationPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex flex-wrap gap-2">
                           {position && (
-                            <a
-                              href={`https://www.google.com/maps/dir/?api=1&origin=${position.lat},${position.lng}&destination=${event.lat},${event.lng}&travelmode=driving`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
                               className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
-                              onClick={(e) => e.stopPropagation()}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.open(`https://www.google.com/maps/dir/?api=1&origin=${position.lat},${position.lng}&destination=${event.lat},${event.lng}&travelmode=driving`, '_blank');
+                              }}
+                              type="button"
                             >
                               Itinéraire
-                            </a>
+                            </button>
                           )}
                           {position && (
                             <button
