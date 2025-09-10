@@ -75,33 +75,6 @@ function getTileUrl(x: number, y: number, zoom: number, useAlternatives = true) 
   return `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
 }
 
-// Fonction pour précharger une tuile avec fallback
-function preloadTileWithFallback(x: number, y: number, zoom: number) {
-  const primaryUrl = getTileUrl(x, y, zoom, true);
-  const fallbackUrls = [
-    `https://a.tile.openstreetmap.org/${zoom}/${x}/${y}.png`,
-    `https://b.tile.openstreetmap.org/${zoom}/${x}/${y}.png`,
-    `https://c.tile.openstreetmap.org/${zoom}/${x}/${y}.png`,
-  ];
-  
-  // Précharger la tuile principale
-  const img = new Image();
-  img.src = primaryUrl;
-  img.loading = 'eager';
-  img.fetchPriority = 'high';
-  img.crossOrigin = 'anonymous';
-  
-  // Précharger les fallbacks en arrière-plan
-  fallbackUrls.forEach((url, index) => {
-    setTimeout(() => {
-      const fallbackImg = new Image();
-      fallbackImg.src = url;
-      fallbackImg.loading = 'lazy';
-      fallbackImg.fetchPriority = 'low';
-      fallbackImg.crossOrigin = 'anonymous';
-    }, index * 100);
-  });
-}
 
 // Composant pour précharger les tuiles critiques dans le head avec CDN alternatifs
 function TilePreloader({ position }: { position: { lat: number; lng: number } | null }) {
