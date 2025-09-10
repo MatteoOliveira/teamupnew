@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import Link from "next/link";
 import dynamic from 'next/dynamic';
-import Head from 'next/head';
 
 // Dynamic import de la Map avec SSR désactivé
 const Map = dynamic(() => import('@/components/Map'), {
@@ -63,75 +62,12 @@ function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon
   return R * c;
 }
 
-// Fonction utilitaire pour calculer les coordonnées de tuile OpenStreetMap
-function getTileCoordinates(lat: number, lng: number, zoom: number) {
-  const tileX = Math.floor((lng + 180) / 360 * Math.pow(2, zoom));
-  const tileY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
-  return { x: tileX, y: tileY };
-}
+// Fonction getTileCoordinates supprimée car non utilisée
 
-// Fonction pour générer l'URL d'une tuile avec CDN alternatifs plus rapides
-function getTileUrl(x: number, y: number, zoom: number, useAlternatives = true) {
-  if (useAlternatives) {
-    // CDN alternatifs plus rapides (Cloudflare, etc.)
-    const alternatives = [
-      `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`, // Original
-      `https://a.tile.openstreetmap.org/${zoom}/${x}/${y}.png`, // Serveur A
-      `https://b.tile.openstreetmap.org/${zoom}/${x}/${y}.png`, // Serveur B
-      `https://c.tile.openstreetmap.org/${zoom}/${x}/${y}.png`, // Serveur C
-    ];
-    
-    // Utiliser un serveur différent pour éviter la surcharge
-    const serverIndex = (x + y + zoom) % alternatives.length;
-    return alternatives[serverIndex];
-  }
-  
-  return `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
-}
+// Fonction getTileUrl supprimée car non utilisée
 
 
-// Composant pour précharger les tuiles critiques dans le head avec CDN alternatifs
-function TilePreloader({ position }: { position: { lat: number; lng: number } | null }) {
-  if (!position) return null;
-  
-  const zoom = 8;
-  const centerTile = getTileCoordinates(position.lat, position.lng, zoom);
-  
-  // Tuiles critiques ultra-agressives avec CDN alternatifs
-  const criticalTiles = [
-    // Tuile centrale (priorité maximale) - Précharger sur tous les serveurs
-    { x: centerTile.x, y: centerTile.y, priority: "high", servers: ["a", "b", "c"] },
-    // Tuiles adjacentes immédiates (priorité élevée)
-    { x: centerTile.x + 1, y: centerTile.y, priority: "high", servers: ["a", "b"] },
-    { x: centerTile.x, y: centerTile.y + 1, priority: "high", servers: ["a", "b"] },
-    { x: centerTile.x + 1, y: centerTile.y + 1, priority: "high", servers: ["a", "b"] },
-    { x: centerTile.x - 1, y: centerTile.y, priority: "high", servers: ["a", "b"] },
-    { x: centerTile.x, y: centerTile.y - 1, priority: "high", servers: ["a", "b"] },
-    { x: centerTile.x - 1, y: centerTile.y - 1, priority: "high", servers: ["a", "b"] },
-    // Tuiles de contexte (priorité moyenne)
-    { x: centerTile.x + 2, y: centerTile.y, priority: "low", servers: ["a"] },
-    { x: centerTile.x, y: centerTile.y + 2, priority: "low", servers: ["a"] },
-    { x: centerTile.x - 2, y: centerTile.y, priority: "low", servers: ["a"] },
-    { x: centerTile.x, y: centerTile.y - 2, priority: "low", servers: ["a"] },
-  ];
-  
-  return (
-    <Head>
-      {criticalTiles.map((tile) => 
-        tile.servers.map((server) => (
-          <link
-            key={`tile-${tile.x}-${tile.y}-${server}`}
-            rel="preload"
-            as="image"
-            href={`https://${server}.tile.openstreetmap.org/${zoom}/${tile.x}/${tile.y}.png`}
-            fetchPriority={tile.priority as "high" | "low" | "auto"}
-            crossOrigin="anonymous"
-          />
-        ))
-      )}
-    </Head>
-  );
-}
+// Composant TilePreloader supprimé pour éviter les warnings de preload inutilisé
 
 // Le composant ZoomToEvent est maintenant dans Map.tsx
 
@@ -184,67 +120,7 @@ export default function ReservationPage() {
     }
   };
 
-  // Précharge ultra-agressive des tuiles critiques avec CDN alternatifs
-  useEffect(() => {
-    if (position) {
-      const preloadCriticalTilesUltraAggressive = () => {
-        const zoom = 8; // Zoom utilisé par la carte
-        const centerTile = getTileCoordinates(position.lat, position.lng, zoom);
-        
-        // Tuiles critiques ultra-agressives avec CDN alternatifs
-        const criticalTiles = [
-          // Phase 1: Tuile centrale (priorité maximale) - Tous les serveurs
-          { x: centerTile.x, y: centerTile.y, phase: 1, servers: ["a", "b", "c"] },
-          // Phase 2: Tuiles adjacentes immédiates (priorité élevée) - Serveurs multiples
-          { x: centerTile.x + 1, y: centerTile.y, phase: 2, servers: ["a", "b"] },
-          { x: centerTile.x, y: centerTile.y + 1, phase: 2, servers: ["a", "b"] },
-          { x: centerTile.x + 1, y: centerTile.y + 1, phase: 2, servers: ["a", "b"] },
-          { x: centerTile.x - 1, y: centerTile.y, phase: 2, servers: ["a", "b"] },
-          { x: centerTile.x, y: centerTile.y - 1, phase: 2, servers: ["a", "b"] },
-          { x: centerTile.x - 1, y: centerTile.y - 1, phase: 2, servers: ["a", "b"] },
-          // Phase 3: Tuiles de contexte (priorité moyenne) - Serveur principal
-          { x: centerTile.x + 2, y: centerTile.y, phase: 3, servers: ["a"] },
-          { x: centerTile.x, y: centerTile.y + 2, phase: 3, servers: ["a"] },
-          { x: centerTile.x - 2, y: centerTile.y, phase: 3, servers: ["a"] },
-          { x: centerTile.x, y: centerTile.y - 2, phase: 3, servers: ["a"] },
-          { x: centerTile.x + 2, y: centerTile.y + 1, phase: 3, servers: ["a"] },
-          { x: centerTile.x + 1, y: centerTile.y + 2, phase: 3, servers: ["a"] },
-          { x: centerTile.x - 2, y: centerTile.y - 1, phase: 3, servers: ["a"] },
-          { x: centerTile.x - 1, y: centerTile.y - 2, phase: 3, servers: ["a"] },
-        ];
-        
-        // Précharger par phases avec CDN alternatifs
-        criticalTiles.forEach((tile, index) => {
-          const delay = tile.phase === 1 ? 0 : tile.phase === 2 ? 50 : 100;
-          
-          tile.servers.forEach((server, serverIndex) => {
-            setTimeout(() => {
-              const img = new Image();
-              img.src = `https://${server}.tile.openstreetmap.org/${zoom}/${tile.x}/${tile.y}.png`;
-              // Précharge avec priorité maximale
-              img.loading = 'eager';
-              img.fetchPriority = tile.phase === 1 ? 'high' : tile.phase === 2 ? 'high' : 'low';
-              // CrossOrigin pour éviter les problèmes CORS
-              img.crossOrigin = 'anonymous';
-              
-              // Gestion d'erreur avec fallback
-              img.onerror = () => {
-                console.warn(`Failed to load tile from ${server}, trying fallback`);
-                const fallbackImg = new Image();
-                fallbackImg.src = getTileUrl(tile.x, tile.y, zoom, true);
-                fallbackImg.loading = 'eager';
-                fallbackImg.fetchPriority = 'high';
-                fallbackImg.crossOrigin = 'anonymous';
-              };
-            }, delay + (index * 15) + (serverIndex * 10)); // Chargement ultra-échelonné
-          });
-        });
-      };
-      
-      // Démarrer la précharge ultra-agressive immédiatement
-      preloadCriticalTilesUltraAggressive();
-    }
-  }, [position]);
+  // Précharge JavaScript supprimée pour éviter les warnings de preload inutilisé
 
   // Initialiser le centre de la carte directement à la position utilisateur
   useEffect(() => {
@@ -390,8 +266,7 @@ export default function ReservationPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Précharge des tuiles critiques pour améliorer le LCP */}
-      <TilePreloader position={position} />
+      {/* Précharge supprimée pour éviter les warnings de preload inutilisé */}
       {/* Header Mobile minimal */}
       <div className="md:hidden flex items-center justify-center py-3 px-4 bg-white border-b border-gray-200">
         <div className="flex items-center space-x-1">
