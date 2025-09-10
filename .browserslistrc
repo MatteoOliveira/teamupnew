@@ -1,0 +1,18 @@
+# Configuration pour cibler les navigateurs modernes
+# Évite la transpilation inutile des fonctionnalités JavaScript modernes
+
+# Navigateurs modernes (95%+ de couverture)
+> 0.5%
+last 2 versions
+Firefox ESR
+not dead
+not IE 11
+
+# Fonctionnalités JavaScript modernes supportées
+# Array.prototype.at (2021)
+# Array.prototype.flat (2019) 
+# Array.prototype.flatMap (2019)
+# Object.fromEntries (2019)
+# Object.hasOwn (2022)
+# String.prototype.trimEnd (2017)
+# String.prototype.trimStart (2017)

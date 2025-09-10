@@ -27,6 +27,16 @@ const nextConfig = {
     domains: ['teamup-fawn.vercel.app'],
     unoptimized: true, // Pour éviter les problèmes avec Vercel
   },
+  // Optimisation pour éviter le JavaScript hérité aux navigateurs modernes
+  experimental: {
+    esmExternals: true,
+  },
+  // Configuration du transpile pour cibler les navigateurs modernes
+  transpilePackages: [],
+  // Optimisation des polyfills
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
   async headers() {
     return [
       {
