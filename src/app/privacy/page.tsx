@@ -21,7 +21,7 @@ export default function PrivacyPage() {
           {/* 1. Informations sur l'Éditeur */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              1. Informations sur l'Éditeur
+              1. Informations sur l&apos;Éditeur
             </h2>
             <div className="text-gray-700 space-y-2">
               <p><strong>Nom :</strong> TeamUp</p>
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
                 <li>Gérer votre compte utilisateur et votre profil</li>
                 <li>Vous permettre de créer et participer à des événements sportifs</li>
                 <li>Vous proposer des événements à proximité de votre localisation</li>
-                <li>Améliorer notre service et analyser l'utilisation de l'application</li>
+                <li>Améliorer notre service et analyser l&apos;utilisation de l&apos;application</li>
                 <li>Vous contacter concernant votre compte ou les événements</li>
               </ul>
             </div>
@@ -187,7 +187,7 @@ export default function PrivacyPage() {
           <div className="text-center mt-8">
             <Link href="/">
               <Button className="bg-blue-500 hover:bg-blue-600">
-                Retour à l'accueil
+                Retour à l&apos;accueil
               </Button>
             </Link>
           </div>
