@@ -71,11 +71,12 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Header />
-        <div className="pb-20">
+        {/* Contenu principal avec padding fixe pour éviter les décalages */}
+        <main className="min-h-screen pb-20">
           {children}
-        </div>
-        {/* NavBar en bas */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex justify-around items-center h-16 shadow-md w-full">
+        </main>
+        {/* NavBar en bas avec hauteur fixe */}
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 h-16 shadow-md">
           <NavBar />
         </nav>
       </body>

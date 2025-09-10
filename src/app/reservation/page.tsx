@@ -591,7 +591,8 @@ export default function ReservationPage() {
           </div>
         )}
 
-        <div className="mt-6 text-center">
+        {/* Bouton retour avec hauteur fixe pour éviter les décalages */}
+        <div className="mt-6 text-center h-12 flex items-center justify-center">
           <Button
             onClick={() => router.push('/profile')}
             className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"

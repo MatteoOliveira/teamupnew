@@ -40,7 +40,19 @@ export default function NavBar() {
     checkUnread();
   }, [user]);
 
-  if (!mounted) return null;
+  // Rendu avec placeholder pour éviter les décalages
+  if (!mounted) {
+    return (
+      <nav aria-label="Navigation principale" role="navigation" className="flex w-full justify-around bg-white border-t border-gray-200 h-16 shadow-md">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="flex flex-col items-center justify-center text-xs text-gray-400">
+            <div className="w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+            <div className="w-8 h-3 bg-gray-200 rounded animate-pulse mt-1"></div>
+          </div>
+        ))}
+      </nav>
+    );
+  }
 
   const navItems = [
     { href: "/event-create", label: "Créer", icon: (
