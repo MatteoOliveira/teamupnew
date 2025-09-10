@@ -5,8 +5,8 @@ const withPWA = require('next-pwa')({
   disable: process.env.NODE_ENV === 'development',
   buildExcludes: [/middleware-manifest\.json$/, /build-manifest\.json$/],
   publicExcludes: ['!robots.txt', '!sitemap.xml'],
-  // Service worker par défaut de next-pwa pour éviter les conflits de navigation
-  // sw: 'firebase-messaging-sw.js', // Temporairement désactivé
+  // Service worker par défaut de next-pwa - PAS de service worker personnalisé
+  // sw: 'sw-unified.js', // DÉSACTIVÉ pour restaurer la navigation
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,
