@@ -263,21 +263,31 @@ export default function ProfilePage() {
         });
       setMyEvents(futureEvents);
     });
-    // Mes inscriptions (où je suis inscrit)
+    // Mes inscriptions (où je suis inscrit) - UNIQUEMENT les événements futurs
     getDocs(query(collection(db, 'event_participants'), where('userId', '==', user.uid))).then(async snap => {
       const eventIds = snap.docs.map(doc => doc.data().eventId);
       if (eventIds.length === 0) { setMyRegistrations([]); return; }
       const eventsSnap = await getDocs(query(collection(db, 'events')));
-      setMyRegistrations(eventsSnap.docs.filter(doc => eventIds.includes(doc.id)).map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          name: data.name,
-          sport: data.sport,
-          city: data.city,
-          date: data.date,
-        };
-      }));
+      const now = new Date();
+      const futureRegistrations = eventsSnap.docs
+        .filter(doc => {
+          const data = doc.data();
+          if (!eventIds.includes(doc.id)) return false; // Je suis inscrit
+          if (!data.date?.seconds) return false;
+          const eventDate = new Date(data.date.seconds * 1000);
+          return eventDate > now; // Seulement les événements futurs
+        })
+        .map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name,
+            sport: data.sport,
+            city: data.city,
+            date: data.date,
+          };
+        });
+      setMyRegistrations(futureRegistrations);
     });
     // Événements près de moi (même ville)
     if (city) {
@@ -795,7 +805,11 @@ export default function ProfilePage() {
             ) : (
               <div className="grid gap-4">
                 {myRegistrations.map(ev => (
-                  <div key={ev.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div 
+                    key={ev.id} 
+                    className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/event/${ev.id}`)}
+                  >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900 mb-1">{ev.name}</h3>
@@ -807,7 +821,12 @@ export default function ProfilePage() {
                           {ev.date ? new Date(ev.date.seconds * 1000).toLocaleDateString() : 'Date non définie'}
                         </div>
                       </div>
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 ))}
