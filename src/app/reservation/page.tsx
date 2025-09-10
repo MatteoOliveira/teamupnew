@@ -7,18 +7,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import Link from "next/link";
-import { Suspense, lazy } from 'react';
+// Suspense et lazy loading supprimés pour éviter les erreurs
 
 import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap } from 'leaflet';
 import { useMap } from 'react-leaflet';
 import Head from 'next/head';
 
-// Lazy loading des composants lourds
-const MapContainer = lazy(() => import('react-leaflet').then(mod => ({ default: mod.MapContainer })));
-const TileLayer = lazy(() => import('react-leaflet').then(mod => ({ default: mod.TileLayer })));
-const Marker = lazy(() => import('react-leaflet').then(mod => ({ default: mod.Marker })));
-const Popup = lazy(() => import('react-leaflet').then(mod => ({ default: mod.Popup })));
+// Import direct des composants Leaflet pour éviter les erreurs de lazy loading
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 
 // Composant pour configurer les icônes Leaflet
 function LeafletIconConfig() {
@@ -28,7 +25,7 @@ function LeafletIconConfig() {
       window.L.Icon.Default.mergeOptions({
         iconUrl: '/marker-icon.webp',
         iconRetinaUrl: '/marker-icon-2x.webp',
-        shadowUrl: '/marker-shadow.webp',
+        shadowUrl: false, // Désactiver l'ombre pour éviter l'erreur 404
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
@@ -48,7 +45,7 @@ if (typeof window !== "undefined") {
       window.L.Icon.Default.mergeOptions({
         iconUrl: '/marker-icon.webp',
         iconRetinaUrl: '/marker-icon-2x.webp',
-        shadowUrl: '/marker-shadow.webp',
+        shadowUrl: false, // Désactiver l'ombre pour éviter l'erreur 404
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
@@ -565,19 +562,7 @@ export default function ReservationPage() {
               {/* Carte avec lazy loading pour réduire le JavaScript initial */}
                 <div style={{ height: 300, width: "100%", zIndex: 1, borderRadius: '8px', overflow: 'hidden' }}>
                   {mapCenter ? (
-                    <Suspense fallback={
-                      <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="w-6 h-6 mx-auto mb-2 text-blue-500 animate-spin">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                          </div>
-                          <p className="text-gray-500 text-sm">Chargement de la carte...</p>
-                        </div>
-                      </div>
-                    }>
-                      <MapContainer
+                    <MapContainer
                         center={mapCenter}
                         zoom={currentZoom}
                         style={{ height: "100%", width: "100%", zIndex: 1 }}
@@ -630,7 +615,6 @@ export default function ReservationPage() {
                           </Marker>
                         ))}
                       </MapContainer>
-                    </Suspense>
                   ) : (
                     <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center">
                       <div className="text-center">
