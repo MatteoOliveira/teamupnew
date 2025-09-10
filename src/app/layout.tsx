@@ -123,9 +123,7 @@ export default function RootLayout({
           }}
         />
         
-        {/* Précharge optimisée - Seulement la tuile centrale de la France (zoom 8) */}
-        {/* Tuile critique 129/88 - Centre de la France - Un seul serveur pour éviter le warning */}
-        <link rel="preload" as="image" href="https://a.tile.openstreetmap.org/8/129/88.png" fetchPriority="high" crossOrigin="anonymous" />
+        {/* Précharge supprimée pour éviter les warnings sur les pages sans carte */}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Header />
