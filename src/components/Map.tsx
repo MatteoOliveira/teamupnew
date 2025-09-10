@@ -34,11 +34,11 @@ function LeafletIconConfig() {
       window.L.Icon.Default.mergeOptions({
         iconUrl: '/marker-icon.webp',
         iconRetinaUrl: '/marker-icon-2x.webp',
-        // Pas de shadowUrl pour éviter l'erreur 404
+        shadowUrl: '', // Désactiver explicitement l'ombre
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowSize: [41, 41]
+        shadowSize: [0, 0] // Taille d'ombre à zéro
       });
     }
   }, []);
