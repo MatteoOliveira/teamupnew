@@ -185,6 +185,35 @@ export function usePushNotifications() {
 
       console.log('✅ État local mis à jour: isSubscribed = true');
 
+      // Recharger l'état depuis Firestore pour s'assurer de la synchronisation
+      setTimeout(async () => {
+        try {
+          const userDoc = await doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userDoc);
+          
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            const hasToken = !!userData.fcmToken;
+            const isEnabled = userData.pushNotificationsEnabled === true;
+            
+            console.log('🔄 Rechargement état Firestore:', {
+              hasToken,
+              isEnabled,
+              fcmToken: userData.fcmToken ? 'Présent' : 'Absent',
+              pushNotificationsEnabled: userData.pushNotificationsEnabled
+            });
+            
+            setState(prev => ({ 
+              ...prev, 
+              isSubscribed: hasToken && isEnabled,
+              token: userData.fcmToken || null
+            }));
+          }
+        } catch (error) {
+          console.error('Erreur rechargement état:', error);
+        }
+      }, 1000);
+
       return true;
     } catch (error) {
       console.error('❌ Erreur abonnement notifications:', error);

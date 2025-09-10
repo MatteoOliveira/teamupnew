@@ -30,8 +30,13 @@ export default function PushNotificationManager() {
       console.log('🚀 Résultat subscribe:', success);
       
       if (success) {
-        setMessage('Notifications push activées avec succès !');
+        setMessage('Notifications push activées avec succès ! L&apos;abonnement sera mis à jour dans quelques secondes.');
         setMessageType('success');
+        
+        // Recharger la page après 2 secondes pour voir l'état mis à jour
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       } else {
         setMessage(error || 'Erreur lors de l\'activation des notifications');
         setMessageType('error');
@@ -239,6 +244,14 @@ export default function PushNotificationManager() {
               📱 Tester sur mobile
             </Button>
           )}
+
+          {/* Bouton de rechargement d'état */}
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-gray-600 hover:bg-gray-700 text-white"
+          >
+            🔄 Recharger l&apos;état
+          </Button>
         </div>
       </div>
 
