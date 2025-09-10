@@ -15,6 +15,7 @@ import { getStatsPeriod } from '@/utils/statsCalculator';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useUserData } from '@/hooks/useUserData';
 import DataViewer from '@/components/DataViewer';
+import DataEditor from '@/components/DataEditor';
 
 // Lazy loading des composants lourds pour réduire le JavaScript initial
 // Ces composants seront utilisés quand la section statistiques sera implémentée
@@ -703,6 +704,13 @@ export default function ProfilePage() {
           
           <div className="space-y-4">
             <DataViewer userData={userData} loading={userDataLoading} />
+            <DataEditor 
+              userData={userData} 
+              onDataUpdated={() => {
+                // Rafraîchir les données après modification
+                window.location.reload();
+              }} 
+            />
           </div>
         </div>
 
