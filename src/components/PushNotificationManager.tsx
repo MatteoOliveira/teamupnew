@@ -137,7 +137,7 @@ export default function PushNotificationManager() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-blue-800 text-sm font-medium">
-              Les notifications sont activées par défaut pour vous tenir informé des événements.
+              Les notifications sont activées par défaut. Vous pouvez les désactiver si vous le souhaitez.
             </span>
           </div>
         </div>
@@ -227,8 +227,8 @@ export default function PushNotificationManager() {
         )}
 
         <div className="flex flex-wrap gap-3">
-          {/* Bouton d'activation - toujours visible si pas encore abonné */}
-          {!isSubscribed && (
+          {/* Bouton d'activation - seulement si vraiment pas abonné ET permission accordée */}
+          {!isSubscribed && permission.granted && (
             <Button
               onClick={handleSubscribe}
               disabled={isLoading}
@@ -238,8 +238,8 @@ export default function PushNotificationManager() {
             </Button>
           )}
 
-          {/* Bouton de désactivation - visible si abonné */}
-          {isSubscribed && (
+          {/* Bouton de désactivation - visible par défaut (notifications activées par défaut) */}
+          {(isSubscribed || (!permission.denied && !needsPermission)) && (
             <Button
               onClick={handleUnsubscribe}
               disabled={isLoading}

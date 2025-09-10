@@ -28,7 +28,7 @@ export function usePushNotifications() {
     isSupported: false,
     permission: { granted: false, denied: false, default: true },
     token: null,
-    isSubscribed: false,
+    isSubscribed: true, // Activé par défaut
     isLoading: false,
     error: null,
   });
@@ -343,7 +343,7 @@ export function usePushNotifications() {
           // Auto-activer les notifications si l'utilisateur n'a pas encore de préférence définie
           if (!userData.hasOwnProperty('pushNotificationsEnabled') && state.isSupported) {
             console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
-            setTimeout(() => subscribe(), 1000); // Délai pour éviter les conflits
+            subscribe(); // Activation immédiate
           }
         } else {
           console.log('🔍 Document utilisateur non trouvé - Auto-activation');
@@ -352,7 +352,7 @@ export function usePushNotifications() {
           // Nouvel utilisateur - auto-activer les notifications
           if (state.isSupported) {
             console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
-            setTimeout(() => subscribe(), 1000); // Délai pour éviter les conflits
+            subscribe(); // Activation immédiate
           }
         }
       } catch (error) {
