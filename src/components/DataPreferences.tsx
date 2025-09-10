@@ -42,7 +42,7 @@ export default function DataPreferences() {
         }
       }));
     }
-  }, [consent, isAllowed]);
+  }, [consent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePreferenceChange = (category: keyof typeof preferences, key: string, value: boolean) => {
     setPreferences(prev => ({
