@@ -70,7 +70,15 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [sport, setSport] = useState('');
   const [city, setCity] = useState("");
-  const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings'>('profile');
+  // Fonction pour obtenir l'onglet initial depuis l'URL hash
+  const getInitialTab = (): 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings' => {
+    if (typeof window === 'undefined') return 'profile';
+    const hash = window.location.hash.slice(1); // Enlever le #
+    const validTabs = ['profile', 'myevents', 'cityevents', 'myregistrations', 'pastevents', 'history', 'stats', 'settings'];
+    return validTabs.includes(hash) ? hash as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings' : 'profile';
+  };
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings'>(getInitialTab());
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [message, setMessage] = useState('');
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -111,6 +119,23 @@ export default function ProfilePage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Écouter les changements de hash dans l'URL
+  useEffect(() => {
+    const handleHashChange = () => {
+      const newTab = getInitialTab();
+      setActiveTab(newTab);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Mettre à jour l'URL quand l'onglet change
+  const handleTabChange = (tab: 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings') => {
+    setActiveTab(tab);
+    window.location.hash = tab;
+  };
 
   // Charger le profil existant
   useEffect(() => {
@@ -491,7 +516,7 @@ export default function ProfilePage() {
                             } ${
                               activeTab === tab.key ? 'bg-purple-50 text-purple-700 font-semibold' : ''
                             } flex items-center space-x-3 w-full text-left px-4 py-3 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-md mx-2`}
-                            onClick={() => setActiveTab(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings')}
+                            onClick={() => handleTabChange(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings')}
                           >
                             <div className={`w-2 h-2 rounded-full ${activeTab === tab.key ? 'bg-purple-500' : 'bg-gray-300'}`}></div>
                             <span>{tab.label}</span>
@@ -520,7 +545,7 @@ export default function ProfilePage() {
                         ? 'bg-purple-100 text-purple-700 border border-purple-200' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
                     }`}
-                    onClick={() => setActiveTab(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings')}
+                    onClick={() => handleTabChange(tab.key as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings')}
                   >
                     {tab.label}
                   </button>
