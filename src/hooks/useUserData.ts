@@ -86,41 +86,59 @@ export function useUserData(userId: string | null) {
         ? { name: '', sport: '', city: '', email: '' }
         : profileSnapshot.docs[0].data() as UserProfile;
 
-      // 2. Récupérer les événements créés par l'utilisateur
+      // 2. Récupérer les événements créés par l'utilisateur (sans orderBy temporairement)
       const eventsQuery = query(
         collection(db, 'events'),
-        where('createdBy', '==', userId),
-        orderBy('createdAt', 'desc')
+        where('createdBy', '==', userId)
       );
       const eventsSnapshot = await getDocs(eventsQuery);
       const events = eventsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as EventData[];
+      
+      // Trier côté client en attendant l'index Firestore
+      events.sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+        return dateB - dateA; // Descending order
+      });
 
-      // 3. Récupérer les participations de l'utilisateur
+      // 3. Récupérer les participations de l'utilisateur (sans orderBy temporairement)
       const participationsQuery = query(
         collection(db, 'participations'),
-        where('userId', '==', userId),
-        orderBy('joinedAt', 'desc')
+        where('userId', '==', userId)
       );
       const participationsSnapshot = await getDocs(participationsQuery);
       const participations = participationsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as ParticipationData[];
+      
+      // Trier côté client en attendant l'index Firestore
+      participations.sort((a, b) => {
+        const dateA = a.joinedAt?.seconds || 0;
+        const dateB = b.joinedAt?.seconds || 0;
+        return dateB - dateA; // Descending order
+      });
 
-      // 4. Récupérer les messages de l'utilisateur
+      // 4. Récupérer les messages de l'utilisateur (sans orderBy temporairement)
       const messagesQuery = query(
         collection(db, 'messages'),
-        where('userId', '==', userId),
-        orderBy('timestamp', 'desc')
+        where('userId', '==', userId)
       );
       const messagesSnapshot = await getDocs(messagesQuery);
       const messages = messagesSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as MessageData[];
+      
+      // Trier côté client en attendant l'index Firestore
+      messages.sort((a, b) => {
+        const dateA = a.timestamp?.seconds || 0;
+        const dateB = b.timestamp?.seconds || 0;
+        return dateB - dateA; // Descending order
+      });
 
       // 5. Récupérer les consentements cookies
       let consent: ConsentData | null = null;
