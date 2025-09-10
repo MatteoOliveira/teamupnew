@@ -31,10 +31,10 @@ export default function Header() {
         <div className="flex justify-between items-center py-2 md:py-4">
           <Link href="/" className="flex items-center gap-1 md:gap-2">
             <Image 
-              src="/icon-192x192.webp" 
+              src="/favicon-32x32.webp" 
               alt="Logo TeamUp" 
-              width={24} 
-              height={24} 
+              width={32} 
+              height={32}
               className="w-6 h-6 md:w-10 md:h-10"
               priority
               placeholder="blur"
