@@ -27,7 +27,10 @@ export function useAuth() {
     // Ensuite écouter les changements d'état d'authentification
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (isMounted) {
-        console.log('État d\'authentification changé:', user);
+        // Log seulement en mode développement et pour les changements significatifs
+        if (process.env.NODE_ENV === 'development' && user) {
+          console.log('Utilisateur connecté:', user.uid);
+        }
         setUser(user);
         setLoading(false);
       }
