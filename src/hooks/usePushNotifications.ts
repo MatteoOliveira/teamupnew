@@ -339,9 +339,21 @@ export function usePushNotifications() {
             isSubscribed: hasToken && isEnabled,
             token: userData.fcmToken || null
           }));
+          
+          // Auto-activer les notifications si l'utilisateur n'a pas encore de préférence définie
+          if (!userData.hasOwnProperty('pushNotificationsEnabled') && state.isSupported) {
+            console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
+            setTimeout(() => subscribe(), 1000); // Délai pour éviter les conflits
+          }
         } else {
-          console.log('🔍 Document utilisateur non trouvé');
+          console.log('🔍 Document utilisateur non trouvé - Auto-activation');
           setState(prev => ({ ...prev, isSubscribed: false }));
+          
+          // Nouvel utilisateur - auto-activer les notifications
+          if (state.isSupported) {
+            console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
+            setTimeout(() => subscribe(), 1000); // Délai pour éviter les conflits
+          }
         }
       } catch (error) {
         console.error('Erreur initialisation état notifications:', error);
@@ -350,7 +362,7 @@ export function usePushNotifications() {
     };
 
     initializeState();
-  }, [user, checkPermission]);
+  }, [user, checkPermission, state.isSupported, subscribe]);
 
   // Configurer l'écoute des messages en premier plan
   useEffect(() => {
