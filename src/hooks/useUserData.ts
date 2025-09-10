@@ -65,6 +65,9 @@ export function useUserData(userId: string | null) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Debug log pour userId
+  console.log('useUserData: userId =', userId);
+
   const fetchUserData = useCallback(async () => {
     if (!userId) {
       console.log('useUserData: userId is null');

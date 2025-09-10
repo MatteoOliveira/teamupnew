@@ -64,6 +64,11 @@ export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { getUserStats, trackPageView, trackProfileUpdate } = useAnalytics();
+  
+  // Debug logs pour l'authentification
+  console.log('Profile: user =', user);
+  console.log('Profile: user?.uid =', user?.uid);
+  
   const { userData, loading: userDataLoading } = useUserData(user?.uid || null);
   const [name, setName] = useState('');
   const [sport, setSport] = useState('');
