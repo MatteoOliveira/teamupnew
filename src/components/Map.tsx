@@ -34,7 +34,7 @@ function LeafletIconConfig() {
       window.L.Icon.Default.mergeOptions({
         iconUrl: '/marker-icon.webp',
         iconRetinaUrl: '/marker-icon-2x.webp',
-        shadowUrl: false, // Désactiver l'ombre pour éviter l'erreur 404
+        // Pas de shadowUrl pour éviter l'erreur 404
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
