@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, lazy } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { doc, setDoc, getDoc, collection, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { deleteUser } from 'firebase/auth';
