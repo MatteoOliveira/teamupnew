@@ -26,8 +26,6 @@ export default function DataPreferences() {
       sms: false,
     },
     communication: {
-      newsletters: false,
-      promotional: false,
       updates: true,
     },
     dataProcessing: {
@@ -102,8 +100,6 @@ export default function DataPreferences() {
         sms: false,
       },
       communication: {
-        newsletters: false,
-        promotional: false,
         updates: true,
       },
       dataProcessing: {
@@ -227,37 +223,6 @@ export default function DataPreferences() {
         <div>
           <h4 className="text-md font-medium text-gray-900 mb-4">📧 Communication</h4>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">Newsletters</div>
-                <div className="text-sm text-gray-600">Actualités et conseils sportifs</div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={preferences.communication.newsletters}
-                  onChange={(e) => handlePreferenceChange('communication', 'newsletters', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">Offres Promotionnelles</div>
-                <div className="text-sm text-gray-600">Réductions et événements spéciaux</div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={preferences.communication.promotional}
-                  onChange={(e) => handlePreferenceChange('communication', 'promotional', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-              </label>
-            </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
@@ -310,7 +275,7 @@ export default function DataPreferences() {
                   ...prev,
                   cookies: { analytics: true, marketing: true },
                   notifications: { push: true, email: true, sms: true },
-                  communication: { newsletters: true, promotional: true, updates: true },
+                  communication: { updates: true },
                   dataProcessing: { analytics: true }
                 }));
               }}
@@ -324,7 +289,7 @@ export default function DataPreferences() {
                   ...prev,
                   cookies: { analytics: false, marketing: false },
                   notifications: { push: false, email: false, sms: false },
-                  communication: { newsletters: false, promotional: false, updates: false },
+                  communication: { updates: false },
                   dataProcessing: { analytics: false }
                 }));
               }}
