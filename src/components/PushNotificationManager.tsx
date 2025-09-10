@@ -13,7 +13,6 @@ export default function PushNotificationManager() {
     error,
     subscribe,
     unsubscribe,
-    sendTestNotification,
     canSubscribe,
     canUnsubscribe,
     needsPermission,
@@ -55,8 +54,22 @@ export default function PushNotificationManager() {
     setMessageType('');
     
     try {
-      sendTestNotification();
-      setMessage('Notification de test envoyée !');
+      // Créer une notification de test plus réaliste
+      const testNotification = new Notification('🔔 Test TeamUp', {
+        body: 'Ceci est un test de notification push depuis votre téléphone !',
+        icon: '/icon-192x192.webp',
+        badge: '/icon-192x192.webp',
+        tag: 'teamup-test',
+        requireInteraction: true
+      });
+
+      // Gérer les clics sur la notification
+      testNotification.onclick = () => {
+        window.focus();
+        testNotification.close();
+      };
+
+      setMessage('📱 Notification de test envoyée ! Vérifiez votre téléphone.');
       setMessageType('success');
     } catch {
       setMessage('Erreur lors de l\'envoi de la notification de test');
@@ -207,7 +220,7 @@ export default function PushNotificationManager() {
               onClick={handleTestNotification}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
-              Tester la notification
+              📱 Tester sur mobile
             </Button>
           )}
         </div>
@@ -222,6 +235,15 @@ export default function PushNotificationManager() {
           <li>• Restez informé des changements d&apos;événements</li>
           <li>• Les notifications fonctionnent même quand l&apos;app est fermée</li>
         </ul>
+        
+        {/* Test mobile */}
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <h5 className="text-sm font-medium text-blue-900 mb-2">📱 Test sur mobile</h5>
+          <p className="text-sm text-blue-700">
+            Utilisez le bouton &quot;Tester sur mobile&quot; pour vérifier que les notifications fonctionnent sur votre téléphone. 
+            La notification apparaîtra même si l&apos;application est fermée.
+          </p>
+        </div>
       </div>
     </div>
   );
