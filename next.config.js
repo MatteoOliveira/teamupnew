@@ -37,6 +37,36 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  // Optimisation du code splitting pour réduire le JavaScript inutilisé
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      // Optimisation des chunks pour réduire le JavaScript inutilisé
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true,
+          },
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            priority: -10,
+            chunks: 'all',
+          },
+          // Chunk séparé pour les composants lourds
+          components: {
+            test: /[\\/]src[\\/]components[\\/]/,
+            name: 'components',
+            priority: 10,
+            chunks: 'all',
+          },
+        },
+      };
+    }
+    return config;
+  },
   async headers() {
     return [
       {
