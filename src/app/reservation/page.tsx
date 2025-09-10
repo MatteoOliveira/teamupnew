@@ -7,59 +7,25 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import Link from "next/link";
-// Suspense et lazy loading supprimés pour éviter les erreurs
-
-import "leaflet/dist/leaflet.css";
-import type { Map as LeafletMap } from 'leaflet';
-import { useMap } from 'react-leaflet';
+import dynamic from 'next/dynamic';
 import Head from 'next/head';
 
-// Import direct des composants Leaflet pour éviter les erreurs de lazy loading
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-
-// Composant pour configurer les icônes Leaflet
-function LeafletIconConfig() {
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.L) {
-      // Configurer les nouvelles icônes WebP
-      window.L.Icon.Default.mergeOptions({
-        iconUrl: '/marker-icon.webp',
-        iconRetinaUrl: '/marker-icon-2x.webp',
-        shadowUrl: false, // Désactiver l'ombre pour éviter l'erreur 404
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
-    }
-  }, []);
-
-  return null; // Ce composant ne rend rien
-}
-
-// Configuration globale des icônes Leaflet (s'exécute immédiatement)
-if (typeof window !== "undefined") {
-  // Attendre que Leaflet soit chargé
-  const configureIcons = () => {
-    if (window.L && window.L.Icon && window.L.Icon.Default) {
-      window.L.Icon.Default.mergeOptions({
-        iconUrl: '/marker-icon.webp',
-        iconRetinaUrl: '/marker-icon-2x.webp',
-        shadowUrl: false, // Désactiver l'ombre pour éviter l'erreur 404
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
-    } else {
-      // Réessayer après un court délai
-      setTimeout(configureIcons, 100);
-    }
-  };
-  
-  // Démarrer la configuration
-  configureIcons();
-}
+// Dynamic import de la Map avec SSR désactivé
+const Map = dynamic(() => import('@/components/Map'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-6 h-6 mx-auto mb-2 text-blue-500 animate-spin">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </div>
+        <p className="text-gray-500 text-sm">Chargement de la carte...</p>
+      </div>
+    </div>
+  )
+});
 
 
 interface UserProfile {
@@ -167,16 +133,7 @@ function TilePreloader({ position }: { position: { lat: number; lng: number } | 
   );
 }
 
-// Composant pour effectuer le zoom effectif sur la carte
-function ZoomToEvent({ lat, lng }: { lat: number | null, lng: number | null }) {
-  const map = useMap();
-  useEffect(() => {
-    if (lat !== null && lng !== null) {
-      map.setView([lat, lng], 15, { animate: true });
-    }
-  }, [lat, lng, map]);
-  return null;
-}
+// Le composant ZoomToEvent est maintenant dans Map.tsx
 
 export default function ReservationPage() {
   const { user, loading } = useAuth();
@@ -211,7 +168,7 @@ export default function ReservationPage() {
   // La configuration des icônes est maintenant gérée par le composant LeafletIconConfig
 
   // Référence vers la carte Leaflet
-  const mapRef = useRef<LeafletMap | null>(null);
+  const mapRef = useRef<any>(null);
   // Référence vers le conteneur de la carte pour scroll
   const mapContainerRef = useRef<HTMLDivElement>(null);
   // État pour stocker la cible de zoom
@@ -559,62 +516,19 @@ export default function ReservationPage() {
                 
               </div>
               
-              {/* Carte avec lazy loading pour réduire le JavaScript initial */}
+              {/* Carte avec dynamic import et SSR désactivé */}
                 <div style={{ height: 300, width: "100%", zIndex: 1, borderRadius: '8px', overflow: 'hidden' }}>
                   {mapCenter ? (
-                    <MapContainer
-                        center={mapCenter}
-                        zoom={currentZoom}
-                        style={{ height: "100%", width: "100%", zIndex: 1 }}
-                        scrollWheelZoom={true}
-                        ref={(mapInstance: LeafletMap) => { mapRef.current = mapInstance; }}
-                      >
-                        <LeafletIconConfig />
-                        <ZoomToEvent lat={zoomTarget.lat} lng={zoomTarget.lng} />
-                        <TileLayer
-                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-                        {/* Marqueur utilisateur */}
-                        <Marker position={[position.lat, position.lng]}>
-                          <Popup>Vous êtes ici</Popup>
-                        </Marker>
-                        {/* Marqueurs événements */}
-                        {events.filter(e => {
-                          // Même filtrage que pour les listes : futurs uniquement et pas créés par l'utilisateur
-                          if (!e.date?.seconds) return false;
-                          const eventDate = new Date(e.date.seconds * 1000);
-                          const now = new Date();
-                          if (eventDate <= now) return false;
-                          if (user && e.createdBy && e.createdBy === user.uid) return false;
-                          return typeof e.lat === 'number' && typeof e.lng === 'number';
-                        }).map(event => (
-                          <Marker key={event.id} position={[event.lat as number, event.lng as number]}>
-                            <Popup>
-                              <div>
-                                <div className="font-bold">{event.name}</div>
-                                <div>{event.city} - {event.location}</div>
-                                <div>{event.date?.seconds ? new Date(event.date.seconds * 1000).toLocaleString() : ""}</div>
-                                <a
-                                  href={`https://www.google.com/maps/dir/?api=1&origin=${position.lat},${position.lng}&destination=${event.lat},${event.lng}&travelmode=driving`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 underline mt-2 block"
-                                >
-                                  Itinéraire Google Maps
-                                </a>
-                                <button
-                                  className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-                                  onClick={() => zoomToEvent(event.lat as number, event.lng as number)}
-                                  type="button"
-                                >
-                                  Zoomer sur l&apos;événement
-                                </button>
-                              </div>
-                            </Popup>
-                          </Marker>
-                        ))}
-                      </MapContainer>
+                    <Map
+                      mapCenter={mapCenter}
+                      currentZoom={currentZoom}
+                      position={position}
+                      events={events}
+                      user={user}
+                      zoomTarget={zoomTarget}
+                      zoomToEvent={zoomToEvent}
+                      mapRef={mapRef}
+                    />
                   ) : (
                     <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center">
                       <div className="text-center">
