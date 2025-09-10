@@ -11,42 +11,16 @@ export default function PushNotificationManager() {
     isSubscribed,
     isLoading,
     error,
-    subscribe,
     unsubscribe,
     needsPermission,
     token: stateToken,
+    forceActivation,
   } = usePushNotifications();
 
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
 
-  const handleSubscribe = async () => {
-    setMessage('');
-    setMessageType('');
-    
-    try {
-      console.log('🚀 Début handleSubscribe');
-      const success = await subscribe();
-      console.log('🚀 Résultat subscribe:', success);
-      
-      if (success) {
-        setMessage('Notifications push activées avec succès ! L&apos;abonnement sera mis à jour dans quelques secondes.');
-        setMessageType('success');
-        
-        // Recharger la page après 2 secondes pour voir l'état mis à jour
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      } else {
-        setMessage(error || 'Erreur lors de l\'activation des notifications');
-        setMessageType('error');
-      }
-    } catch (error) {
-      console.error('❌ Erreur handleSubscribe:', error);
-      setMessage(`Erreur lors de l'activation des notifications: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
-      setMessageType('error');
-    }
-  };
+  // Fonction supprimée car remplacée par forceActivation
 
   const handleUnsubscribe = async () => {
     setMessage('');
@@ -241,10 +215,21 @@ export default function PushNotificationManager() {
         )}
 
         <div className="flex flex-wrap gap-3">
-          {/* Bouton d'activation - seulement si vraiment pas abonné ET permission accordée */}
-          {!isSubscribed && permission.granted && (
+          {/* Bouton de force activation - visible si permission refusée ou abonnement inactif */}
+          {(!permission.granted || !isSubscribed) && (
             <Button
-              onClick={handleSubscribe}
+              onClick={async () => {
+                setMessage('');
+                setMessageType('');
+                const success = await forceActivation();
+                if (success) {
+                  setMessage('Notifications activées avec succès !');
+                  setMessageType('success');
+                } else {
+                  setMessage(error || 'Erreur lors de l\'activation des notifications');
+                  setMessageType('error');
+                }
+              }}
               disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
@@ -252,8 +237,8 @@ export default function PushNotificationManager() {
             </Button>
           )}
 
-          {/* Bouton de désactivation - visible par défaut (notifications activées par défaut) */}
-          {(isSubscribed || (!permission.denied && !needsPermission)) && (
+          {/* Bouton de désactivation - visible si abonné */}
+          {isSubscribed && permission.granted && (
             <Button
               onClick={handleUnsubscribe}
               disabled={isLoading}

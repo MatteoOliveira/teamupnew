@@ -340,9 +340,9 @@ export function usePushNotifications() {
             token: userData.fcmToken || null
           }));
           
-          // Auto-activer les notifications si l'utilisateur n'a pas encore de préférence définie
-          if (!userData.hasOwnProperty('pushNotificationsEnabled') && state.isSupported) {
-            console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
+          // Auto-activer les notifications si l'utilisateur n'a pas encore de préférence définie OU si les notifications sont désactivées
+          if ((!userData.hasOwnProperty('pushNotificationsEnabled') || userData.pushNotificationsEnabled === false) && state.isSupported) {
+            console.log('🚀 Auto-activation des notifications pour utilisateur');
             // Demander la permission automatiquement
             requestPermission().then((granted) => {
               if (granted) {
@@ -400,6 +400,41 @@ export function usePushNotifications() {
     }, 3000);
   }, [state.permission.granted]);
 
+  // Fonction pour forcer l'activation des notifications
+  const forceActivation = useCallback(async (): Promise<boolean> => {
+    if (!user || !state.isSupported) {
+      setState(prev => ({ ...prev, error: 'Utilisateur non connecté ou notifications non supportées' }));
+      return false;
+    }
+
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      console.log('🚀 Force activation des notifications');
+      
+      // Demander la permission
+      const granted = await requestPermission();
+      if (!granted) {
+        setState(prev => ({ ...prev, isLoading: false, error: 'Permission refusée par l\'utilisateur' }));
+        return false;
+      }
+
+      // Activer les notifications
+      const success = await subscribe();
+      if (success) {
+        setState(prev => ({ ...prev, isLoading: false, error: null }));
+        return true;
+      } else {
+        setState(prev => ({ ...prev, isLoading: false, error: 'Erreur lors de l\'activation' }));
+        return false;
+      }
+    } catch (error) {
+      console.error('Erreur force activation:', error);
+      setState(prev => ({ ...prev, isLoading: false, error: 'Erreur lors de l\'activation forcée' }));
+      return false;
+    }
+  }, [user, state.isSupported, requestPermission, subscribe]);
+
   return {
     // État
     ...state,
@@ -409,6 +444,7 @@ export function usePushNotifications() {
     subscribe,
     unsubscribe,
     sendTestNotification,
+    forceActivation,
     
     // Utilitaires
     canSubscribe: state.isSupported && state.permission.granted && !state.isSubscribed,
