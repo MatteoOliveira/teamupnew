@@ -10,7 +10,7 @@ import Input from '@/components/Input';
 import Button from '@/components/Button';
 import { Menu } from '@headlessui/react';
 import { getFCMToken } from '@/lib/firebase-messaging';
-import { EventData, ParticipantData, UserStats, StatsPeriod } from '@/types/stats';
+import { UserStats, StatsPeriod } from '@/types/stats';
 import { getStatsPeriod } from '@/utils/statsCalculator';
 import { useAnalytics } from '@/hooks/useAnalytics';
 // import Image from 'next/image'; // Désactivé pour éviter les erreurs 400
@@ -1085,10 +1085,10 @@ export default function ProfilePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
-                <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Score d'activité</h4>
+                <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Score d&apos;activité</h4>
               </div>
               <div className="text-2xl sm:text-3xl font-bold text-rose-600 mb-2">{userStats.activityScore}/5</div>
-              <p className="text-xs sm:text-sm text-gray-600">Niveau d'engagement</p>
+              <p className="text-xs sm:text-sm text-gray-600">Niveau d&apos;engagement</p>
             </div>
           </div>
 
@@ -1162,7 +1162,7 @@ export default function ProfilePage() {
                 <li>Votre profil utilisateur</li>
                 <li>Tous vos événements créés</li>
                 <li>Toutes vos participations à des événements</li>
-                <li>Votre historique d'activité</li>
+                <li>Votre historique d&apos;activité</li>
               </ul>
               <p className="text-sm text-gray-600 mb-4">
                 Tapez <strong>&quot;SUPPRIMER&quot;</strong> dans le champ ci-dessous pour confirmer :

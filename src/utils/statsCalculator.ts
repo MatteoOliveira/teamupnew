@@ -1,18 +1,18 @@
 import { EventData, ParticipantData, UserStats, StatsPeriod } from '@/types/stats';
 
-// Couleurs pour les graphiques
-const CHART_COLORS = {
-  blue: '#3B82F6',
-  green: '#10B981',
-  purple: '#8B5CF6',
-  yellow: '#F59E0B',
-  red: '#EF4444',
-  orange: '#F97316',
-  pink: '#EC4899',
-  indigo: '#6366F1',
-  teal: '#14B8A6',
-  gray: '#6B7280'
-};
+// Couleurs pour les graphiques (utilisé dans d'autres composants)
+// const CHART_COLORS = {
+//   blue: '#3B82F6',
+//   green: '#10B981',
+//   purple: '#8B5CF6',
+//   yellow: '#F59E0B',
+//   red: '#EF4444',
+//   orange: '#F97316',
+//   pink: '#EC4899',
+//   indigo: '#6366F1',
+//   teal: '#14B8A6',
+//   gray: '#6B7280'
+// };
 
 // const SPORT_COLORS = [
 //   CHART_COLORS.blue,
