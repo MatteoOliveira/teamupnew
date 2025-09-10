@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, getDocs, query, where, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import Button from '@/components/Button';
@@ -134,6 +134,102 @@ export default function EventEditPage() {
     }));
   };
 
+  // Fonction pour comparer les données et générer un résumé des changements
+  const generateChangeSummary = (originalEvent: Event, editedData: Record<string, unknown>) => {
+    const changes: string[] = [];
+    
+    // Comparer les champs modifiés
+    if (originalEvent.name !== (editedData.name as string)?.trim()) {
+      changes.push('le nom');
+    }
+    if (originalEvent.city !== (editedData.city as string)?.trim()) {
+      changes.push('la ville');
+    }
+    if (originalEvent.location !== (editedData.location as string)?.trim()) {
+      changes.push('le lieu');
+    }
+    if (originalEvent.address !== (editedData.address as string)?.trim()) {
+      changes.push('l\'adresse');
+    }
+    if (originalEvent.postcode !== (editedData.postcode as string)?.trim()) {
+      changes.push('le code postal');
+    }
+    if (originalEvent.sport !== (editedData.sport as string)?.trim()) {
+      changes.push('le sport');
+    }
+    if (originalEvent.description !== (editedData.description as string)?.trim()) {
+      changes.push('la description');
+    }
+    if (originalEvent.maxParticipants !== editedData.maxParticipants) {
+      changes.push('le nombre de participants');
+    }
+    if (originalEvent.contactInfo !== (editedData.contactInfo as string)?.trim()) {
+      changes.push('les informations de contact');
+    }
+    if (originalEvent.isReserved !== editedData.isReserved) {
+      changes.push('le statut de réservation');
+    }
+    
+    // Comparer les dates
+    const originalDate = originalEvent.date ? new Date(originalEvent.date.seconds * 1000).toISOString().slice(0, 16) : '';
+    const originalEndDate = originalEvent.endDate ? new Date(originalEvent.endDate.seconds * 1000).toISOString().slice(0, 16) : '';
+    
+    if (originalDate !== editedData.date) {
+      changes.push('la date de début');
+    }
+    if (originalEndDate !== editedData.endDate) {
+      changes.push('la date de fin');
+    }
+    
+    return changes;
+  };
+
+  // Fonction pour envoyer des notifications aux participants
+  const notifyParticipants = async (eventId: string, changeSummary: string[]) => {
+    try {
+      // Récupérer tous les participants
+      const participantsQuery = query(collection(db, 'event_participants'), where('eventId', '==', eventId));
+      const participantsSnapshot = await getDocs(participantsQuery);
+      
+      if (participantsSnapshot.empty) return;
+      
+      // Générer le message de notification
+      const changesText = changeSummary.length > 0 
+        ? changeSummary.join(', ') 
+        : 'des informations';
+      
+      const notificationMessage = `L'événement "${event?.name}" a été modifié : ${changesText} ont été changés.`;
+      
+      // Créer une notification pour chaque participant
+      const notifications = participantsSnapshot.docs.map(participantDoc => {
+        const participantData = participantDoc.data();
+        return {
+          userId: participantData.userId,
+          title: 'Événement modifié',
+          body: notificationMessage,
+          type: 'event_update',
+          eventId: eventId,
+          data: {
+            eventId: eventId,
+            action: 'view_event'
+          },
+          createdAt: new Date()
+        };
+      });
+      
+      // Sauvegarder les notifications dans Firestore
+      const batch = notifications.map(notification => 
+        addDoc(collection(db, 'notifications'), notification)
+      );
+      
+      await Promise.all(batch);
+      console.log(`Notifications envoyées à ${notifications.length} participants`);
+      
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi des notifications:', error);
+    }
+  };
+
   const handleSave = async () => {
     if (!event || !user) return;
 
@@ -173,6 +269,9 @@ export default function EventEditPage() {
         return;
       }
 
+      // Générer le résumé des changements AVANT la sauvegarde
+      const changeSummary = generateChangeSummary(event, editedEvent);
+      
       // Préparer les données à sauvegarder
       const updateData: Record<string, unknown> = {
         name: editedEvent.name.trim(),
@@ -201,6 +300,11 @@ export default function EventEditPage() {
 
       // Sauvegarder les modifications
       await updateDoc(doc(db, 'events', event.id), updateData);
+
+      // Envoyer des notifications aux participants si des changements ont été détectés
+      if (changeSummary.length > 0) {
+        await notifyParticipants(event.id, changeSummary);
+      }
 
       setMessage('Événement modifié avec succès !');
       setMessageType('success');
