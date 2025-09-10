@@ -4,12 +4,23 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import "leaflet/dist/leaflet.css";
 
+interface Event {
+  id: string;
+  name: string;
+  city: string;
+  location: string;
+  date?: { seconds: number };
+  lat?: number;
+  lng?: number;
+  createdBy?: string;
+}
+
 interface MapProps {
   mapCenter: [number, number];
   currentZoom: number;
   position: { lat: number; lng: number };
-  events: unknown[];
-  user: unknown;
+  events: Event[];
+  user: { uid: string } | null;
   zoomTarget: { lat: number | null; lng: number | null };
   zoomToEvent: (lat: number, lng: number) => void;
   mapRef: React.MutableRefObject<unknown>;
