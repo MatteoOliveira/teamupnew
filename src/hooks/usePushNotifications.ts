@@ -147,13 +147,19 @@ export function usePushNotifications() {
     try {
       console.log('🚀 Début subscription, permission actuelle:', state.permission);
       
+      // Vérifier que le service worker est disponible
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        console.log('🔧 Service Worker prêt:', registration.active?.scriptURL);
+      }
+      
       // Demander la permission si nécessaire
       if (!state.permission.granted) {
         console.log('📝 Demande de permission...');
         const granted = await requestPermission();
         console.log('📝 Permission accordée:', granted);
         if (!granted) {
-          setState(prev => ({ ...prev, isLoading: false }));
+          setState(prev => ({ ...prev, isLoading: false, error: 'Permission refusée par l\'utilisateur' }));
           return false;
         }
       }
@@ -161,7 +167,7 @@ export function usePushNotifications() {
       // Obtenir le token FCM
       const token = await getFCMToken();
       if (!token) {
-        setState(prev => ({ ...prev, isLoading: false }));
+        setState(prev => ({ ...prev, isLoading: false, error: 'Impossible d\'obtenir le token FCM' }));
         return false;
       }
 

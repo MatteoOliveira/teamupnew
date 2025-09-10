@@ -4,9 +4,9 @@ const withPWA = require('next-pwa')({
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
   buildExcludes: [/middleware-manifest\.json$/, /build-manifest\.json$/],
-  publicExcludes: ['!robots.txt', '!sitemap.xml'],
-  // Service worker par défaut de next-pwa - PAS de service worker personnalisé
-  // sw: 'sw-unified.js', // DÉSACTIVÉ pour restaurer la navigation
+  publicExcludes: ['!robots.txt', '!sitemap.xml', '!sw-unified.js'],
+  // Service worker unifié pour PWA + Firebase Cloud Messaging
+  sw: 'sw-unified.js', // RÉACTIVÉ pour les notifications
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,
