@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, query, where, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export interface UserProfile {
@@ -37,6 +37,7 @@ export interface ParticipationData {
 export interface MessageData {
   id: string;
   eventId: string;
+  eventName?: string;
   userId: string;
   userName: string;
   message: string;
@@ -117,16 +118,35 @@ export function useUserData(userId: string | null) {
         return dateB - dateA; // Descending order
       });
 
-      // 4. Récupérer les messages de l'utilisateur (sans orderBy temporairement)
-      const messagesQuery = query(
-        collection(db, 'messages'),
-        where('userId', '==', userId)
-      );
-      const messagesSnapshot = await getDocs(messagesQuery);
-      const messages = messagesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as MessageData[];
+      // 4. Récupérer les messages de l'utilisateur depuis event_chats
+      const messages: MessageData[] = [];
+      
+      // Récupérer tous les event_chats
+      const eventChatsSnapshot = await getDocs(collection(db, 'event_chats'));
+      
+      for (const chatDoc of eventChatsSnapshot.docs) {
+        // Vérifier si l'utilisateur est membre de ce chat
+        const memberRef = doc(db, 'event_chats', chatDoc.id, 'members', userId);
+        const memberSnap = await getDoc(memberRef);
+        
+        if (memberSnap.exists()) {
+          // Récupérer les messages de ce chat
+          const messagesQuery = query(
+            collection(db, 'event_chats', chatDoc.id, 'messages'),
+            where('senderId', '==', userId)
+          );
+          const messagesSnapshot = await getDocs(messagesQuery);
+          
+          const chatMessages = messagesSnapshot.docs.map(doc => ({
+            id: doc.id,
+            eventId: chatDoc.id,
+            eventName: chatDoc.data().eventName || 'Événement inconnu',
+            ...doc.data()
+          })) as MessageData[];
+          
+          messages.push(...chatMessages);
+        }
+      }
       
       // Trier côté client en attendant l'index Firestore
       messages.sort((a, b) => {
