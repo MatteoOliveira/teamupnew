@@ -168,7 +168,7 @@ export default function ReservationPage() {
   // La configuration des icônes est maintenant gérée par le composant LeafletIconConfig
 
   // Référence vers la carte Leaflet
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<unknown>(null);
   // Référence vers le conteneur de la carte pour scroll
   const mapContainerRef = useRef<HTMLDivElement>(null);
   // État pour stocker la cible de zoom

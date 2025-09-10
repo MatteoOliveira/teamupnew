@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import type { Map as LeafletMap } from 'leaflet';
 import "leaflet/dist/leaflet.css";
 
@@ -9,11 +9,11 @@ interface MapProps {
   mapCenter: [number, number];
   currentZoom: number;
   position: { lat: number; lng: number };
-  events: any[];
-  user: any;
+  events: unknown[];
+  user: unknown;
   zoomTarget: { lat: number | null; lng: number | null };
   zoomToEvent: (lat: number, lng: number) => void;
-  mapRef: React.MutableRefObject<LeafletMap | null>;
+  mapRef: React.MutableRefObject<unknown>;
 }
 
 // Composant pour configurer les icônes Leaflet
@@ -65,7 +65,7 @@ export default function Map({
       zoom={currentZoom}
       style={{ height: "100%", width: "100%", zIndex: 1 }}
       scrollWheelZoom={true}
-      ref={(mapInstance: LeafletMap) => { mapRef.current = mapInstance; }}
+      ref={(mapInstance: unknown) => { mapRef.current = mapInstance; }}
     >
       <LeafletIconConfig />
       <ZoomToEvent lat={zoomTarget.lat} lng={zoomTarget.lng} />
