@@ -12,9 +12,6 @@ export default function DataViewer({ userData, loading }: DataViewerProps) {
   const [showData, setShowData] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'events' | 'participations' | 'messages' | 'consent'>('profile');
 
-  // Debug
-  console.log('DataViewer: userData =', userData);
-  console.log('DataViewer: loading =', loading);
 
   if (loading) {
     return (
