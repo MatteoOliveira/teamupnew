@@ -24,12 +24,21 @@ export default function PushNotificationManager() {
     setMessage('');
     setMessageType('');
     
-    const success = await subscribe();
-    if (success) {
-      setMessage('Notifications push activées avec succès !');
-      setMessageType('success');
-    } else {
-      setMessage(error || 'Erreur lors de l\'activation des notifications');
+    try {
+      console.log('🚀 Début handleSubscribe');
+      const success = await subscribe();
+      console.log('🚀 Résultat subscribe:', success);
+      
+      if (success) {
+        setMessage('Notifications push activées avec succès !');
+        setMessageType('success');
+      } else {
+        setMessage(error || 'Erreur lors de l\'activation des notifications');
+        setMessageType('error');
+      }
+    } catch (error) {
+      console.error('❌ Erreur handleSubscribe:', error);
+      setMessage(`Erreur lors de l'activation des notifications: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
       setMessageType('error');
     }
   };

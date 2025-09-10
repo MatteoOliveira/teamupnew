@@ -187,11 +187,23 @@ export function usePushNotifications() {
 
       return true;
     } catch (error) {
-      console.error('Erreur abonnement notifications:', error);
+      console.error('❌ Erreur abonnement notifications:', error);
+      
+      // Détail de l'erreur pour debug
+      let errorMessage = 'Erreur lors de l\'abonnement aux notifications';
+      if (error instanceof Error) {
+        errorMessage = `Erreur: ${error.message}`;
+        console.error('❌ Détail erreur:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+      }
+      
       setState(prev => ({
         ...prev,
         isLoading: false,
-        error: 'Erreur lors de l\'abonnement',
+        error: errorMessage,
       }));
       return false;
     }
