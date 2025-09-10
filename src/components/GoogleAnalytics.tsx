@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useCookieConsent } from '@/hooks/useCookieConsent';
 
 // Déclaration de type pour gtag
 declare global {
@@ -12,11 +13,18 @@ declare global {
 
 export default function GoogleAnalytics() {
   const { user } = useAuth();
+  const { isAllowed, isPending } = useCookieConsent();
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Charger Google Analytics seulement si l'utilisateur est connecté
-    // et seulement en production pour éviter le JavaScript inutile en développement
-    if (user && process.env.NODE_ENV === 'production') {
+    // Ne pas charger si en cours de vérification du consentement
+    if (isPending) return;
+
+    // Charger Google Analytics seulement si :
+    // 1. L'utilisateur est connecté
+    // 2. Le consentement analytique est donné
+    // 3. En production
+    if (user && isAllowed('analytics') && process.env.NODE_ENV === 'production') {
       // Charger Google Analytics de manière asynchrone
       const loadGoogleAnalytics = async () => {
         try {
@@ -29,6 +37,7 @@ export default function GoogleAnalytics() {
               send_page_view: true,
               anonymize_ip: true,
             });
+            setIsLoaded(true);
           }
         } catch (error) {
           console.warn('Google Analytics failed to load:', error);
@@ -39,8 +48,29 @@ export default function GoogleAnalytics() {
       const timer = setTimeout(loadGoogleAnalytics, 1000);
       
       return () => clearTimeout(timer);
+    } else if (!isAllowed('analytics') && isLoaded) {
+      // Désactiver Google Analytics si le consentement est retiré
+      console.log('Google Analytics désactivé - consentement retiré');
+      setIsLoaded(false);
     }
-  }, [user]);
+  }, [user, isAllowed, isPending, isLoaded]);
+
+  // Écouter les changements de consentement
+  useEffect(() => {
+    const handleConsentChange = (event: CustomEvent) => {
+      const consent = event.detail;
+      if (!consent.analytics && isLoaded) {
+        console.log('Google Analytics désactivé - consentement modifié');
+        setIsLoaded(false);
+      }
+    };
+
+    window.addEventListener('cookieConsentChanged', handleConsentChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('cookieConsentChanged', handleConsentChange as EventListener);
+    };
+  }, [isLoaded]);
 
   return null; // Ce composant ne rend rien
 }

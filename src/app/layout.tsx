@@ -5,6 +5,7 @@ import NavBar from '@/components/NavBar';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import CookieBanner from '@/components/CookieBanner';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -152,6 +153,8 @@ export default function RootLayout({
         </nav>
         {/* Footer avec liens légaux */}
         <Footer />
+        {/* Banner de cookies pour la conformité RGPD */}
+        <CookieBanner />
         {/* Google Analytics chargé de manière conditionnelle */}
         <GoogleAnalytics />
       </body>
