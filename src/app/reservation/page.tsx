@@ -11,6 +11,7 @@ import Link from "next/link";
 import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap } from 'leaflet';
 import { useMap } from 'react-leaflet';
+import Head from 'next/head';
 
 
 interface UserProfile {
@@ -46,6 +47,48 @@ function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+}
+
+// Fonction utilitaire pour calculer les coordonnées de tuile OpenStreetMap
+function getTileCoordinates(lat: number, lng: number, zoom: number) {
+  const tileX = Math.floor((lng + 180) / 360 * Math.pow(2, zoom));
+  const tileY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
+  return { x: tileX, y: tileY };
+}
+
+// Fonction pour générer l'URL d'une tuile
+function getTileUrl(x: number, y: number, zoom: number) {
+  return `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+}
+
+// Composant pour précharger les tuiles critiques dans le head
+function TilePreloader({ position }: { position: { lat: number; lng: number } | null }) {
+  if (!position) return null;
+  
+  const zoom = 8;
+  const centerTile = getTileCoordinates(position.lat, position.lng, zoom);
+  
+  // Tuiles les plus critiques à précharger dans le head
+  const criticalTiles = [
+    { x: centerTile.x, y: centerTile.y }, // Tuile centrale
+    { x: centerTile.x + 1, y: centerTile.y }, // Adjacente droite
+    { x: centerTile.x, y: centerTile.y + 1 }, // Adjacente bas
+    { x: centerTile.x + 1, y: centerTile.y + 1 }, // Adjacente diagonale
+  ];
+  
+  return (
+    <Head>
+      {criticalTiles.map((tile, index) => (
+        <link
+          key={`tile-${tile.x}-${tile.y}`}
+          rel="preload"
+          as="image"
+          href={getTileUrl(tile.x, tile.y, zoom)}
+          fetchPriority={index === 0 ? "high" : "low"}
+        />
+      ))}
+    </Head>
+  );
 }
 
 // Composant pour effectuer le zoom effectif sur la carte
@@ -110,6 +153,41 @@ export default function ReservationPage() {
       mapContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
+
+  // Précharge des tuiles critiques pour améliorer le LCP
+  useEffect(() => {
+    if (position) {
+      const preloadCriticalTiles = () => {
+        const zoom = 8; // Zoom utilisé par la carte
+        const centerTile = getTileCoordinates(position.lat, position.lng, zoom);
+        
+        // Tuiles critiques à précharger (tuile centrale + adjacentes)
+        const criticalTiles = [
+          // Tuile centrale (position utilisateur)
+          { x: centerTile.x, y: centerTile.y },
+          // Tuiles adjacentes pour éviter les décalages
+          { x: centerTile.x + 1, y: centerTile.y },
+          { x: centerTile.x, y: centerTile.y + 1 },
+          { x: centerTile.x + 1, y: centerTile.y + 1 },
+          { x: centerTile.x - 1, y: centerTile.y },
+          { x: centerTile.x, y: centerTile.y - 1 },
+          { x: centerTile.x - 1, y: centerTile.y - 1 }
+        ];
+        
+        // Précharger chaque tuile critique
+        criticalTiles.forEach((tile, index) => {
+          setTimeout(() => {
+            const img = new Image();
+            img.src = getTileUrl(tile.x, tile.y, zoom);
+            // Précharge avec priorité élevée
+            img.loading = 'eager';
+          }, index * 50); // Chargement échelonné pour éviter la surcharge
+        });
+      };
+      
+      preloadCriticalTiles();
+    }
+  }, [position]);
 
   // Initialiser le centre de la carte directement à la position utilisateur
   useEffect(() => {
@@ -255,6 +333,8 @@ export default function ReservationPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Précharge des tuiles critiques pour améliorer le LCP */}
+      <TilePreloader position={position} />
       {/* Header Mobile minimal */}
       <div className="md:hidden flex items-center justify-center py-3 px-4 bg-white border-b border-gray-200">
         <div className="flex items-center space-x-1">
