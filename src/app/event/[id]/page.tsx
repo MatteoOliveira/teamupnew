@@ -487,27 +487,27 @@ export default function EventDetailPage() {
                         ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200' 
                         : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                     }`}>
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
                             event.createdBy === p.userId ? 'bg-blue-600' : 'bg-purple-600'
                           }`}>
                             {p.userName.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-800">{p.userName}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                              <span className="font-semibold text-gray-800 truncate">{p.userName}</span>
                               {event.createdBy === p.userId && (
-                                <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full font-medium">
+                                <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full font-medium self-start sm:self-auto">
                                   Organisateur
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600">{p.contact}</p>
+                            <p className="text-sm text-gray-600 truncate">{p.contact}</p>
                           </div>
                         </div>
                         {p.registeredAt && (
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 sm:text-right">
                             Inscrit le {new Date(p.registeredAt.seconds * 1000).toLocaleDateString('fr-FR')}
                           </div>
                         )}
