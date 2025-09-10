@@ -101,16 +101,19 @@ export function useUserData(userId: string | null) {
       });
 
       // 3. Récupérer les participations de l'utilisateur depuis event_participants
+      console.log('🔍 Debug participations - userId:', userId);
       const participationsQuery = query(
         collection(db, 'event_participants'),
         where('userId', '==', userId)
       );
       const participationsSnapshot = await getDocs(participationsQuery);
+      console.log('🔍 Debug participations - snapshot size:', participationsSnapshot.docs.length);
       const participations: ParticipationData[] = [];
       
       // Enrichir les participations avec les données de l'événement
       for (const participationDoc of participationsSnapshot.docs) {
         const participationData = participationDoc.data();
+        console.log('🔍 Debug participation data:', participationData);
         
         // Récupérer les données de l'événement
         const eventRef = doc(db, 'events', participationData.eventId);
@@ -118,6 +121,7 @@ export function useUserData(userId: string | null) {
         
         if (eventSnap.exists()) {
           const eventData = eventSnap.data();
+          console.log('🔍 Debug event data:', eventData.name);
           participations.push({
             id: participationDoc.id,
             eventId: participationData.eventId,
@@ -128,6 +132,8 @@ export function useUserData(userId: string | null) {
           });
         }
       }
+      
+      console.log('🔍 Debug final participations:', participations.length);
       
       // Trier côté client en attendant l'index Firestore
       participations.sort((a, b) => {
