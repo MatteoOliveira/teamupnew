@@ -88,7 +88,7 @@ function TilePreloader({ position }: { position: { lat: number; lng: number } | 
   
   return (
     <Head>
-      {criticalTiles.map((tile, index) => (
+      {criticalTiles.map((tile) => (
         <link
           key={`tile-${tile.x}-${tile.y}`}
           rel="preload"
