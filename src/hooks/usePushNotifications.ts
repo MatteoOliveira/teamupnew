@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
 
@@ -169,6 +169,7 @@ export function usePushNotifications() {
       setState(prev => ({
         ...prev,
         isSubscribed: true,
+        token: token,
         isLoading: false,
       }));
 
@@ -258,11 +259,26 @@ export function usePushNotifications() {
         // Vérifier les permissions actuelles
         checkPermission();
 
-        // Note: Ici on devrait vérifier l'état d'abonnement depuis Firestore
-        // Pour simplifier, on considère que l'utilisateur n'est pas abonné par défaut
-        setState(prev => ({ ...prev, isSubscribed: false }));
+        // Vérifier l'état d'abonnement depuis Firestore
+        const userDoc = await doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userDoc);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          const hasToken = !!userData.fcmToken;
+          const isEnabled = userData.pushNotificationsEnabled === true;
+          
+          setState(prev => ({ 
+            ...prev, 
+            isSubscribed: hasToken && isEnabled,
+            token: userData.fcmToken || null
+          }));
+        } else {
+          setState(prev => ({ ...prev, isSubscribed: false }));
+        }
       } catch (error) {
         console.error('Erreur initialisation état notifications:', error);
+        setState(prev => ({ ...prev, isSubscribed: false }));
       }
     };
 
@@ -309,5 +325,8 @@ export function usePushNotifications() {
     canSubscribe: state.isSupported && state.permission.granted && !state.isSubscribed,
     canUnsubscribe: state.isSubscribed,
     needsPermission: state.permission.default || state.permission.denied,
+    
+    // Token pour debug
+    token: state.token,
   };
 }

@@ -16,6 +16,7 @@ export default function PushNotificationManager() {
     canSubscribe,
     canUnsubscribe,
     needsPermission,
+    token: stateToken,
   } = usePushNotifications();
 
   const [message, setMessage] = useState('');
@@ -184,10 +185,15 @@ export default function PushNotificationManager() {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-blue-800">
-                  Permission requise
+                  📱 Comment activer les notifications ?
                 </h3>
                 <div className="mt-2 text-sm text-blue-700">
-                  <p>Vous devez d&apos;abord autoriser les notifications dans votre navigateur.</p>
+                  <p className="mb-2">Sur mobile (PWA) :</p>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>Cliquez sur &quot;Activer les notifications&quot; ci-dessous</li>
+                    <li>Autorisez dans la popup du navigateur</li>
+                    <li>Testez avec le bouton &quot;Tester sur mobile&quot;</li>
+                  </ol>
                 </div>
               </div>
             </div>
@@ -239,10 +245,19 @@ export default function PushNotificationManager() {
         {/* Test mobile */}
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <h5 className="text-sm font-medium text-blue-900 mb-2">📱 Test sur mobile</h5>
-          <p className="text-sm text-blue-700">
+          <p className="text-sm text-blue-700 mb-2">
             Utilisez le bouton &quot;Tester sur mobile&quot; pour vérifier que les notifications fonctionnent sur votre téléphone. 
             La notification apparaîtra même si l&apos;application est fermée.
           </p>
+          
+          {/* Debug info */}
+          <div className="mt-2 p-2 bg-white rounded border text-xs">
+            <div className="text-gray-600">
+              <strong>Debug :</strong> Permission: {permission.granted ? '✅ Accordée' : permission.denied ? '❌ Refusée' : '⏳ Non demandée'} | 
+              Abonnement: {isSubscribed ? '✅ Actif' : '❌ Inactif'} | 
+              Token: {stateToken ? '✅ Présent' : '❌ Absent'}
+            </div>
+          </div>
         </div>
       </div>
     </div>
