@@ -70,15 +70,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [sport, setSport] = useState('');
   const [city, setCity] = useState("");
-  // Fonction pour obtenir l'onglet initial depuis l'URL hash
-  const getInitialTab = (): 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings' => {
-    if (typeof window === 'undefined') return 'profile';
-    const hash = window.location.hash.slice(1); // Enlever le #
-    const validTabs = ['profile', 'myevents', 'cityevents', 'myregistrations', 'pastevents', 'history', 'stats', 'settings'];
-    return validTabs.includes(hash) ? hash as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings' : 'profile';
-  };
-
-  const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings'>(getInitialTab());
+  const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings'>('profile');
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [message, setMessage] = useState('');
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -120,11 +112,22 @@ export default function ProfilePage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Écouter les changements de hash dans l'URL
+  // Initialiser l'onglet depuis l'URL hash au montage
   useEffect(() => {
+    const initializeTab = () => {
+      const hash = window.location.hash.slice(1); // Enlever le #
+      const validTabs = ['profile', 'myevents', 'cityevents', 'myregistrations', 'pastevents', 'history', 'stats', 'settings'];
+      if (validTabs.includes(hash)) {
+        setActiveTab(hash as 'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings');
+      }
+    };
+
+    // Initialiser l'onglet au montage
+    initializeTab();
+
+    // Écouter les changements de hash dans l'URL
     const handleHashChange = () => {
-      const newTab = getInitialTab();
-      setActiveTab(newTab);
+      initializeTab();
     };
 
     window.addEventListener('hashchange', handleHashChange);
