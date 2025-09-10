@@ -62,9 +62,8 @@ export default function RootLayout({
 
         <link rel="apple-touch-icon" href="/icon-192x192.webp" />
         <link rel="icon" type="image/webp" sizes="32x32" href="/icon-192x192.webp" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/webp" sizes="16x16" href="/icon-192x192.webp" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="icon" type="image/webp" sizes="32x32" href="/favicon-32x32.webp" />
+        <link rel="icon" type="image/webp" sizes="16x16" href="/favicon-16x16.webp" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="mask-icon" href="/icon-192x192.webp" color="#3b82f6" />
         <link rel="shortcut icon" href="/favicon.ico" />
