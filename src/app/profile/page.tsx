@@ -13,6 +13,8 @@ import { getFCMToken } from '@/lib/firebase-messaging';
 import { UserStats, StatsPeriod } from '@/types/stats';
 import { getStatsPeriod } from '@/utils/statsCalculator';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useUserData } from '@/hooks/useUserData';
+import DataViewer from '@/components/DataViewer';
 
 // Lazy loading des composants lourds pour réduire le JavaScript initial
 // Ces composants seront utilisés quand la section statistiques sera implémentée
@@ -62,6 +64,7 @@ export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { getUserStats, trackPageView, trackProfileUpdate } = useAnalytics();
+  const { userData, loading: userDataLoading } = useUserData(user?.uid || null);
   const [name, setName] = useState('');
   const [sport, setSport] = useState('');
   const [city, setCity] = useState("");
@@ -657,6 +660,20 @@ export default function ProfilePage() {
             />
             <span className="text-black">Activer le mode sombre</span>
           </label>
+        </div>
+
+        {/* Section Droits RGPD */}
+        <div className="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
+          <h3 className="text-lg font-semibold text-blue-900 mb-4">
+            🔐 Mes Droits RGPD
+          </h3>
+          <p className="text-blue-700 text-sm mb-4">
+            Conformément au RGPD, vous disposez de droits sur vos données personnelles.
+          </p>
+          
+          <div className="space-y-4">
+            <DataViewer userData={userData} loading={userDataLoading} />
+          </div>
         </div>
 
         {/* Suppression de compte */}
