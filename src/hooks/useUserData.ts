@@ -31,7 +31,7 @@ export interface ParticipationData {
   userId: string;
   eventName: string;
   eventDate: { seconds: number } | undefined;
-  joinedAt: { seconds: number };
+  joinedAt: { seconds: number } | Date;
 }
 
 export interface MessageData {
@@ -100,21 +100,39 @@ export function useUserData(userId: string | null) {
         return dateB - dateA; // Descending order
       });
 
-      // 3. Récupérer les participations de l'utilisateur (sans orderBy temporairement)
+      // 3. Récupérer les participations de l'utilisateur depuis event_participants
       const participationsQuery = query(
-        collection(db, 'participations'),
+        collection(db, 'event_participants'),
         where('userId', '==', userId)
       );
       const participationsSnapshot = await getDocs(participationsQuery);
-      const participations = participationsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as ParticipationData[];
+      const participations: ParticipationData[] = [];
+      
+      // Enrichir les participations avec les données de l'événement
+      for (const participationDoc of participationsSnapshot.docs) {
+        const participationData = participationDoc.data();
+        
+        // Récupérer les données de l'événement
+        const eventRef = doc(db, 'events', participationData.eventId);
+        const eventSnap = await getDoc(eventRef);
+        
+        if (eventSnap.exists()) {
+          const eventData = eventSnap.data();
+          participations.push({
+            id: participationDoc.id,
+            eventId: participationData.eventId,
+            userId: participationData.userId,
+            eventName: eventData.name || 'Événement inconnu',
+            eventDate: eventData.date,
+            joinedAt: participationData.registeredAt
+          });
+        }
+      }
       
       // Trier côté client en attendant l'index Firestore
       participations.sort((a, b) => {
-        const dateA = a.joinedAt?.seconds || 0;
-        const dateB = b.joinedAt?.seconds || 0;
+        const dateA = a.joinedAt instanceof Date ? a.joinedAt.getTime() / 1000 : (a.joinedAt?.seconds || 0);
+        const dateB = b.joinedAt instanceof Date ? b.joinedAt.getTime() / 1000 : (b.joinedAt?.seconds || 0);
         return dateB - dateA; // Descending order
       });
 

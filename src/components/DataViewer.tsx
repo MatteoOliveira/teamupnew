@@ -46,7 +46,10 @@ export default function DataViewer({ userData, loading }: DataViewerProps) {
     );
   }
 
-  const formatDate = (timestamp: { seconds: number }) => {
+  const formatDate = (timestamp: { seconds: number } | Date) => {
+    if (timestamp instanceof Date) {
+      return timestamp.toLocaleString('fr-FR');
+    }
     return new Date(timestamp.seconds * 1000).toLocaleString('fr-FR');
   };
 
