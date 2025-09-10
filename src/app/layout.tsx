@@ -78,11 +78,23 @@ export default function RootLayout({
         {/* Preconnect pour établir la connexion plus rapidement */}
         <link rel="preconnect" href="https://tile.openstreetmap.org" crossOrigin="anonymous" />
         
-        {/* Précharge globale des tuiles les plus communes en France (zoom 8) */}
-        <link rel="preload" as="image" href="https://tile.openstreetmap.org/8/129/88.png" fetchPriority="high" crossOrigin="anonymous" />
-        <link rel="preload" as="image" href="https://tile.openstreetmap.org/8/130/88.png" fetchPriority="high" crossOrigin="anonymous" />
-        <link rel="preload" as="image" href="https://tile.openstreetmap.org/8/129/89.png" fetchPriority="high" crossOrigin="anonymous" />
-        <link rel="preload" as="image" href="https://tile.openstreetmap.org/8/130/89.png" fetchPriority="high" crossOrigin="anonymous" />
+        {/* Précharge globale ultra-agressive des tuiles les plus communes en France (zoom 8) */}
+        {/* Tuile critique 129/88 - Tous les serveurs */}
+        <link rel="preload" as="image" href="https://a.tile.openstreetmap.org/8/129/88.png" fetchPriority="high" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="https://b.tile.openstreetmap.org/8/129/88.png" fetchPriority="high" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="https://c.tile.openstreetmap.org/8/129/88.png" fetchPriority="high" crossOrigin="anonymous" />
+        
+        {/* Tuile critique 130/88 - Serveurs multiples */}
+        <link rel="preload" as="image" href="https://a.tile.openstreetmap.org/8/130/88.png" fetchPriority="high" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="https://b.tile.openstreetmap.org/8/130/88.png" fetchPriority="high" crossOrigin="anonymous" />
+        
+        {/* Tuile critique 129/89 - Serveurs multiples */}
+        <link rel="preload" as="image" href="https://a.tile.openstreetmap.org/8/129/89.png" fetchPriority="high" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="https://b.tile.openstreetmap.org/8/129/89.png" fetchPriority="high" crossOrigin="anonymous" />
+        
+        {/* Tuile critique 130/89 - Serveurs multiples */}
+        <link rel="preload" as="image" href="https://a.tile.openstreetmap.org/8/130/89.png" fetchPriority="high" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="https://b.tile.openstreetmap.org/8/130/89.png" fetchPriority="high" crossOrigin="anonymous" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Header />

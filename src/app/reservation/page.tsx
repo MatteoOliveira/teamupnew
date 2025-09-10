@@ -56,48 +56,92 @@ function getTileCoordinates(lat: number, lng: number, zoom: number) {
   return { x: tileX, y: tileY };
 }
 
-// Fonction pour générer l'URL d'une tuile
-function getTileUrl(x: number, y: number, zoom: number) {
+// Fonction pour générer l'URL d'une tuile avec CDN alternatifs plus rapides
+function getTileUrl(x: number, y: number, zoom: number, useAlternatives = true) {
+  if (useAlternatives) {
+    // CDN alternatifs plus rapides (Cloudflare, etc.)
+    const alternatives = [
+      `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`, // Original
+      `https://a.tile.openstreetmap.org/${zoom}/${x}/${y}.png`, // Serveur A
+      `https://b.tile.openstreetmap.org/${zoom}/${x}/${y}.png`, // Serveur B
+      `https://c.tile.openstreetmap.org/${zoom}/${x}/${y}.png`, // Serveur C
+    ];
+    
+    // Utiliser un serveur différent pour éviter la surcharge
+    const serverIndex = (x + y + zoom) % alternatives.length;
+    return alternatives[serverIndex];
+  }
+  
   return `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
 }
 
-// Composant pour précharger les tuiles critiques dans le head
+// Fonction pour précharger une tuile avec fallback
+function preloadTileWithFallback(x: number, y: number, zoom: number) {
+  const primaryUrl = getTileUrl(x, y, zoom, true);
+  const fallbackUrls = [
+    `https://a.tile.openstreetmap.org/${zoom}/${x}/${y}.png`,
+    `https://b.tile.openstreetmap.org/${zoom}/${x}/${y}.png`,
+    `https://c.tile.openstreetmap.org/${zoom}/${x}/${y}.png`,
+  ];
+  
+  // Précharger la tuile principale
+  const img = new Image();
+  img.src = primaryUrl;
+  img.loading = 'eager';
+  img.fetchPriority = 'high';
+  img.crossOrigin = 'anonymous';
+  
+  // Précharger les fallbacks en arrière-plan
+  fallbackUrls.forEach((url, index) => {
+    setTimeout(() => {
+      const fallbackImg = new Image();
+      fallbackImg.src = url;
+      fallbackImg.loading = 'lazy';
+      fallbackImg.fetchPriority = 'low';
+      fallbackImg.crossOrigin = 'anonymous';
+    }, index * 100);
+  });
+}
+
+// Composant pour précharger les tuiles critiques dans le head avec CDN alternatifs
 function TilePreloader({ position }: { position: { lat: number; lng: number } | null }) {
   if (!position) return null;
   
   const zoom = 8;
   const centerTile = getTileCoordinates(position.lat, position.lng, zoom);
   
-  // Tuiles critiques étendues pour une précharge agressive
+  // Tuiles critiques ultra-agressives avec CDN alternatifs
   const criticalTiles = [
-    // Tuile centrale (priorité maximale)
-    { x: centerTile.x, y: centerTile.y, priority: "high" },
+    // Tuile centrale (priorité maximale) - Précharger sur tous les serveurs
+    { x: centerTile.x, y: centerTile.y, priority: "high", servers: ["a", "b", "c"] },
     // Tuiles adjacentes immédiates (priorité élevée)
-    { x: centerTile.x + 1, y: centerTile.y, priority: "high" },
-    { x: centerTile.x, y: centerTile.y + 1, priority: "high" },
-    { x: centerTile.x + 1, y: centerTile.y + 1, priority: "high" },
-    { x: centerTile.x - 1, y: centerTile.y, priority: "high" },
-    { x: centerTile.x, y: centerTile.y - 1, priority: "high" },
-    { x: centerTile.x - 1, y: centerTile.y - 1, priority: "high" },
+    { x: centerTile.x + 1, y: centerTile.y, priority: "high", servers: ["a", "b"] },
+    { x: centerTile.x, y: centerTile.y + 1, priority: "high", servers: ["a", "b"] },
+    { x: centerTile.x + 1, y: centerTile.y + 1, priority: "high", servers: ["a", "b"] },
+    { x: centerTile.x - 1, y: centerTile.y, priority: "high", servers: ["a", "b"] },
+    { x: centerTile.x, y: centerTile.y - 1, priority: "high", servers: ["a", "b"] },
+    { x: centerTile.x - 1, y: centerTile.y - 1, priority: "high", servers: ["a", "b"] },
     // Tuiles de contexte (priorité moyenne)
-    { x: centerTile.x + 2, y: centerTile.y, priority: "low" },
-    { x: centerTile.x, y: centerTile.y + 2, priority: "low" },
-    { x: centerTile.x - 2, y: centerTile.y, priority: "low" },
-    { x: centerTile.x, y: centerTile.y - 2, priority: "low" },
+    { x: centerTile.x + 2, y: centerTile.y, priority: "low", servers: ["a"] },
+    { x: centerTile.x, y: centerTile.y + 2, priority: "low", servers: ["a"] },
+    { x: centerTile.x - 2, y: centerTile.y, priority: "low", servers: ["a"] },
+    { x: centerTile.x, y: centerTile.y - 2, priority: "low", servers: ["a"] },
   ];
   
   return (
     <Head>
-      {criticalTiles.map((tile) => (
-        <link
-          key={`tile-${tile.x}-${tile.y}`}
-          rel="preload"
-          as="image"
-          href={getTileUrl(tile.x, tile.y, zoom)}
-          fetchPriority={tile.priority as "high" | "low" | "auto"}
-          crossOrigin="anonymous"
-        />
-      ))}
+      {criticalTiles.map((tile) => 
+        tile.servers.map((server) => (
+          <link
+            key={`tile-${tile.x}-${tile.y}-${server}`}
+            rel="preload"
+            as="image"
+            href={`https://${server}.tile.openstreetmap.org/${zoom}/${tile.x}/${tile.y}.png`}
+            fetchPriority={tile.priority as "high" | "low" | "auto"}
+            crossOrigin="anonymous"
+          />
+        ))
+      )}
     </Head>
   );
 }
@@ -165,53 +209,65 @@ export default function ReservationPage() {
     }
   };
 
-  // Précharge agressive des tuiles critiques pour améliorer le LCP
+  // Précharge ultra-agressive des tuiles critiques avec CDN alternatifs
   useEffect(() => {
     if (position) {
-      const preloadCriticalTiles = () => {
+      const preloadCriticalTilesUltraAggressive = () => {
         const zoom = 8; // Zoom utilisé par la carte
         const centerTile = getTileCoordinates(position.lat, position.lng, zoom);
         
-        // Tuiles critiques étendues pour une précharge agressive
+        // Tuiles critiques ultra-agressives avec CDN alternatifs
         const criticalTiles = [
-          // Phase 1: Tuile centrale (priorité maximale)
-          { x: centerTile.x, y: centerTile.y, phase: 1 },
-          // Phase 2: Tuiles adjacentes immédiates (priorité élevée)
-          { x: centerTile.x + 1, y: centerTile.y, phase: 2 },
-          { x: centerTile.x, y: centerTile.y + 1, phase: 2 },
-          { x: centerTile.x + 1, y: centerTile.y + 1, phase: 2 },
-          { x: centerTile.x - 1, y: centerTile.y, phase: 2 },
-          { x: centerTile.x, y: centerTile.y - 1, phase: 2 },
-          { x: centerTile.x - 1, y: centerTile.y - 1, phase: 2 },
-          // Phase 3: Tuiles de contexte (priorité moyenne)
-          { x: centerTile.x + 2, y: centerTile.y, phase: 3 },
-          { x: centerTile.x, y: centerTile.y + 2, phase: 3 },
-          { x: centerTile.x - 2, y: centerTile.y, phase: 3 },
-          { x: centerTile.x, y: centerTile.y - 2, phase: 3 },
-          { x: centerTile.x + 2, y: centerTile.y + 1, phase: 3 },
-          { x: centerTile.x + 1, y: centerTile.y + 2, phase: 3 },
-          { x: centerTile.x - 2, y: centerTile.y - 1, phase: 3 },
-          { x: centerTile.x - 1, y: centerTile.y - 2, phase: 3 },
+          // Phase 1: Tuile centrale (priorité maximale) - Tous les serveurs
+          { x: centerTile.x, y: centerTile.y, phase: 1, servers: ["a", "b", "c"] },
+          // Phase 2: Tuiles adjacentes immédiates (priorité élevée) - Serveurs multiples
+          { x: centerTile.x + 1, y: centerTile.y, phase: 2, servers: ["a", "b"] },
+          { x: centerTile.x, y: centerTile.y + 1, phase: 2, servers: ["a", "b"] },
+          { x: centerTile.x + 1, y: centerTile.y + 1, phase: 2, servers: ["a", "b"] },
+          { x: centerTile.x - 1, y: centerTile.y, phase: 2, servers: ["a", "b"] },
+          { x: centerTile.x, y: centerTile.y - 1, phase: 2, servers: ["a", "b"] },
+          { x: centerTile.x - 1, y: centerTile.y - 1, phase: 2, servers: ["a", "b"] },
+          // Phase 3: Tuiles de contexte (priorité moyenne) - Serveur principal
+          { x: centerTile.x + 2, y: centerTile.y, phase: 3, servers: ["a"] },
+          { x: centerTile.x, y: centerTile.y + 2, phase: 3, servers: ["a"] },
+          { x: centerTile.x - 2, y: centerTile.y, phase: 3, servers: ["a"] },
+          { x: centerTile.x, y: centerTile.y - 2, phase: 3, servers: ["a"] },
+          { x: centerTile.x + 2, y: centerTile.y + 1, phase: 3, servers: ["a"] },
+          { x: centerTile.x + 1, y: centerTile.y + 2, phase: 3, servers: ["a"] },
+          { x: centerTile.x - 2, y: centerTile.y - 1, phase: 3, servers: ["a"] },
+          { x: centerTile.x - 1, y: centerTile.y - 2, phase: 3, servers: ["a"] },
         ];
         
-        // Précharger par phases pour optimiser la priorité réseau
+        // Précharger par phases avec CDN alternatifs
         criticalTiles.forEach((tile, index) => {
-          const delay = tile.phase === 1 ? 0 : tile.phase === 2 ? 100 : 200;
+          const delay = tile.phase === 1 ? 0 : tile.phase === 2 ? 50 : 100;
           
-          setTimeout(() => {
-            const img = new Image();
-            img.src = getTileUrl(tile.x, tile.y, zoom);
-            // Précharge avec priorité maximale
-            img.loading = 'eager';
-            img.fetchPriority = tile.phase === 1 ? 'high' : tile.phase === 2 ? 'high' : 'low';
-            // CrossOrigin pour éviter les problèmes CORS
-            img.crossOrigin = 'anonymous';
-          }, delay + (index * 25)); // Chargement échelonné optimisé
+          tile.servers.forEach((server, serverIndex) => {
+            setTimeout(() => {
+              const img = new Image();
+              img.src = `https://${server}.tile.openstreetmap.org/${zoom}/${tile.x}/${tile.y}.png`;
+              // Précharge avec priorité maximale
+              img.loading = 'eager';
+              img.fetchPriority = tile.phase === 1 ? 'high' : tile.phase === 2 ? 'high' : 'low';
+              // CrossOrigin pour éviter les problèmes CORS
+              img.crossOrigin = 'anonymous';
+              
+              // Gestion d'erreur avec fallback
+              img.onerror = () => {
+                console.warn(`Failed to load tile from ${server}, trying fallback`);
+                const fallbackImg = new Image();
+                fallbackImg.src = getTileUrl(tile.x, tile.y, zoom, true);
+                fallbackImg.loading = 'eager';
+                fallbackImg.fetchPriority = 'high';
+                fallbackImg.crossOrigin = 'anonymous';
+              };
+            }, delay + (index * 15) + (serverIndex * 10)); // Chargement ultra-échelonné
+          });
         });
       };
       
-      // Démarrer la précharge immédiatement
-      preloadCriticalTiles();
+      // Démarrer la précharge ultra-agressive immédiatement
+      preloadCriticalTilesUltraAggressive();
     }
   }, [position]);
 
