@@ -100,12 +100,9 @@ export default function ReservationPage() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   // État pour stocker la cible de zoom
   const [zoomTarget, setZoomTarget] = useState<{lat: number|null, lng: number|null}>({lat: null, lng: null});
-  // État pour le lazy loading de la carte
-  const [isMapVisible, setIsMapVisible] = useState(false);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [currentZoom, setCurrentZoom] = useState(8); // Commencer avec zoom local
+  // État simplifié pour la carte
+  const [currentZoom, setCurrentZoom] = useState(8);
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
-  const [loadingPhase, setLoadingPhase] = useState<'local' | 'context' | 'complete'>('local');
   // Fonction pour zoomer sur un événement et scroller vers la carte
   const zoomToEvent = (lat: number, lng: number) => {
     setZoomTarget({ lat, lng });
@@ -113,78 +110,6 @@ export default function ReservationPage() {
       mapContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
-
-  // Précharge progressive : Position utilisateur → zone étendue
-  useEffect(() => {
-    if (position && isMapVisible) {
-      const preloadTilesProgressive = () => {
-        const lat = position.lat;
-        const lng = position.lng;
-        
-        // Phase 1: Charger la tuile centrale (zoom 8) - Position utilisateur
-        setLoadingPhase('local');
-        const centerZoom = 8;
-        const centerTileX = Math.floor((lng + 180) / 360 * Math.pow(2, centerZoom));
-        const centerTileY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, centerZoom));
-        
-        // Charger d'abord la tuile centrale (position utilisateur)
-        const centerImg = new Image();
-        centerImg.src = `https://tile.openstreetmap.org/${centerZoom}/${centerTileX}/${centerTileY}.png`;
-        
-        // Phase 2: Après 200ms, charger les tuiles adjacentes
-        setTimeout(() => {
-          const adjacentTiles = [
-            { x: centerTileX + 1, y: centerTileY },
-            { x: centerTileX, y: centerTileY + 1 },
-            { x: centerTileX + 1, y: centerTileY + 1 },
-            { x: centerTileX - 1, y: centerTileY },
-            { x: centerTileX, y: centerTileY - 1 },
-            { x: centerTileX - 1, y: centerTileY - 1 }
-          ];
-          
-          adjacentTiles.forEach((tile, index) => {
-            setTimeout(() => {
-              const img = new Image();
-              img.src = `https://tile.openstreetmap.org/${centerZoom}/${tile.x}/${tile.y}.png`;
-            }, index * 100);
-          });
-        }, 200);
-        
-        // Phase 3: Après 800ms, charger les tuiles de zoom plus faible pour le contexte
-        setTimeout(() => {
-          setLoadingPhase('context');
-          const contextZoom = 7;
-          const contextTileX = Math.floor((lng + 180) / 360 * Math.pow(2, contextZoom));
-          const contextTileY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, contextZoom));
-          
-          // Charger les tuiles de contexte (zoom 7)
-          const contextTiles = [
-            { x: contextTileX, y: contextTileY },
-            { x: contextTileX + 1, y: contextTileY },
-            { x: contextTileX, y: contextTileY + 1 },
-            { x: contextTileX + 1, y: contextTileY + 1 },
-            { x: contextTileX - 1, y: contextTileY },
-            { x: contextTileX, y: contextTileY - 1 },
-            { x: contextTileX - 1, y: contextTileY - 1 }
-          ];
-          
-          contextTiles.forEach((tile, index) => {
-            setTimeout(() => {
-              const img = new Image();
-              img.src = `https://tile.openstreetmap.org/${contextZoom}/${tile.x}/${tile.y}.png`;
-            }, index * 150);
-          });
-          
-          // Phase 4: Marquer comme terminé après 1.5 secondes
-          setTimeout(() => {
-            setLoadingPhase('complete');
-          }, 1500);
-        }, 800);
-      };
-      
-      preloadTilesProgressive();
-    }
-  }, [position, isMapVisible]);
 
   // Initialiser le centre de la carte directement à la position utilisateur
   useEffect(() => {
@@ -194,35 +119,6 @@ export default function ReservationPage() {
       setCurrentZoom(8);
     }
   }, [position]);
-
-  // Intersection Observer pour le lazy loading de la carte
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !isMapVisible) {
-            setIsMapVisible(true);
-            // Charger immédiatement la carte (pas de délai)
-            setIsMapLoaded(true);
-          }
-        });
-      },
-      { 
-        rootMargin: '300px', // Commencer à charger plus tôt
-        threshold: 0.1 
-      }
-    );
-
-    if (mapContainerRef.current) {
-      observer.observe(mapContainerRef.current);
-    }
-
-    return () => {
-      if (mapContainerRef.current) {
-        observer.unobserve(mapContainerRef.current);
-      }
-    };
-  }, [isMapVisible]);
 
   const loadUserProfile = useCallback(async () => {
     if (!user) return;
@@ -481,39 +377,11 @@ export default function ReservationPage() {
                   <h2 className="text-lg font-bold text-gray-900">Carte des événements</h2>
                 </div>
                 
-                {/* Indicateur de progression */}
-                {isMapVisible && loadingPhase !== 'complete' && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                    <span>
-                      {loadingPhase === 'local' && 'Chargement de votre zone...'}
-                      {loadingPhase === 'context' && 'Chargement du contexte...'}
-                    </span>
-                  </div>
-                )}
               </div>
               
-              {/* Placeholder pendant le chargement */}
-              {!isMapVisible && (
-                <div 
-                  className="w-full bg-gray-100 rounded-lg flex items-center justify-center"
-                  style={{ height: 300 }}
-                >
-                  <div className="text-center">
-                    <div className="w-8 h-8 mx-auto mb-2 text-blue-500 animate-pulse">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                      </svg>
-                    </div>
-                    <p className="text-gray-500 text-sm">Chargement de la carte...</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Carte réelle avec lazy loading */}
-              {isMapVisible && (
+              {/* Carte simplifiée - chargement direct */}
                 <div style={{ height: 300, width: "100%", zIndex: 1, borderRadius: '8px', overflow: 'hidden' }}>
-                  {isMapLoaded && mapCenter ? (
+                  {mapCenter ? (
                     <MapContainer
                       center={mapCenter}
                       zoom={currentZoom}
@@ -525,7 +393,6 @@ export default function ReservationPage() {
                       <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        loading="lazy"
                       />
                 {/* Marqueur utilisateur */}
                 <Marker position={[position.lat, position.lng]}>
@@ -580,7 +447,6 @@ export default function ReservationPage() {
                     </div>
                   )}
                 </div>
-              )}
             </div>
           </div>
         )}
