@@ -16,6 +16,7 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import { useUserData } from '@/hooks/useUserData';
 import DataViewer from '@/components/DataViewer';
 import DataEditor from '@/components/DataEditor';
+import DataExporter from '@/components/DataExporter';
 
 // Lazy loading des composants lourds pour réduire le JavaScript initial
 // Ces composants seront utilisés quand la section statistiques sera implémentée
@@ -711,6 +712,7 @@ export default function ProfilePage() {
                 window.location.reload();
               }} 
             />
+            <DataExporter userData={userData} />
           </div>
         </div>
 
