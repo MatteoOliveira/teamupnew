@@ -28,6 +28,17 @@ interface Event {
   isReserved?: boolean;
 }
 
+interface AddressSuggestion {
+  properties: {
+    label: string;
+    city: string;
+    postcode: string;
+  };
+  geometry: {
+    coordinates: [number, number];
+  };
+}
+
 export default function EventEditPage() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -37,6 +48,11 @@ export default function EventEditPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+  
+  // États pour l'autocomplétion Google Maps
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isAddressSelected, setIsAddressSelected] = useState(false);
 
   // États pour l'édition
   const [editedEvent, setEditedEvent] = useState({
@@ -127,10 +143,69 @@ export default function EventEditPage() {
     fetchEvent();
   }, [id, user]);
 
+  // Gestionnaire pour fermer les suggestions quand on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.address-suggestions') && !target.closest('input[type="text"]')) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleInputChange = (field: string, value: string | number | boolean) => {
     setEditedEvent(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  // Fonction d'autocomplétion Google Maps
+  const searchAddress = async (query: string) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&type=housenumber&autocomplete=1`
+      );
+      const data = await response.json();
+      setAddressSuggestions(data.features || []);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error("Erreur lors de la recherche d'adresse:", error);
+    }
+  };
+
+  // Fonction pour sélectionner une adresse
+  const selectAddress = (suggestion: AddressSuggestion) => {
+    const { properties } = suggestion;
+    setEditedEvent(prev => ({
+      ...prev,
+      address: properties.label,
+      city: properties.city,
+      postcode: properties.postcode
+    }));
+    setIsAddressSelected(true);
+    setShowSuggestions(false);
+    setAddressSuggestions([]);
+  };
+
+  // Fonction pour réinitialiser la sélection d'adresse
+  const resetAddressSelection = () => {
+    setIsAddressSelected(false);
+    setEditedEvent(prev => ({
+      ...prev,
+      city: '',
+      postcode: ''
     }));
   };
 
@@ -431,16 +506,58 @@ export default function EventEditPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Adresse
                 </label>
-                <Input
+                <input
                   type="text"
+                  placeholder="Ex: 10 rue de Paris"
                   value={editedEvent.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  placeholder="Ex: 123 Rue de la Paix"
+                  onChange={(e) => {
+                    handleInputChange('address', e.target.value);
+                    searchAddress(e.target.value);
+                    if (isAddressSelected) {
+                      resetAddressSelection();
+                    }
+                  }}
+                  onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
+                  className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
+                
+                {/* Bouton de réinitialisation */}
+                {isAddressSelected && (
+                  <button
+                    type="button"
+                    onClick={resetAddressSelection}
+                    className="absolute right-3 top-8 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Réinitialiser l'adresse"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+                
+                {/* Suggestions d'adresses */}
+                {showSuggestions && addressSuggestions.length > 0 && (
+                  <div className="address-suggestions absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {addressSuggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        onClick={() => selectAddress(suggestion)}
+                      >
+                        <div className="text-sm font-medium text-gray-900">
+                          {suggestion.properties.label}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {suggestion.properties.city} {suggestion.properties.postcode}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
