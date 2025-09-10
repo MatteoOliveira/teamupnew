@@ -4,7 +4,9 @@ const withPWA = require('next-pwa')({
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
   buildExcludes: [/middleware-manifest\.json$/, /build-manifest\.json$/],
-  publicExcludes: ['!robots.txt', '!sitemap.xml'],
+  publicExcludes: ['!robots.txt', '!sitemap.xml', '!firebase-messaging-sw.js'],
+  // Utiliser notre service worker personnalisé pour les notifications
+  sw: 'firebase-messaging-sw.js',
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,

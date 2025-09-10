@@ -1,0 +1,228 @@
+'use client';
+
+import { useState } from 'react';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import Button from '@/components/Button';
+
+export default function PushNotificationManager() {
+  const {
+    isSupported,
+    permission,
+    isSubscribed,
+    isLoading,
+    error,
+    subscribe,
+    unsubscribe,
+    sendTestNotification,
+    canSubscribe,
+    canUnsubscribe,
+    needsPermission,
+  } = usePushNotifications();
+
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+
+  const handleSubscribe = async () => {
+    setMessage('');
+    setMessageType('');
+    
+    const success = await subscribe();
+    if (success) {
+      setMessage('Notifications push activées avec succès !');
+      setMessageType('success');
+    } else {
+      setMessage(error || 'Erreur lors de l\'activation des notifications');
+      setMessageType('error');
+    }
+  };
+
+  const handleUnsubscribe = async () => {
+    setMessage('');
+    setMessageType('');
+    
+    const success = await unsubscribe();
+    if (success) {
+      setMessage('Notifications push désactivées avec succès !');
+      setMessageType('success');
+    } else {
+      setMessage(error || 'Erreur lors de la désactivation des notifications');
+      setMessageType('error');
+    }
+  };
+
+  const handleTestNotification = () => {
+    setMessage('');
+    setMessageType('');
+    
+    try {
+      sendTestNotification();
+      setMessage('Notification de test envoyée !');
+      setMessageType('success');
+    } catch {
+      setMessage('Erreur lors de l\'envoi de la notification de test');
+      setMessageType('error');
+    }
+  };
+
+  if (!isSupported) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">🔔 Notifications Push</h3>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800">
+                Notifications non supportées
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>Votre navigateur ne supporte pas les notifications push. Essayez avec Chrome, Firefox ou Safari.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">🔔 Notifications Push</h3>
+      
+      {message && (
+        <div className={`p-3 mb-4 rounded-md text-sm ${
+          messageType === 'success' 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Erreur
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* État des permissions */}
+      <div className="mb-6">
+        <h4 className="text-md font-medium text-gray-900 mb-3">État des permissions</h4>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span className="text-sm text-gray-700">Support des notifications</span>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              isSupported ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}>
+              {isSupported ? 'Supporté' : 'Non supporté'}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span className="text-sm text-gray-700">Permission accordée</span>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              permission.granted ? 'bg-green-100 text-green-800' : 
+              permission.denied ? 'bg-red-100 text-red-800' : 
+              'bg-yellow-100 text-yellow-800'
+            }`}>
+              {permission.granted ? 'Accordée' : 
+               permission.denied ? 'Refusée' : 'Non demandée'}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span className="text-sm text-gray-700">Abonnement actif</span>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              isSubscribed ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+            }`}>
+              {isSubscribed ? 'Actif' : 'Inactif'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="space-y-4">
+        {needsPermission && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">
+                  Permission requise
+                </h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <p>Vous devez d&apos;abord autoriser les notifications dans votre navigateur.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-3">
+          {canSubscribe && (
+            <Button
+              onClick={handleSubscribe}
+              disabled={isLoading}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isLoading ? 'Activation...' : 'Activer les notifications'}
+            </Button>
+          )}
+
+          {canUnsubscribe && (
+            <Button
+              onClick={handleUnsubscribe}
+              disabled={isLoading}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isLoading ? 'Désactivation...' : 'Désactiver les notifications'}
+            </Button>
+          )}
+
+          {permission.granted && (
+            <Button
+              onClick={handleTestNotification}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Tester la notification
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Informations */}
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <h4 className="text-sm font-medium text-gray-900 mb-2">À propos des notifications</h4>
+        <ul className="text-sm text-gray-600 space-y-1">
+          <li>• Recevez des rappels pour vos événements</li>
+          <li>• Soyez notifié des nouveaux messages</li>
+          <li>• Restez informé des changements d&apos;événements</li>
+          <li>• Les notifications fonctionnent même quand l&apos;app est fermée</li>
+        </ul>
+      </div>
+    </div>
+  );
+}

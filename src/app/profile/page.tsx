@@ -18,6 +18,7 @@ import DataViewer from '@/components/DataViewer';
 import DataEditor from '@/components/DataEditor';
 import DataExporter from '@/components/DataExporter';
 import DataPreferences from '@/components/DataPreferences';
+import PushNotificationManager from '@/components/PushNotificationManager';
 
 // Lazy loading des composants lourds pour réduire le JavaScript initial
 // Ces composants seront utilisés quand la section statistiques sera implémentée
@@ -715,6 +716,9 @@ export default function ProfilePage() {
             />
             <DataExporter userData={userData} />
             <DataPreferences />
+            
+            {/* Notifications Push */}
+            <PushNotificationManager />
           </div>
         </div>
 
