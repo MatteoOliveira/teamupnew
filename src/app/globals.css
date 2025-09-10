@@ -39,6 +39,27 @@ img {
   }
 }
 
+/* Optimisations pour les tuiles de carte */
+.leaflet-tile {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  will-change: transform;
+}
+
+/* Amélioration du rendu des cartes */
+.leaflet-container {
+  background: #f8f9fa;
+}
+
+.leaflet-tile-container {
+  will-change: transform;
+}
+
+/* Optimisation des transitions de carte */
+.leaflet-zoom-animated {
+  transition: transform 0.25s ease-in-out;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -100,6 +100,9 @@ export default function ReservationPage() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   // État pour stocker la cible de zoom
   const [zoomTarget, setZoomTarget] = useState<{lat: number|null, lng: number|null}>({lat: null, lng: null});
+  // État pour le lazy loading de la carte
+  const [isMapVisible, setIsMapVisible] = useState(false);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
   // Fonction pour zoomer sur un événement et scroller vers la carte
   const zoomToEvent = (lat: number, lng: number) => {
     setZoomTarget({ lat, lng });
@@ -107,6 +110,71 @@ export default function ReservationPage() {
       mapContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
+
+  // Précharge des tuiles critiques
+  useEffect(() => {
+    if (position && isMapVisible) {
+      // Précharger les tuiles critiques autour de la position de l'utilisateur
+      const preloadTiles = () => {
+        const zoom = 8;
+        const lat = position.lat;
+        const lng = position.lng;
+        
+        // Calculer les coordonnées de tuile
+        const tileX = Math.floor((lng + 180) / 360 * Math.pow(2, zoom));
+        const tileY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
+        
+        // Précharger les tuiles autour de la position
+        const tiles = [
+          { x: tileX, y: tileY },
+          { x: tileX + 1, y: tileY },
+          { x: tileX, y: tileY + 1 },
+          { x: tileX + 1, y: tileY + 1 },
+          { x: tileX - 1, y: tileY },
+          { x: tileX, y: tileY - 1 },
+          { x: tileX - 1, y: tileY - 1 }
+        ];
+        
+        tiles.forEach(tile => {
+          const img = new Image();
+          img.src = `https://tile.openstreetmap.org/${zoom}/${tile.x}/${tile.y}.png`;
+        });
+      };
+      
+      preloadTiles();
+    }
+  }, [position, isMapVisible]);
+
+  // Intersection Observer pour le lazy loading de la carte
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isMapVisible) {
+            setIsMapVisible(true);
+            // Précharger les tuiles critiques après un court délai
+            setTimeout(() => {
+              setIsMapLoaded(true);
+            }, 100);
+          }
+        });
+      },
+      { 
+        rootMargin: '200px', // Commencer à charger 200px avant que la carte soit visible
+        threshold: 0.1 
+      }
+    );
+
+    if (mapContainerRef.current) {
+      observer.observe(mapContainerRef.current);
+    }
+
+    return () => {
+      if (mapContainerRef.current) {
+        observer.unobserve(mapContainerRef.current);
+      }
+    };
+  }, [isMapVisible]);
 
   const loadUserProfile = useCallback(async () => {
     if (!user) return;
@@ -351,7 +419,7 @@ export default function ReservationPage() {
             </Button>
           </Link>
         </div>
-        {/* Carte Leaflet */}
+        {/* Carte Leaflet avec Lazy Loading */}
         {position && (
           <div className="mb-6 relative z-10" ref={mapContainerRef}>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -363,19 +431,41 @@ export default function ReservationPage() {
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">Carte des événements</h2>
               </div>
-              <div style={{ height: 300, width: "100%", zIndex: 1, borderRadius: '8px', overflow: 'hidden' }}>
-              <MapContainer
-                center={[position.lat, position.lng]}
-                zoom={8}
-                style={{ height: "100%", width: "100%", zIndex: 1 }}
-                scrollWheelZoom={true}
-                whenCreated={(mapInstance: LeafletMap) => { mapRef.current = mapInstance; }}
-              >
-                <ZoomToEvent lat={zoomTarget.lat} lng={zoomTarget.lng} />
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+              
+              {/* Placeholder pendant le chargement */}
+              {!isMapVisible && (
+                <div 
+                  className="w-full bg-gray-100 rounded-lg flex items-center justify-center"
+                  style={{ height: 300 }}
+                >
+                  <div className="text-center">
+                    <div className="w-8 h-8 mx-auto mb-2 text-blue-500 animate-pulse">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-500 text-sm">Chargement de la carte...</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Carte réelle avec lazy loading */}
+              {isMapVisible && (
+                <div style={{ height: 300, width: "100%", zIndex: 1, borderRadius: '8px', overflow: 'hidden' }}>
+                  {isMapLoaded ? (
+                    <MapContainer
+                      center={[position.lat, position.lng]}
+                      zoom={8}
+                      style={{ height: "100%", width: "100%", zIndex: 1 }}
+                      scrollWheelZoom={true}
+                      whenCreated={(mapInstance: LeafletMap) => { mapRef.current = mapInstance; }}
+                    >
+                      <ZoomToEvent lat={zoomTarget.lat} lng={zoomTarget.lng} />
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        loading="lazy"
+                      />
                 {/* Marqueur utilisateur */}
                 <Marker position={[position.lat, position.lng]}>
                   <Popup>Vous êtes ici</Popup>
@@ -415,8 +505,21 @@ export default function ReservationPage() {
                     </Popup>
                   </Marker>
                 ))}
-              </MapContainer>
-              </div>
+                    </MapContainer>
+                  ) : (
+                    <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="w-6 h-6 mx-auto mb-2 text-blue-500 animate-spin">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                        </div>
+                        <p className="text-gray-500 text-sm">Initialisation de la carte...</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
