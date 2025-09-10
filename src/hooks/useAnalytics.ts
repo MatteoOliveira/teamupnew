@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { collection, addDoc, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
+import { EventData, ParticipantData, UserStats as NewUserStats, StatsPeriod } from '@/types/stats';
+import { calculateUserStats, getStatsPeriod } from '@/utils/statsCalculator';
 
 export interface AnalyticsEvent {
   id?: string;
@@ -62,93 +64,48 @@ export const useAnalytics = () => {
     }
   }, [user]);
 
-  // Récupérer les statistiques utilisateur (version simplifiée)
-  const getUserStats = useCallback(async (): Promise<UserStats | null> => {
+  // Récupérer les statistiques utilisateur (version améliorée)
+  const getUserStats = useCallback(async (period: StatsPeriod = getStatsPeriod('all')): Promise<NewUserStats | null> => {
     if (!user) return null;
 
     setIsLoading(true);
     try {
-      // Récupérer tous les événements de l'utilisateur (sans index complexe)
-      const eventsQuery = query(
-        collection(db, 'events'),
-        where('createdBy', '==', user.uid)
-      );
-      const eventsSnapshot = await getDocs(eventsQuery);
-      const createdEvents = eventsSnapshot.docs.length;
-
-      // Récupérer les inscriptions de l'utilisateur (sans index complexe)
-      const registrationsQuery = query(
-        collection(db, 'event_participants'),
-        where('userId', '==', user.uid)
-      );
-      const registrationsSnapshot = await getDocs(registrationsQuery);
-      const joinedEvents = registrationsSnapshot.docs.length;
-
-      // Pour l'instant, on évite la requête analytics complexe qui nécessite un index
-      // TODO: Réactiver quand les index Firebase seront créés
-      const recentActivity: AnalyticsEvent[] = [];
-
-      // Calculer les statistiques
-      const totalEvents = createdEvents + joinedEvents;
-      const participationRate = createdEvents > 0 ? (joinedEvents / createdEvents) * 100 : 0;
-      
-      // Calculer la distribution des sports
-      const sportsDistribution: Record<string, number> = {};
-      eventsSnapshot.docs.forEach(doc => {
-        const sport = doc.data().sport;
-        sportsDistribution[sport] = (sportsDistribution[sport] || 0) + 1;
+      // Récupérer tous les événements
+      const eventsSnapshot = await getDocs(collection(db, 'events'));
+      const events: EventData[] = eventsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name,
+          sport: data.sport,
+          city: data.city,
+          date: data.date,
+          endDate: data.endDate,
+          createdBy: data.createdBy,
+          isReserved: data.isReserved,
+          maxParticipants: data.maxParticipants,
+          currentParticipants: data.currentParticipants,
+        };
       });
 
-      // Trouver le sport favori
-      const favoriteSport = Object.entries(sportsDistribution)
-        .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Aucun';
-
-      // Calculer le score d'activité (basé sur les événements réels)
-      const activityScore = Math.min(5, Math.max(1, totalEvents / 3));
-
-      // Calculer la tendance mensuelle (basée sur les événements des 3 derniers mois)
-      const threeMonthsAgo = new Date();
-      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-      
-      const recentEvents = eventsSnapshot.docs.filter(doc => {
-        const eventDate = doc.data().createdAt?.toDate();
-        return eventDate && eventDate >= threeMonthsAgo;
-      }).length;
-      
-      const olderEvents = eventsSnapshot.docs.length - recentEvents;
-      const monthlyTrend = olderEvents > 0 ? ((recentEvents - olderEvents) / olderEvents) * 100 : 0;
-
-      // Calculer la durée moyenne des événements (basée sur les vrais événements)
-      let totalDuration = 0;
-      let eventsWithDuration = 0;
-      
-      eventsSnapshot.docs.forEach(doc => {
-        const eventData = doc.data();
-        if (eventData.startTime && eventData.endTime) {
-          const start = new Date(eventData.startTime);
-          const end = new Date(eventData.endTime);
-          const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // en heures
-          if (duration > 0) {
-            totalDuration += duration;
-            eventsWithDuration++;
-          }
-        }
+      // Récupérer tous les participants
+      const participantsSnapshot = await getDocs(collection(db, 'event_participants'));
+      const participants: ParticipantData[] = participantsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          eventId: data.eventId,
+          userId: data.userId,
+          userName: data.userName,
+          registeredAt: data.registeredAt,
+          isOrganizer: data.isOrganizer,
+        };
       });
-      
-      const averageEventDuration = eventsWithDuration > 0 ? totalDuration / eventsWithDuration : 2.0;
 
-      return {
-        totalEvents,
-        eventsCreated: createdEvents,
-        eventsJoined: joinedEvents,
-        favoriteSport,
-        participationRate,
-        averageEventDuration,
-        activityScore,
-        monthlyTrend,
-        sportsDistribution,
-        recentActivity,
-      };
+      // Calculer les statistiques avec nos nouvelles fonctions
+      const stats = calculateUserStats(events, participants, user.uid, period);
+
+      return stats;
     } catch (error) {
       console.error('Erreur lors de la récupération des statistiques:', error);
       // Retourner des statistiques par défaut en cas d'erreur
@@ -160,9 +117,10 @@ export const useAnalytics = () => {
         participationRate: 0,
         averageEventDuration: 0,
         activityScore: 0,
-        monthlyTrend: 0,
-        sportsDistribution: {},
-        recentActivity: [],
+        eventsByMonth: [],
+        sportDistribution: [],
+        monthlyGoal: { current: 0, target: 10 },
+        newSportsGoal: { current: 0, target: 5 }
       };
     } finally {
       setIsLoading(false);

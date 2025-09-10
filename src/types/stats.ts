@@ -43,7 +43,7 @@ export interface UserStats {
 }
 
 export interface StatsPeriod {
-  key: 'all' | 'month' | 'year';
+  key: 'all' | 'month' | 'year' | 'week';
   label: string;
   startDate: Date;
   endDate: Date;

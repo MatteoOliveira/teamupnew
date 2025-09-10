@@ -1,4 +1,4 @@
-import { EventData, ParticipantData, UserStats, StatsPeriod, MetricCard, ChartData } from '@/types/stats';
+import { EventData, ParticipantData, UserStats, StatsPeriod } from '@/types/stats';
 
 // Couleurs pour les graphiques
 const CHART_COLORS = {
@@ -28,10 +28,20 @@ const SPORT_COLORS = [
 ];
 
 // Fonction pour obtenir la période sélectionnée
-export function getStatsPeriod(periodKey: 'all' | 'month' | 'year'): StatsPeriod {
+export function getStatsPeriod(periodKey: 'all' | 'month' | 'year' | 'week'): StatsPeriod {
   const now = new Date();
   
   switch (periodKey) {
+    case 'week':
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+      return {
+        key: 'week',
+        label: 'Cette semaine',
+        startDate: weekStart,
+        endDate: now
+      };
     case 'month':
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       return {
@@ -131,8 +141,8 @@ export function calculateUserStats(
   const sportDistribution = calculateSportDistribution(filteredEvents);
   
   // Calculer les objectifs
-  const monthlyGoal = calculateMonthlyGoal(events, userId, period);
-  const newSportsGoal = calculateNewSportsGoal(events, userId, period);
+  const monthlyGoal = calculateMonthlyGoal(events, participants, userId, period);
+  const newSportsGoal = calculateNewSportsGoal(events, participants, userId, period);
   
   return {
     totalEvents,
@@ -187,12 +197,13 @@ function calculateEventsByMonth(events: EventData[]): { month: string; count: nu
     }
   });
   
-  // Générer les 12 derniers mois
+  // Générer les mois dans l'ordre chronologique avec le mois actuel au centre
   const months = [];
   const now = new Date();
   
-  for (let i = 11; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+  // Commencer par 6 mois avant le mois actuel
+  for (let i = -6; i <= 5; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     const monthNames = [
       'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
@@ -230,7 +241,7 @@ function calculateSportDistribution(events: EventData[]): { sport: string; count
 }
 
 // Calculer l'objectif mensuel
-function calculateMonthlyGoal(events: EventData[], userId: string, period: StatsPeriod): { current: number; target: number } {
+function calculateMonthlyGoal(events: EventData[], participants: ParticipantData[], userId: string, period: StatsPeriod): { current: number; target: number } {
   const currentMonthEvents = events.filter(event => {
     if (!event.date?.seconds) return false;
     const eventDate = new Date(event.date.seconds * 1000);
@@ -247,7 +258,7 @@ function calculateMonthlyGoal(events: EventData[], userId: string, period: Stats
 }
 
 // Calculer l'objectif nouveaux sports
-function calculateNewSportsGoal(events: EventData[], userId: string, period: StatsPeriod): { current: number; target: number } {
+function calculateNewSportsGoal(events: EventData[], participants: ParticipantData[], userId: string, period: StatsPeriod): { current: number; target: number } {
   const userEvents = events.filter(event => 
     event.createdBy === userId || participants.some(p => p.userId === userId && p.eventId === event.id)
   );
@@ -257,68 +268,5 @@ function calculateNewSportsGoal(events: EventData[], userId: string, period: Sta
   return {
     current: uniqueSports,
     target: 5 // Objectif par défaut
-  };
-}
-
-// Créer les cartes de métriques
-export function createMetricCards(stats: UserStats): MetricCard[] {
-  return [
-    {
-      title: 'Événements totaux',
-      value: stats.totalEvents,
-      subtitle: 'Tous les événements participés',
-      icon: 'calendar',
-      color: 'blue',
-      change: '+12% ce mois'
-    },
-    {
-      title: 'Événements créés',
-      value: stats.eventsCreated,
-      subtitle: 'Événements organisés',
-      icon: 'plus',
-      color: 'green',
-      change: '+8% ce mois'
-    },
-    {
-      title: 'Événements rejoints',
-      value: stats.eventsJoined,
-      subtitle: 'Événements participés',
-      icon: 'users',
-      color: 'purple',
-      change: '+15% ce mois'
-    },
-    {
-      title: 'Sport favori',
-      value: stats.favoriteSport,
-      subtitle: 'Activité préférée',
-      icon: 'lightning',
-      color: 'yellow'
-    }
-  ];
-}
-
-// Créer les données pour le graphique des événements par mois
-export function createEventsByMonthChart(eventsByMonth: { month: string; count: number }[]): ChartData {
-  return {
-    labels: eventsByMonth.map(item => item.month),
-    datasets: [{
-      label: 'Événements',
-      data: eventsByMonth.map(item => item.count),
-      backgroundColor: CHART_COLORS.blue,
-      borderColor: CHART_COLORS.blue
-    }]
-  };
-}
-
-// Créer les données pour le graphique de répartition par sport
-export function createSportDistributionChart(sportDistribution: { sport: string; count: number; percentage: number }[]): ChartData {
-  return {
-    labels: sportDistribution.map(item => item.sport),
-    datasets: [{
-      label: 'Pourcentage',
-      data: sportDistribution.map(item => item.percentage),
-      backgroundColor: sportDistribution.map((_, index) => SPORT_COLORS[index % SPORT_COLORS.length]),
-      borderColor: sportDistribution.map((_, index) => SPORT_COLORS[index % SPORT_COLORS.length])
-    }]
   };
 }

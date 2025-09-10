@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { doc, setDoc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { doc, setDoc, getDoc, collection, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { deleteUser } from 'firebase/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/Input';
 import Button from '@/components/Button';
 import { Menu } from '@headlessui/react';
 import { getFCMToken } from '@/lib/firebase-messaging';
+import { EventData, ParticipantData, UserStats, StatsPeriod } from '@/types/stats';
+import { calculateUserStats, getStatsPeriod } from '@/utils/statsCalculator';
 import { useAnalytics } from '@/hooks/useAnalytics';
 // import Image from 'next/image'; // Désactivé pour éviter les erreurs 400
 
@@ -71,7 +74,7 @@ export default function ProfilePage() {
   const [pastEvents, setPastEvents] = useState<Event[]>([]);
   const [pastEventsFilter, setPastEventsFilter] = useState<'all' | 'created' | 'joined'>('all');
   const [activityHistory, setActivityHistory] = useState<{id: string; type: string; description: string; date: Date}[]>([]);
-  const [userStats, setUserStats] = useState<{totalEvents: number; eventsCreated: number; eventsJoined: number; favoriteSport: string; participationRate: number; averageEventDuration: number; activityScore: number; monthlyTrend: number; sportsDistribution: Record<string, number>}>({
+  const [userStats, setUserStats] = useState<UserStats>({
     totalEvents: 0,
     eventsCreated: 0,
     eventsJoined: 0,
@@ -79,10 +82,26 @@ export default function ProfilePage() {
     participationRate: 0,
     averageEventDuration: 0,
     activityScore: 0,
-    monthlyTrend: 0,
-    sportsDistribution: {}
+    eventsByMonth: [],
+    sportDistribution: [],
+    monthlyGoal: { current: 0, target: 10 },
+    newSportsGoal: { current: 0, target: 5 }
   });
   const [statsLoading, setStatsLoading] = useState(false);
+  
+  // États pour les statistiques dynamiques
+  const [selectedPeriod, setSelectedPeriod] = useState<StatsPeriod>(getStatsPeriod('all'));
+  const [allEvents, setAllEvents] = useState<EventData[]>([]);
+  const [allParticipants, setAllParticipants] = useState<ParticipantData[]>([]);
+  
+  // Refs pour le graphique des événements par mois
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const currentMonthRef = useRef<HTMLDivElement>(null);
+  
+  // États pour la suppression de compte
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Charger le profil existant
   useEffect(() => {
@@ -110,7 +129,7 @@ export default function ProfilePage() {
     
     setStatsLoading(true);
     try {
-      const stats = await getUserStats();
+      const stats = await getUserStats(selectedPeriod);
       if (stats) {
         setUserStats(stats);
       }
@@ -119,7 +138,7 @@ export default function ProfilePage() {
     } finally {
       setStatsLoading(false);
     }
-  }, [user, getUserStats]);
+  }, [user, getUserStats, selectedPeriod]);
 
   // Charger les statistiques quand on change d'onglet vers stats
   useEffect(() => {
@@ -127,6 +146,64 @@ export default function ProfilePage() {
       loadUserStats();
     }
   }, [activeTab, user, loadUserStats]);
+
+  // Centrer automatiquement le mois actuel dans le graphique
+  useEffect(() => {
+    if (currentMonthRef.current && chartContainerRef.current && userStats.eventsByMonth.length > 0) {
+      // Attendre un peu pour que le DOM soit rendu
+      setTimeout(() => {
+        currentMonthRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }, 100);
+    }
+  }, [userStats.eventsByMonth]);
+
+  // Fonction pour supprimer le compte utilisateur
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    
+    setIsDeleting(true);
+    try {
+      // Supprimer toutes les données associées à l'utilisateur
+      const batch = writeBatch(db);
+      
+      // 1. Supprimer le profil utilisateur
+      batch.delete(doc(db, 'users', user.uid));
+      
+      // 2. Supprimer tous les événements créés par l'utilisateur
+      const eventsQuery = query(collection(db, 'events'), where('createdBy', '==', user.uid));
+      const eventsSnapshot = await getDocs(eventsQuery);
+      eventsSnapshot.forEach((eventDoc) => {
+        batch.delete(eventDoc.ref);
+      });
+      
+      // 3. Supprimer toutes les participations de l'utilisateur
+      const participantsQuery = query(collection(db, 'participants'), where('userId', '==', user.uid));
+      const participantsSnapshot = await getDocs(participantsQuery);
+      participantsSnapshot.forEach((participantDoc) => {
+        batch.delete(participantDoc.ref);
+      });
+      
+      // Exécuter toutes les suppressions
+      await batch.commit();
+      
+      // 4. Supprimer le compte Firebase Auth
+      await deleteUser(user);
+      
+      // Rediriger vers la page de connexion
+      router.push('/choose-experience');
+      
+    } catch (error) {
+      console.error('Erreur lors de la suppression du compte:', error);
+      setMessage('Erreur lors de la suppression du compte. Veuillez réessayer.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
 
   // Track page view (une seule fois)
   useEffect(() => {
@@ -577,6 +654,20 @@ export default function ProfilePage() {
             <span className="text-black">Activer le mode sombre</span>
           </label>
         </div>
+
+        {/* Suppression de compte */}
+        <div className="mb-6 p-4 border border-red-200 rounded-lg bg-red-50">
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Zone de danger</h3>
+          <p className="text-sm text-red-700 mb-4">
+            La suppression de votre compte est définitive. Toutes vos données (profil, événements créés, participations) seront supprimées et ne pourront pas être récupérées.
+          </p>
+          <Button 
+            onClick={() => setShowDeleteModal(true)}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Supprimer mon compte
+          </Button>
+        </div>
       </section>
 
           {/* Onglet Mes événements */}
@@ -795,7 +886,14 @@ export default function ProfilePage() {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Mes statistiques</h2>
             <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
               <span className="text-xs sm:text-sm text-gray-500">Période :</span>
-              <select className="px-2 py-1.5 sm:px-3 sm:py-1 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 w-full sm:w-auto">
+              <select 
+                value={selectedPeriod.key}
+                onChange={(e) => {
+                  const newPeriod = getStatsPeriod(e.target.value as 'all' | 'month' | 'year' | 'week');
+                  setSelectedPeriod(newPeriod);
+                }}
+                className="px-2 py-1.5 sm:px-3 sm:py-1 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 w-full sm:w-auto"
+              >
                 <option value="all">Tout le temps</option>
                 <option value="year">Cette année</option>
                 <option value="month">Ce mois</option>
@@ -882,16 +980,45 @@ export default function ProfilePage() {
             {/* Graphique des événements par mois */}
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Événements par mois</h3>
-              <div className="h-64 flex items-end justify-between space-x-2">
-                {[12, 8, 15, 22, 18, 25, 30, 28, 35, 32, 28, 24].map((height, index) => (
-                  <div key={index} className="flex flex-col items-center space-y-2">
-                    <div 
-                      className="bg-gradient-to-t from-blue-500 to-blue-400 rounded-t w-8 transition-all duration-500 hover:from-blue-600 hover:to-blue-500"
-                      style={{ height: `${(height / 35) * 200}px` }}
-                    ></div>
-                    <div className="text-xs text-gray-500">{['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'][index]}</div>
-                  </div>
-                ))}
+              <div className="h-64 overflow-x-auto overflow-y-hidden" ref={chartContainerRef}>
+                <div className="flex items-end justify-start space-x-3 min-w-max px-2">
+                  {userStats.eventsByMonth.length > 0 ? userStats.eventsByMonth.map((monthData, index) => {
+                    const maxCount = Math.max(...userStats.eventsByMonth.map(m => m.count), 1);
+                    const height = (monthData.count / maxCount) * 200;
+                    const currentMonthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+                    const currentMonth = currentMonthNames[new Date().getMonth()];
+                    const isCurrentMonth = monthData.month === currentMonth;
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        ref={isCurrentMonth ? currentMonthRef : null}
+                        className={`flex flex-col items-center space-y-2 flex-shrink-0 ${isCurrentMonth ? 'ring-2 ring-blue-300 rounded-lg p-1' : ''}`}
+                      >
+                        <div 
+                          className={`rounded-t w-8 transition-all duration-500 hover:from-blue-600 hover:to-blue-500 ${
+                            isCurrentMonth 
+                              ? 'bg-gradient-to-t from-blue-600 to-blue-500 shadow-lg' 
+                              : 'bg-gradient-to-t from-blue-500 to-blue-400'
+                          }`}
+                          style={{ height: `${height}px` }}
+                        ></div>
+                        <div className={`text-xs ${isCurrentMonth ? 'text-blue-600 font-semibold' : 'text-gray-500'}`}>
+                          {monthData.month}
+                        </div>
+                        {monthData.count > 0 && (
+                          <div className={`text-xs font-medium ${isCurrentMonth ? 'text-blue-600' : 'text-blue-600'}`}>
+                            {monthData.count}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }) : (
+                    <div className="flex items-center justify-center h-full w-full text-gray-500">
+                      Aucune donnée disponible
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -899,26 +1026,28 @@ export default function ProfilePage() {
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Répartition par sport</h3>
               <div className="space-y-4">
-                {[
-                  { sport: 'Football', percentage: 35, color: 'bg-green-500' },
-                  { sport: 'Basketball', percentage: 25, color: 'bg-orange-500' },
-                  { sport: 'Tennis', percentage: 20, color: 'bg-yellow-500' },
-                  { sport: 'Volleyball', percentage: 15, color: 'bg-blue-500' },
-                  { sport: 'Autres', percentage: 5, color: 'bg-gray-500' }
-                ].map((item, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">{item.sport}</span>
-                      <span className="text-sm text-gray-500">{item.percentage}%</span>
+                {userStats.sportDistribution.length > 0 ? userStats.sportDistribution.map((sportData, index) => {
+                  const colors = ['bg-green-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-purple-500', 'bg-red-500', 'bg-gray-500'];
+                  const color = colors[index % colors.length];
+                  return (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">{sportData.sport}</span>
+                        <span className="text-sm text-gray-500">{sportData.percentage}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${color} transition-all duration-500`}
+                          style={{ width: `${sportData.percentage}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full ${item.color} transition-all duration-500`}
-                        style={{ width: `${item.percentage}%` }}
-                      ></div>
-                    </div>
+                  );
+                }) : (
+                  <div className="flex items-center justify-center h-32 text-gray-500">
+                    Aucune donnée disponible
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -934,7 +1063,7 @@ export default function ProfilePage() {
                 </div>
                 <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Taux de participation</h4>
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-indigo-600 mb-2">87%</div>
+              <div className="text-2xl sm:text-3xl font-bold text-indigo-600 mb-2">{userStats.participationRate}%</div>
               <p className="text-xs sm:text-sm text-gray-600">Événements rejoints sur créés</p>
             </div>
 
@@ -947,7 +1076,7 @@ export default function ProfilePage() {
                 </div>
                 <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Temps moyen</h4>
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-emerald-600 mb-2">2.5h</div>
+              <div className="text-2xl sm:text-3xl font-bold text-emerald-600 mb-2">{userStats.averageEventDuration}h</div>
               <p className="text-xs sm:text-sm text-gray-600">Durée moyenne des événements</p>
             </div>
 
@@ -960,7 +1089,7 @@ export default function ProfilePage() {
                 </div>
                 <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Score d'activité</h4>
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-rose-600 mb-2">4.2/5</div>
+              <div className="text-2xl sm:text-3xl font-bold text-rose-600 mb-2">{userStats.activityScore}/5</div>
               <p className="text-xs sm:text-sm text-gray-600">Niveau d'engagement</p>
             </div>
           </div>
@@ -972,19 +1101,25 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Événements ce mois</span>
-                  <span className="text-sm text-gray-500">8/10</span>
+                  <span className="text-sm text-gray-500">{userStats.monthlyGoal.current}/{userStats.monthlyGoal.target}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-purple-500 h-2 rounded-full" style={{ width: '80%' }}></div>
+                  <div 
+                    className="bg-purple-500 h-2 rounded-full transition-all duration-500" 
+                    style={{ width: `${Math.min((userStats.monthlyGoal.current / userStats.monthlyGoal.target) * 100, 100)}%` }}
+                  ></div>
                 </div>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Nouveaux sports</span>
-                  <span className="text-sm text-gray-500">2/3</span>
+                  <span className="text-sm text-gray-500">{userStats.newSportsGoal.current}/{userStats.newSportsGoal.target}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '67%' }}></div>
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-500" 
+                    style={{ width: `${Math.min((userStats.newSportsGoal.current / userStats.newSportsGoal.target) * 100, 100)}%` }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -1004,6 +1139,67 @@ export default function ProfilePage() {
           )}
         </main>
       </div>
+
+      {/* Modal de confirmation de suppression de compte */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Supprimer votre compte</h3>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-700 mb-4">
+                <strong>Êtes-vous sûr de vouloir supprimer votre compte ?</strong>
+              </p>
+              <p className="text-sm text-gray-600 mb-4">
+                Cette action est <strong>définitive et irréversible</strong>. Toutes vos données seront supprimées :
+              </p>
+              <ul className="text-sm text-gray-600 list-disc list-inside mb-4">
+                <li>Votre profil utilisateur</li>
+                <li>Tous vos événements créés</li>
+                <li>Toutes vos participations à des événements</li>
+                <li>Votre historique d'activité</li>
+              </ul>
+              <p className="text-sm text-gray-600 mb-4">
+                Tapez <strong>"SUPPRIMER"</strong> dans le champ ci-dessous pour confirmer :
+              </p>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Tapez SUPPRIMER ici"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </div>
+            
+            <div className="flex space-x-3">
+              <Button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmText('');
+                }}
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
+                disabled={isDeleting}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleDeleteAccount}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                disabled={deleteConfirmText !== 'SUPPRIMER' || isDeleting}
+              >
+                {isDeleting ? 'Suppression...' : 'Supprimer définitivement'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
