@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -7,9 +8,14 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           {/* Logo et nom */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">T</span>
-            </div>
+            <Image
+              src="/favicon-32x32.webp"
+              alt="TeamUp Logo"
+              width={32}
+              height={32}
+              className="rounded-lg"
+              priority
+            />
             <span className="text-gray-900 font-semibold">TeamUp</span>
           </div>
 
