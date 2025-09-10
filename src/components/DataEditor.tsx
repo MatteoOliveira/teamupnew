@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
+import { useSecurity } from '@/hooks/useSecurity';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { CompleteUserData } from '@/hooks/useUserData';
@@ -15,6 +16,12 @@ interface DataEditorProps {
 
 export default function DataEditor({ userData, onDataUpdated }: DataEditorProps) {
   const { user } = useAuth();
+  const { 
+    validateAndSanitizeUserData, 
+    validateProfileUpdate,
+    getMainError,
+    clearErrors 
+  } = useSecurity();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -75,14 +82,39 @@ export default function DataEditor({ userData, onDataUpdated }: DataEditorProps)
     setIsSaving(true);
     setMessage('');
     setMessageType('');
+    clearErrors();
 
     try {
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
+      // Vérifier le rate limiting
+      if (!validateProfileUpdate()) {
+        const errorMessage = getMainError();
+        setMessage(errorMessage || 'Limite de modifications atteinte');
+        setMessageType('error');
+        return;
+      }
+
+      // Valider et nettoyer les données
+      const sanitizedData = validateAndSanitizeUserData({
         name: editedData.name,
         sport: editedData.sport,
         city: editedData.city,
-        notifications: editedData.notifications,
+        notifications: editedData.notifications
+      });
+
+      if (!sanitizedData) {
+        const errorMessage = getMainError();
+        setMessage(errorMessage || 'Données invalides');
+        setMessageType('error');
+        return;
+      }
+
+      const userRef = doc(db, 'users', user.uid);
+      const sanitizedUserData = sanitizedData as Record<string, unknown>;
+      await updateDoc(userRef, {
+        name: sanitizedUserData.name,
+        sport: sanitizedUserData.sport,
+        city: sanitizedUserData.city,
+        notifications: sanitizedUserData.notifications,
         updatedAt: new Date()
       });
 

@@ -1,0 +1,163 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // RÈGLES POUR LES UTILISATEURS
+    // ==========================================
+    match /users/{userId} {
+      // Lecture et écriture uniquement pour le propriétaire du compte
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Validation des données utilisateur
+      allow create: if request.auth != null && 
+        request.auth.uid == userId &&
+        isValidUserData(request.resource.data);
+      
+      allow update: if request.auth != null && 
+        request.auth.uid == userId &&
+        isValidUserData(request.resource.data);
+    }
+    
+    // ==========================================
+    // RÈGLES POUR LES ÉVÉNEMENTS
+    // ==========================================
+    match /events/{eventId} {
+      // Lecture publique pour tous les utilisateurs authentifiés
+      allow read: if request.auth != null;
+      
+      // Création uniquement par des utilisateurs authentifiés
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.createdBy &&
+        isValidEventData(request.resource.data);
+      
+      // Modification uniquement par le créateur
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.createdBy &&
+        isValidEventData(request.resource.data);
+      
+      // Suppression uniquement par le créateur
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.createdBy;
+    }
+    
+    // ==========================================
+    // RÈGLES POUR LES PARTICIPATIONS
+    // ==========================================
+    match /event_participants/{participationId} {
+      // Lecture pour tous les utilisateurs authentifiés
+      allow read: if request.auth != null;
+      
+      // Création uniquement par l'utilisateur concerné
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId &&
+        isValidParticipationData(request.resource.data);
+      
+      // Suppression uniquement par l'utilisateur concerné
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+    }
+    
+    // ==========================================
+    // RÈGLES POUR LES CHATS D'ÉVÉNEMENTS
+    // ==========================================
+    match /event_chats/{eventId} {
+      // Lecture et écriture uniquement pour les membres du chat
+      allow read, write: if request.auth != null && 
+        exists(/databases/$(database)/documents/event_chats/$(eventId)/members/$(request.auth.uid));
+      
+      // Création du chat uniquement par le créateur de l'événement
+      allow create: if request.auth != null && 
+        request.auth.uid == get(/databases/$(database)/documents/events/$(eventId)).data.createdBy;
+    }
+    
+    // ==========================================
+    // RÈGLES POUR LES MEMBRES DE CHAT
+    // ==========================================
+    match /event_chats/{eventId}/members/{userId} {
+      // Lecture pour tous les membres du chat
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/event_chats/$(eventId)/members/$(request.auth.uid));
+      
+      // Ajout uniquement par le créateur de l'événement ou l'utilisateur lui-même
+      allow create: if request.auth != null && 
+        (request.auth.uid == userId || 
+         request.auth.uid == get(/databases/$(database)/documents/events/$(eventId)).data.createdBy);
+      
+      // Suppression uniquement par l'utilisateur concerné ou le créateur
+      allow delete: if request.auth != null && 
+        (request.auth.uid == userId || 
+         request.auth.uid == get(/databases/$(database)/documents/events/$(eventId)).data.createdBy);
+    }
+    
+    // ==========================================
+    // RÈGLES POUR LES MESSAGES
+    // ==========================================
+    match /event_chats/{eventId}/messages/{messageId} {
+      // Lecture uniquement pour les membres du chat
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/event_chats/$(eventId)/members/$(request.auth.uid));
+      
+      // Création uniquement par les membres du chat
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.senderId &&
+        exists(/databases/$(database)/documents/event_chats/$(eventId)/members/$(request.auth.uid)) &&
+        isValidMessageData(request.resource.data);
+      
+      // Modification uniquement par l'auteur du message
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.senderId &&
+        isValidMessageData(request.resource.data);
+      
+      // Suppression uniquement par l'auteur du message
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.senderId;
+    }
+    
+    // ==========================================
+    // FONCTIONS DE VALIDATION
+    // ==========================================
+    
+    // Validation des données utilisateur
+    function isValidUserData(data) {
+      return data.keys().hasAll(['name', 'sport', 'city']) &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 50 &&
+        data.sport is string && data.sport.size() >= 2 && data.sport.size() <= 30 &&
+        data.city is string && data.city.size() >= 2 && data.city.size() <= 50 &&
+        (!data.keys().hasAny(['email']) || (data.email is string && data.email.matches('.*@.*\\..*')));
+    }
+    
+    // Validation des données d'événement
+    function isValidEventData(data) {
+      return data.keys().hasAll(['name', 'sport', 'city', 'date', 'location', 'description', 'createdBy']) &&
+        data.name is string && data.name.size() >= 3 && data.name.size() <= 100 &&
+        data.sport is string && data.sport.size() >= 2 && data.sport.size() <= 30 &&
+        data.city is string && data.city.size() >= 2 && data.city.size() <= 50 &&
+        data.location is string && data.location.size() >= 5 && data.location.size() <= 200 &&
+        data.description is string && data.description.size() >= 10 && data.description.size() <= 1000 &&
+        data.createdBy is string &&
+        data.date is timestamp &&
+        (!data.keys().hasAny(['lat']) || (data.lat is number && data.lat >= -90 && data.lat <= 90)) &&
+        (!data.keys().hasAny(['lng']) || (data.lng is number && data.lng >= -180 && data.lng <= 180));
+    }
+    
+    // Validation des données de participation
+    function isValidParticipationData(data) {
+      return data.keys().hasAll(['userId', 'eventId', 'userName', 'contact', 'registeredAt']) &&
+        data.userId is string &&
+        data.eventId is string &&
+        data.userName is string && data.userName.size() >= 2 && data.userName.size() <= 50 &&
+        data.contact is string && data.contact.size() >= 5 && data.contact.size() <= 100 &&
+        data.registeredAt is timestamp;
+    }
+    
+    // Validation des données de message
+    function isValidMessageData(data) {
+      return data.keys().hasAll(['senderId', 'senderName', 'content', 'timestamp']) &&
+        data.senderId is string &&
+        data.senderName is string && data.senderName.size() >= 2 && data.senderName.size() <= 50 &&
+        data.content is string && data.content.size() >= 1 && data.content.size() <= 500 &&
+        data.timestamp is timestamp;
+    }
+  }
+}
