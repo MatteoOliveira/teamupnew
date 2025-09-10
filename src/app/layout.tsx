@@ -74,8 +74,21 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//b.tile.openstreetmap.org" />
         <link rel="dns-prefetch" href="//c.tile.openstreetmap.org" />
         
-        {/* Preconnect pour établir la connexion plus rapidement */}
-        <link rel="preconnect" href="https://tile.openstreetmap.org" crossOrigin="anonymous" />
+        {/* Preconnect pour établir la connexion plus rapidement - OpenStreetMap */}
+        <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://b.tile.openstreetmap.org" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://c.tile.openstreetmap.org" crossOrigin="anonymous" />
+        
+        {/* Preconnect pour Firebase - 620 ms d'économies */}
+        <link rel="preconnect" href="https://teamup-7a2d6.firebaseapp.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://firebase.googleapis.com" crossOrigin="anonymous" />
+        
+        {/* Preconnect pour Google APIs - 620 ms d'économies */}
+        <link rel="preconnect" href="https://apis.google.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.googleapis.com" crossOrigin="anonymous" />
+        
+        {/* Preconnect pour Google Tag Manager - 310 ms d'économies */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         
         {/* Précharge globale ultra-agressive des tuiles les plus communes en France (zoom 8) */}
         {/* Tuile critique 129/88 - Tous les serveurs */}
