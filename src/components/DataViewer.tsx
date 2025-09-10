@@ -116,7 +116,7 @@ export default function DataViewer({ userData, loading }: DataViewerProps) {
         userData.messages.map((message, index) => (
           <div key={message.id} className="bg-gray-50 p-3 rounded border">
             <div className="text-gray-900"><strong>Message #{index + 1}</strong></div>
-            <div className="text-gray-800"><strong>Contenu :</strong> {message.message}</div>
+            <div className="text-gray-800"><strong>Contenu :</strong> {message.content}</div>
             <div className="text-gray-800"><strong>Envoyé le :</strong> {formatDate(message.timestamp)}</div>
             <div className="text-gray-800"><strong>Dans l&apos;événement :</strong> {message.eventName || message.eventId}</div>
           </div>

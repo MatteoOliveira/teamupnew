@@ -38,9 +38,9 @@ export interface MessageData {
   id: string;
   eventId: string;
   eventName?: string;
-  userId: string;
-  userName: string;
-  message: string;
+  senderId: string;
+  senderName: string;
+  content: string;
   timestamp: { seconds: number };
 }
 
