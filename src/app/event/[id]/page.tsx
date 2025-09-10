@@ -440,9 +440,17 @@ export default function EventDetailPage() {
             
             {isCreator && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center gap-2">
-                  <div className="text-blue-600">👑</div>
-                  <p className="text-blue-800 font-semibold">Vous êtes l&apos;organisateur de cet événement</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="text-blue-600">👑</div>
+                    <p className="text-blue-800 font-semibold">Vous êtes l&apos;organisateur de cet événement</p>
+                  </div>
+                  <Button
+                    onClick={() => router.push(`/event-edit/${event.id}`)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
+                  >
+                    ✏️ Modifier l&apos;événement
+                  </Button>
                 </div>
               </div>
             )}
