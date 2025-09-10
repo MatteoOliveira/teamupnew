@@ -68,6 +68,21 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="mask-icon" href="/icon-192x192.webp" color="#3b82f6" />
         <link rel="shortcut icon" href="/favicon.ico" />
+        
+        {/* DNS Prefetch pour optimiser le chargement des tuiles OpenStreetMap */}
+        <link rel="dns-prefetch" href="//tile.openstreetmap.org" />
+        <link rel="dns-prefetch" href="//a.tile.openstreetmap.org" />
+        <link rel="dns-prefetch" href="//b.tile.openstreetmap.org" />
+        <link rel="dns-prefetch" href="//c.tile.openstreetmap.org" />
+        
+        {/* Preconnect pour établir la connexion plus rapidement */}
+        <link rel="preconnect" href="https://tile.openstreetmap.org" crossOrigin="anonymous" />
+        
+        {/* Précharge globale des tuiles les plus communes en France (zoom 8) */}
+        <link rel="preload" as="image" href="https://tile.openstreetmap.org/8/129/88.png" fetchPriority="high" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="https://tile.openstreetmap.org/8/130/88.png" fetchPriority="high" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="https://tile.openstreetmap.org/8/129/89.png" fetchPriority="high" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="https://tile.openstreetmap.org/8/130/89.png" fetchPriority="high" crossOrigin="anonymous" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Header />

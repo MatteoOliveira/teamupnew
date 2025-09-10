@@ -68,12 +68,22 @@ function TilePreloader({ position }: { position: { lat: number; lng: number } | 
   const zoom = 8;
   const centerTile = getTileCoordinates(position.lat, position.lng, zoom);
   
-  // Tuiles les plus critiques à précharger dans le head
+  // Tuiles critiques étendues pour une précharge agressive
   const criticalTiles = [
-    { x: centerTile.x, y: centerTile.y }, // Tuile centrale
-    { x: centerTile.x + 1, y: centerTile.y }, // Adjacente droite
-    { x: centerTile.x, y: centerTile.y + 1 }, // Adjacente bas
-    { x: centerTile.x + 1, y: centerTile.y + 1 }, // Adjacente diagonale
+    // Tuile centrale (priorité maximale)
+    { x: centerTile.x, y: centerTile.y, priority: "high" },
+    // Tuiles adjacentes immédiates (priorité élevée)
+    { x: centerTile.x + 1, y: centerTile.y, priority: "high" },
+    { x: centerTile.x, y: centerTile.y + 1, priority: "high" },
+    { x: centerTile.x + 1, y: centerTile.y + 1, priority: "high" },
+    { x: centerTile.x - 1, y: centerTile.y, priority: "high" },
+    { x: centerTile.x, y: centerTile.y - 1, priority: "high" },
+    { x: centerTile.x - 1, y: centerTile.y - 1, priority: "high" },
+    // Tuiles de contexte (priorité moyenne)
+    { x: centerTile.x + 2, y: centerTile.y, priority: "low" },
+    { x: centerTile.x, y: centerTile.y + 2, priority: "low" },
+    { x: centerTile.x - 2, y: centerTile.y, priority: "low" },
+    { x: centerTile.x, y: centerTile.y - 2, priority: "low" },
   ];
   
   return (
@@ -84,7 +94,8 @@ function TilePreloader({ position }: { position: { lat: number; lng: number } | 
           rel="preload"
           as="image"
           href={getTileUrl(tile.x, tile.y, zoom)}
-          fetchPriority={index === 0 ? "high" : "low"}
+          fetchPriority={tile.priority as "high" | "low" | "auto"}
+          crossOrigin="anonymous"
         />
       ))}
     </Head>
@@ -154,37 +165,52 @@ export default function ReservationPage() {
     }
   };
 
-  // Précharge des tuiles critiques pour améliorer le LCP
+  // Précharge agressive des tuiles critiques pour améliorer le LCP
   useEffect(() => {
     if (position) {
       const preloadCriticalTiles = () => {
         const zoom = 8; // Zoom utilisé par la carte
         const centerTile = getTileCoordinates(position.lat, position.lng, zoom);
         
-        // Tuiles critiques à précharger (tuile centrale + adjacentes)
+        // Tuiles critiques étendues pour une précharge agressive
         const criticalTiles = [
-          // Tuile centrale (position utilisateur)
-          { x: centerTile.x, y: centerTile.y },
-          // Tuiles adjacentes pour éviter les décalages
-          { x: centerTile.x + 1, y: centerTile.y },
-          { x: centerTile.x, y: centerTile.y + 1 },
-          { x: centerTile.x + 1, y: centerTile.y + 1 },
-          { x: centerTile.x - 1, y: centerTile.y },
-          { x: centerTile.x, y: centerTile.y - 1 },
-          { x: centerTile.x - 1, y: centerTile.y - 1 }
+          // Phase 1: Tuile centrale (priorité maximale)
+          { x: centerTile.x, y: centerTile.y, phase: 1 },
+          // Phase 2: Tuiles adjacentes immédiates (priorité élevée)
+          { x: centerTile.x + 1, y: centerTile.y, phase: 2 },
+          { x: centerTile.x, y: centerTile.y + 1, phase: 2 },
+          { x: centerTile.x + 1, y: centerTile.y + 1, phase: 2 },
+          { x: centerTile.x - 1, y: centerTile.y, phase: 2 },
+          { x: centerTile.x, y: centerTile.y - 1, phase: 2 },
+          { x: centerTile.x - 1, y: centerTile.y - 1, phase: 2 },
+          // Phase 3: Tuiles de contexte (priorité moyenne)
+          { x: centerTile.x + 2, y: centerTile.y, phase: 3 },
+          { x: centerTile.x, y: centerTile.y + 2, phase: 3 },
+          { x: centerTile.x - 2, y: centerTile.y, phase: 3 },
+          { x: centerTile.x, y: centerTile.y - 2, phase: 3 },
+          { x: centerTile.x + 2, y: centerTile.y + 1, phase: 3 },
+          { x: centerTile.x + 1, y: centerTile.y + 2, phase: 3 },
+          { x: centerTile.x - 2, y: centerTile.y - 1, phase: 3 },
+          { x: centerTile.x - 1, y: centerTile.y - 2, phase: 3 },
         ];
         
-        // Précharger chaque tuile critique
+        // Précharger par phases pour optimiser la priorité réseau
         criticalTiles.forEach((tile, index) => {
+          const delay = tile.phase === 1 ? 0 : tile.phase === 2 ? 100 : 200;
+          
           setTimeout(() => {
             const img = new Image();
             img.src = getTileUrl(tile.x, tile.y, zoom);
-            // Précharge avec priorité élevée
+            // Précharge avec priorité maximale
             img.loading = 'eager';
-          }, index * 50); // Chargement échelonné pour éviter la surcharge
+            img.fetchPriority = tile.phase === 1 ? 'high' : tile.phase === 2 ? 'high' : 'low';
+            // CrossOrigin pour éviter les problèmes CORS
+            img.crossOrigin = 'anonymous';
+          }, delay + (index * 25)); // Chargement échelonné optimisé
         });
       };
       
+      // Démarrer la précharge immédiatement
       preloadCriticalTiles();
     }
   }, [position]);
