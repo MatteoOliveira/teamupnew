@@ -273,6 +273,7 @@ export default function ProfilePage() {
         .filter(doc => {
           const data = doc.data();
           if (!eventIds.includes(doc.id)) return false; // Je suis inscrit
+          if (data.createdBy === user.uid) return false; // Exclure les événements que j'ai créés
           if (!data.date?.seconds) return false;
           const eventDate = new Date(data.date.seconds * 1000);
           return eventDate > now; // Seulement les événements futurs
