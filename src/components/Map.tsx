@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import type { Map as LeafletMap } from 'leaflet';
 import "leaflet/dist/leaflet.css";
 
 interface MapProps {
