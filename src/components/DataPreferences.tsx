@@ -32,8 +32,6 @@ export default function DataPreferences() {
     },
     dataProcessing: {
       analytics: true,
-      personalization: false,
-      advertising: false,
     }
   });
 
@@ -110,8 +108,6 @@ export default function DataPreferences() {
       },
       dataProcessing: {
         analytics: true,
-        personalization: false,
-        advertising: false,
       }
     });
   };
@@ -301,37 +297,6 @@ export default function DataPreferences() {
               </label>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">Personnalisation</div>
-                <div className="text-sm text-gray-600">Contenu adapté à vos préférences</div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={preferences.dataProcessing.personalization}
-                  onChange={(e) => handlePreferenceChange('dataProcessing', 'personalization', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div>
-                <div className="font-medium text-gray-900">Publicité Ciblée</div>
-                <div className="text-sm text-gray-600">Annonces personnalisées</div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={preferences.dataProcessing.advertising}
-                  onChange={(e) => handlePreferenceChange('dataProcessing', 'advertising', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-              </label>
-            </div>
           </div>
         </div>
 
@@ -346,7 +311,7 @@ export default function DataPreferences() {
                   cookies: { analytics: true, marketing: true },
                   notifications: { push: true, email: true, sms: true },
                   communication: { newsletters: true, promotional: true, updates: true },
-                  dataProcessing: { analytics: true, personalization: true, advertising: true }
+                  dataProcessing: { analytics: true }
                 }));
               }}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
@@ -360,7 +325,7 @@ export default function DataPreferences() {
                   cookies: { analytics: false, marketing: false },
                   notifications: { push: false, email: false, sms: false },
                   communication: { newsletters: false, promotional: false, updates: false },
-                  dataProcessing: { analytics: false, personalization: false, advertising: false }
+                  dataProcessing: { analytics: false }
                 }));
               }}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
