@@ -165,6 +165,22 @@ export default function ReservationPage() {
   const Marker = Leaflet.Marker || (() => null);
   const Popup = Leaflet.Popup || (() => null);
 
+  // Configuration des icônes Leaflet pour utiliser les WebP
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.L) {
+      // Configurer les nouvelles icônes WebP
+      window.L.Icon.Default.mergeOptions({
+        iconUrl: '/marker-icon.webp',
+        iconRetinaUrl: '/marker-icon-2x.webp',
+        shadowUrl: '/marker-shadow.webp',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+    }
+  }, []);
+
   // Référence vers la carte Leaflet
   const mapRef = useRef<LeafletMap | null>(null);
   // Référence vers le conteneur de la carte pour scroll
