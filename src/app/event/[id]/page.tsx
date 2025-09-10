@@ -274,7 +274,7 @@ export default function EventDetailPage() {
         {/* Bouton de retour */}
         <div className="mb-6">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/')}
             className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors duration-200 group"
           >
             <ArrowLeftIcon className="h-5 w-5 group-hover:-translate-x-1 transition-transform duration-200" />

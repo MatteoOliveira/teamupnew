@@ -254,11 +254,11 @@ export default function EventEditPage() {
         {/* Bouton de retour */}
         <div className="mb-6">
           <button
-            onClick={() => router.push(`/event/${event.id}`)}
+            onClick={() => router.push('/')}
             className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors duration-200 group"
           >
             <ArrowLeftIcon className="h-5 w-5 group-hover:-translate-x-1 transition-transform duration-200" />
-            <span className="font-medium">Retour aux détails</span>
+            <span className="font-medium">Retour aux événements</span>
           </button>
         </div>
 
