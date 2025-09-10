@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 // Déclaration de type pour gtag
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
+    gtag?: (command: string, targetId: string, config?: Record<string, unknown>) => void;
   }
 }
 
