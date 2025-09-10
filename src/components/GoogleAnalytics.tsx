@@ -3,6 +3,13 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
+// Déclaration de type pour gtag
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
+
 export default function GoogleAnalytics() {
   const { user } = useAuth();
 
