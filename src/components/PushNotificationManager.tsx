@@ -62,18 +62,26 @@ export default function PushNotificationManager() {
     }
   };
 
-  const handleTestNotification = () => {
+  const handleTestNotification = async () => {
     setMessage('');
     setMessageType('');
     
     try {
+      // Vérifier la permission avant d'envoyer la notification
+      if (Notification.permission !== 'granted') {
+        setMessage('Permission non accordée. Veuillez d\'abord activer les notifications.');
+        setMessageType('error');
+        return;
+      }
+
       // Créer une notification de test plus réaliste
       const testNotification = new Notification('🔔 Test TeamUp', {
         body: 'Ceci est un test de notification push depuis votre téléphone !',
         icon: '/icon-192x192.webp',
         badge: '/icon-192x192.webp',
         tag: 'teamup-test',
-        requireInteraction: true
+        requireInteraction: true,
+        silent: false
       });
 
       // Gérer les clics sur la notification
@@ -82,10 +90,16 @@ export default function PushNotificationManager() {
         testNotification.close();
       };
 
+      // Gérer la fermeture automatique après 5 secondes
+      setTimeout(() => {
+        testNotification.close();
+      }, 5000);
+
       setMessage('📱 Notification de test envoyée ! Vérifiez votre téléphone.');
       setMessageType('success');
-    } catch {
-      setMessage('Erreur lors de l\'envoi de la notification de test');
+    } catch (error) {
+      console.error('Erreur test notification:', error);
+      setMessage(`Erreur lors de l'envoi de la notification de test: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
       setMessageType('error');
     }
   };

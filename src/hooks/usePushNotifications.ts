@@ -26,7 +26,7 @@ export function usePushNotifications() {
   const { user } = useAuth();
   const [state, setState] = useState<PushNotificationState>({
     isSupported: false,
-    permission: { granted: false, denied: false, default: true },
+    permission: { granted: true, denied: false, default: false }, // Permission accordée par défaut
     token: null,
     isSubscribed: true, // Activé par défaut
     isLoading: false,
@@ -343,7 +343,12 @@ export function usePushNotifications() {
           // Auto-activer les notifications si l'utilisateur n'a pas encore de préférence définie
           if (!userData.hasOwnProperty('pushNotificationsEnabled') && state.isSupported) {
             console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
-            subscribe(); // Activation immédiate
+            // Demander la permission automatiquement
+            requestPermission().then((granted) => {
+              if (granted) {
+                subscribe(); // Activation immédiate après permission
+              }
+            });
           }
         } else {
           console.log('🔍 Document utilisateur non trouvé - Auto-activation');
@@ -352,7 +357,12 @@ export function usePushNotifications() {
           // Nouvel utilisateur - auto-activer les notifications
           if (state.isSupported) {
             console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
-            subscribe(); // Activation immédiate
+            // Demander la permission automatiquement
+            requestPermission().then((granted) => {
+              if (granted) {
+                subscribe(); // Activation immédiate après permission
+              }
+            });
           }
         }
       } catch (error) {
@@ -362,7 +372,7 @@ export function usePushNotifications() {
     };
 
     initializeState();
-  }, [user, checkPermission, state.isSupported, subscribe]);
+  }, [user, checkPermission, state.isSupported, subscribe, requestPermission]);
 
   // Configurer l'écoute des messages en premier plan
   useEffect(() => {
