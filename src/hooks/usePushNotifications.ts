@@ -55,6 +55,8 @@ export function usePushNotifications() {
     }
 
     const permission = Notification.permission;
+    console.log('🔍 Permission actuelle:', permission);
+    
     setState(prev => ({
       ...prev,
       permission: {
@@ -131,7 +133,7 @@ export function usePushNotifications() {
       }));
       return null;
     }
-  }, [state.isSupported, state.permission.granted]);
+  }, [state.isSupported, state.permission]);
 
   // S'abonner aux notifications
   const subscribe = useCallback(async (): Promise<boolean> => {
@@ -143,9 +145,13 @@ export function usePushNotifications() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
+      console.log('🚀 Début subscription, permission actuelle:', state.permission);
+      
       // Demander la permission si nécessaire
       if (!state.permission.granted) {
+        console.log('📝 Demande de permission...');
         const granted = await requestPermission();
+        console.log('📝 Permission accordée:', granted);
         if (!granted) {
           setState(prev => ({ ...prev, isLoading: false }));
           return false;

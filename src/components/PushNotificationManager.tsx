@@ -13,8 +13,6 @@ export default function PushNotificationManager() {
     error,
     subscribe,
     unsubscribe,
-    canSubscribe,
-    canUnsubscribe,
     needsPermission,
     token: stateToken,
   } = usePushNotifications();
@@ -201,7 +199,8 @@ export default function PushNotificationManager() {
         )}
 
         <div className="flex flex-wrap gap-3">
-          {canSubscribe && (
+          {/* Bouton d'activation - toujours visible si pas encore abonné */}
+          {!isSubscribed && (
             <Button
               onClick={handleSubscribe}
               disabled={isLoading}
@@ -211,7 +210,8 @@ export default function PushNotificationManager() {
             </Button>
           )}
 
-          {canUnsubscribe && (
+          {/* Bouton de désactivation - visible si abonné */}
+          {isSubscribed && (
             <Button
               onClick={handleUnsubscribe}
               disabled={isLoading}
@@ -221,7 +221,8 @@ export default function PushNotificationManager() {
             </Button>
           )}
 
-          {permission.granted && (
+          {/* Bouton de test - toujours visible si supporté */}
+          {isSupported && (
             <Button
               onClick={handleTestNotification}
               className="bg-green-600 hover:bg-green-700 text-white"
