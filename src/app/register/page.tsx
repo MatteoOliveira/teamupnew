@@ -155,6 +155,14 @@ export default function RegisterPage() {
               </div>
             )}
 
+            {/* Lien RGPD obligatoire */}
+            <div className="text-center text-xs text-gray-600">
+              En créant un compte, vous acceptez notre{' '}
+              <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
+                Politique de Confidentialité
+              </Link>
+            </div>
+
             <Button
               type="submit"
               disabled={loading}

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from '@/components/NavBar';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 
 const geistSans = Geist({
@@ -149,6 +150,8 @@ export default function RootLayout({
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 h-16 shadow-md">
           <NavBar />
         </nav>
+        {/* Footer avec liens légaux */}
+        <Footer />
         {/* Google Analytics chargé de manière conditionnelle */}
         <GoogleAnalytics />
       </body>
