@@ -41,8 +41,8 @@ export default function PrivacyPage() {
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li><strong>Données de profil :</strong> nom, adresse email, sport préféré</li>
-                <li><strong>Données de localisation :</strong> position géographique pour la recherche d'événements</li>
-                <li><strong>Données d'activité :</strong> participations aux événements, événements créés</li>
+                <li><strong>Données de localisation :</strong> position géographique pour la recherche d&apos;événements</li>
+                <li><strong>Données d&apos;activité :</strong> participations aux événements, événements créés</li>
                 <li><strong>Données de navigation :</strong> cookies analytiques pour améliorer le service</li>
               </ul>
             </div>
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
             <div className="text-gray-700">
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li><strong>Exécution du contrat :</strong> Gestion de votre compte et des événements</li>
-                <li><strong>Intérêt légitime :</strong> Amélioration du service et analyse d'utilisation</li>
+                <li><strong>Intérêt légitime :</strong> Amélioration du service et analyse d&apos;utilisation</li>
                 <li><strong>Consentement :</strong> Cookies analytiques et communications marketing</li>
               </ul>
             </div>
@@ -117,11 +117,11 @@ export default function PrivacyPage() {
             <div className="text-gray-700">
               <p className="mb-4">Conformément au RGPD, vous disposez des droits suivants :</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li><strong>Droit d'accès :</strong> Consulter vos données personnelles</li>
+                <li><strong>Droit d&apos;accès :</strong> Consulter vos données personnelles</li>
                 <li><strong>Droit de rectification :</strong> Corriger vos données</li>
-                <li><strong>Droit à l'effacement :</strong> Supprimer votre compte et vos données</li>
+                <li><strong>Droit à l&apos;effacement :</strong> Supprimer votre compte et vos données</li>
                 <li><strong>Droit à la portabilité :</strong> Récupérer vos données dans un format lisible</li>
-                <li><strong>Droit d'opposition :</strong> Vous opposer au traitement de vos données</li>
+                <li><strong>Droit d&apos;opposition :</strong> Vous opposer au traitement de vos données</li>
               </ul>
               <p className="mt-4">
                 Pour exercer ces droits, contactez-nous à : <strong>digital.campus@outlook.com</strong>
@@ -139,9 +139,9 @@ export default function PrivacyPage() {
                 Notre application utilise des cookies pour :
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Analyser l'utilisation de l'application (Google Analytics)</li>
+                <li>Analyser l&apos;utilisation de l&apos;application (Google Analytics)</li>
                 <li>Mémoriser vos préférences de connexion</li>
-                <li>Améliorer les performances de l'application</li>
+                <li>Améliorer les performances de l&apos;application</li>
               </ul>
               <p className="mt-4">
                 Vous pouvez gérer vos préférences de cookies dans les paramètres de votre navigateur.
