@@ -30,8 +30,8 @@ export default function ChooseExperiencePage() {
   }, [router]);
 
   const handleWebExperience = () => {
-    // Continuer sur le web
-    router.push('/');
+    // Continuer sur le web - rediriger vers le formulaire de connexion
+    router.push('/login');
   };
 
   const handleAppExperience = () => {
