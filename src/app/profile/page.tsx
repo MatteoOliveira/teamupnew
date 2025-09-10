@@ -38,13 +38,6 @@ const TABS = [
   { key: 'settings', label: 'Réglages' },
 ];
 
-const defaultNotifications = {
-  groupMessages: true,
-  eventReminders: true,
-  newEventsInCity: true,
-  eventRegistration: true,
-  eventChanges: true,
-};
 
 interface Event {
   id: string;
@@ -77,7 +70,6 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings'>('profile');
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [message, setMessage] = useState('');
-  const [notifications, setNotifications] = useState(defaultNotifications);
   const [darkMode, setDarkMode] = useState(false);
   const [myEvents, setMyEvents] = useState<Event[]>([]);
   const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
@@ -151,7 +143,6 @@ export default function ProfilePage() {
           setName(data.name || '');
           setSport(data.sport || '');
           setCity(data.city || '');
-          if (data.notifications) setNotifications({ ...defaultNotifications, ...data.notifications });
         }
         setProfileLoaded(true);
       });
@@ -417,16 +408,6 @@ export default function ProfilePage() {
   };
 
 
-  // Gérer le changement de préférences de notifications
-  const handleNotificationChange = (key: keyof typeof defaultNotifications) => {
-    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const saveNotifications = async () => {
-    if (!user) return;
-    await setDoc(doc(db, 'users', user.uid), { notifications }, { merge: true });
-    setMessage('Préférences de notifications mises à jour !');
-  };
 
   // Accessibilité : focus sur le tab actif
   useEffect(() => {
@@ -697,42 +678,6 @@ export default function ProfilePage() {
             </div>
           </SettingsSection>
 
-          {/* Section Notifications (Anciennes) */}
-          <SettingsSection
-            title="📧 Préférences de Notifications"
-            icon={
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            }
-          >
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600 mb-4">
-                Configurez vos préférences de notifications pour les événements et messages.
-              </p>
-              
-              <form onSubmit={e => { e.preventDefault(); saveNotifications(); }}>
-                <div className="space-y-3">
-                  {Object.entries(defaultNotifications).map(([key, label]) => (
-                    <label key={key} className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        checked={notifications[key as keyof typeof defaultNotifications]}
-                        onChange={() => handleNotificationChange(key as keyof typeof defaultNotifications)}
-                        aria-checked={notifications[key as keyof typeof defaultNotifications]}
-                        aria-label={key}
-                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                      />
-                      <span className="text-gray-900">{label}</span>
-                    </label>
-                  ))}
-                </div>
-                <Button type="submit" className="mt-4 bg-purple-600 hover:bg-purple-700 text-white">
-                  Enregistrer les préférences
-                </Button>
-              </form>
-            </div>
-          </SettingsSection>
 
           {/* Section Zone de Danger */}
           <SettingsSection
