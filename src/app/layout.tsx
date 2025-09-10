@@ -91,6 +91,36 @@ export default function RootLayout({
         {/* Preconnect pour Google Tag Manager - 310 ms d'économies */}
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         
+        {/* Google Tag Manager - Chargé de manière optimisée */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Charger GTM seulement en production et de manière asynchrone
+              if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+                // Délai pour éviter de bloquer le rendu initial
+                setTimeout(function() {
+                  var script = document.createElement('script');
+                  script.async = true;
+                  script.src = 'https://www.googletagmanager.com/gtag/js?id=G-XP9K67C013';
+                  script.onload = function() {
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    window.gtag = gtag;
+                    gtag('js', new Date());
+                    gtag('config', 'G-XP9K67C013', {
+                      page_title: document.title,
+                      page_location: window.location.href,
+                      send_page_view: true,
+                      anonymize_ip: true
+                    });
+                  };
+                  document.head.appendChild(script);
+                }, 2000); // Délai de 2 secondes pour éviter de bloquer le rendu
+              }
+            `,
+          }}
+        />
+        
         {/* Précharge globale ultra-agressive des tuiles les plus communes en France (zoom 8) */}
         {/* Tuile critique 129/88 - Tous les serveurs */}
         <link rel="preload" as="image" href="https://a.tile.openstreetmap.org/8/129/88.png" fetchPriority="high" crossOrigin="anonymous" />

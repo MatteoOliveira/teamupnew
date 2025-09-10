@@ -7,11 +7,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import Link from "next/link";
+import { Suspense, lazy } from 'react';
 
 import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap } from 'leaflet';
 import { useMap } from 'react-leaflet';
 import Head from 'next/head';
+
+// Lazy loading des composants lourds
+const MapContainer = lazy(() => import('react-leaflet').then(mod => ({ default: mod.MapContainer })));
+const TileLayer = lazy(() => import('react-leaflet').then(mod => ({ default: mod.TileLayer })));
+const Marker = lazy(() => import('react-leaflet').then(mod => ({ default: mod.Marker })));
+const Popup = lazy(() => import('react-leaflet').then(mod => ({ default: mod.Popup })));
 
 
 interface UserProfile {
@@ -158,12 +165,7 @@ export default function ReservationPage() {
       return dateOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const Leaflet = typeof window !== "undefined" ? require("react-leaflet") : {};
-  const MapContainer = Leaflet.MapContainer || (() => null);
-  const TileLayer = Leaflet.TileLayer || (() => null);
-  const Marker = Leaflet.Marker || (() => null);
-  const Popup = Leaflet.Popup || (() => null);
+  // Les composants MapContainer, TileLayer, Marker, Popup sont maintenant lazy-loaded
 
   // Configuration des icônes Leaflet pour utiliser les WebP
   useEffect(() => {
@@ -530,61 +532,74 @@ export default function ReservationPage() {
                 
               </div>
               
-              {/* Carte simplifiée - chargement direct */}
+              {/* Carte avec lazy loading pour réduire le JavaScript initial */}
                 <div style={{ height: 300, width: "100%", zIndex: 1, borderRadius: '8px', overflow: 'hidden' }}>
                   {mapCenter ? (
-                    <MapContainer
-                      center={mapCenter}
-                      zoom={currentZoom}
-                      style={{ height: "100%", width: "100%", zIndex: 1 }}
-                      scrollWheelZoom={true}
-                      whenCreated={(mapInstance: LeafletMap) => { mapRef.current = mapInstance; }}
-                    >
-                      <ZoomToEvent lat={zoomTarget.lat} lng={zoomTarget.lng} />
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                {/* Marqueur utilisateur */}
-                <Marker position={[position.lat, position.lng]}>
-                  <Popup>Vous êtes ici</Popup>
-                </Marker>
-                {/* Marqueurs événements */}
-                {events.filter(e => {
-                  // Même filtrage que pour les listes : futurs uniquement et pas créés par l'utilisateur
-                  if (!e.date?.seconds) return false;
-                  const eventDate = new Date(e.date.seconds * 1000);
-                  const now = new Date();
-                  if (eventDate <= now) return false;
-                  if (user && e.createdBy && e.createdBy === user.uid) return false;
-                  return typeof e.lat === 'number' && typeof e.lng === 'number';
-                }).map(event => (
-                  <Marker key={event.id} position={[event.lat as number, event.lng as number]}>
-                    <Popup>
-                      <div>
-                        <div className="font-bold">{event.name}</div>
-                        <div>{event.city} - {event.location}</div>
-                        <div>{event.date?.seconds ? new Date(event.date.seconds * 1000).toLocaleString() : ""}</div>
-                        <a
-                          href={`https://www.google.com/maps/dir/?api=1&origin=${position.lat},${position.lng}&destination=${event.lat},${event.lng}&travelmode=driving`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline mt-2 block"
-                        >
-                          Itinéraire Google Maps
-                        </a>
-                        <button
-                          className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-                          onClick={() => zoomToEvent(event.lat as number, event.lng as number)}
-                          type="button"
-                        >
-                          Zoomer sur l&apos;événement
-                        </button>
+                    <Suspense fallback={
+                      <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="w-6 h-6 mx-auto mb-2 text-blue-500 animate-spin">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                          </div>
+                          <p className="text-gray-500 text-sm">Chargement de la carte...</p>
+                        </div>
                       </div>
-                    </Popup>
-                  </Marker>
-                ))}
-                    </MapContainer>
+                    }>
+                      <MapContainer
+                        center={mapCenter}
+                        zoom={currentZoom}
+                        style={{ height: "100%", width: "100%", zIndex: 1 }}
+                        scrollWheelZoom={true}
+                        ref={(mapInstance: LeafletMap) => { mapRef.current = mapInstance; }}
+                      >
+                        <ZoomToEvent lat={zoomTarget.lat} lng={zoomTarget.lng} />
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        {/* Marqueur utilisateur */}
+                        <Marker position={[position.lat, position.lng]}>
+                          <Popup>Vous êtes ici</Popup>
+                        </Marker>
+                        {/* Marqueurs événements */}
+                        {events.filter(e => {
+                          // Même filtrage que pour les listes : futurs uniquement et pas créés par l'utilisateur
+                          if (!e.date?.seconds) return false;
+                          const eventDate = new Date(e.date.seconds * 1000);
+                          const now = new Date();
+                          if (eventDate <= now) return false;
+                          if (user && e.createdBy && e.createdBy === user.uid) return false;
+                          return typeof e.lat === 'number' && typeof e.lng === 'number';
+                        }).map(event => (
+                          <Marker key={event.id} position={[event.lat as number, event.lng as number]}>
+                            <Popup>
+                              <div>
+                                <div className="font-bold">{event.name}</div>
+                                <div>{event.city} - {event.location}</div>
+                                <div>{event.date?.seconds ? new Date(event.date.seconds * 1000).toLocaleString() : ""}</div>
+                                <a
+                                  href={`https://www.google.com/maps/dir/?api=1&origin=${position.lat},${position.lng}&destination=${event.lat},${event.lng}&travelmode=driving`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline mt-2 block"
+                                >
+                                  Itinéraire Google Maps
+                                </a>
+                                <button
+                                  className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                                  onClick={() => zoomToEvent(event.lat as number, event.lng as number)}
+                                  type="button"
+                                >
+                                  Zoomer sur l&apos;événement
+                                </button>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        ))}
+                      </MapContainer>
+                    </Suspense>
                   ) : (
                     <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center">
                       <div className="text-center">

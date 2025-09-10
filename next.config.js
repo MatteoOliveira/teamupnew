@@ -43,17 +43,42 @@ const nextConfig = {
       // Optimisation des chunks pour réduire le JavaScript inutilisé
       config.optimization.splitChunks = {
         chunks: 'all',
+        minSize: 20000, // Chunks minimum de 20KB
+        maxSize: 100000, // Chunks maximum de 100KB
         cacheGroups: {
           default: {
             minChunks: 2,
             priority: -20,
             reuseExistingChunk: true,
           },
+          // Chunk séparé pour React et ses dépendances
+          react: {
+            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            name: 'react',
+            priority: 20,
+            chunks: 'all',
+          },
+          // Chunk séparé pour Firebase
+          firebase: {
+            test: /[\\/]node_modules[\\/]firebase[\\/]/,
+            name: 'firebase',
+            priority: 15,
+            chunks: 'all',
+          },
+          // Chunk séparé pour Leaflet (map)
+          leaflet: {
+            test: /[\\/]node_modules[\\/]leaflet[\\/]/,
+            name: 'leaflet',
+            priority: 15,
+            chunks: 'all',
+          },
+          // Chunk séparé pour les autres vendors
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             priority: -10,
             chunks: 'all',
+            maxSize: 50000, // Limite de 50KB pour éviter les gros chunks
           },
           // Chunk séparé pour les composants lourds
           components: {
