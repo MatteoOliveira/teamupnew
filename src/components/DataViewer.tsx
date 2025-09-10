@@ -52,11 +52,11 @@ export default function DataViewer({ userData, loading }: DataViewerProps) {
 
   const renderProfileData = () => (
     <div className="space-y-2">
-      <div><strong>Nom :</strong> {userData.profile.name || 'Non renseigné'}</div>
-      <div><strong>Sport préféré :</strong> {userData.profile.sport || 'Non renseigné'}</div>
-      <div><strong>Ville :</strong> {userData.profile.city || 'Non renseigné'}</div>
-      <div><strong>Email :</strong> {userData.profile.email || 'Non renseigné'}</div>
-      <div><strong>ID Utilisateur :</strong> {userData.uid}</div>
+      <div className="text-gray-800"><strong>Nom :</strong> {userData.profile.name || 'Non renseigné'}</div>
+      <div className="text-gray-800"><strong>Sport préféré :</strong> {userData.profile.sport || 'Non renseigné'}</div>
+      <div className="text-gray-800"><strong>Ville :</strong> {userData.profile.city || 'Non renseigné'}</div>
+      <div className="text-gray-800"><strong>Email :</strong> {userData.profile.email || 'Non renseigné'}</div>
+      <div className="text-gray-800"><strong>ID Utilisateur :</strong> {userData.uid}</div>
     </div>
   );
 
@@ -70,14 +70,14 @@ export default function DataViewer({ userData, loading }: DataViewerProps) {
       ) : (
         userData.events.map((event, index) => (
           <div key={event.id} className="bg-gray-50 p-3 rounded border">
-            <div><strong>Événement #{index + 1}</strong></div>
-            <div><strong>Nom :</strong> {event.name}</div>
-            <div><strong>Sport :</strong> {event.sport}</div>
-            <div><strong>Date :</strong> {event.date ? formatDate(event.date) : 'Non définie'}</div>
-            <div><strong>Lieu :</strong> {event.location}, {event.city}</div>
-            <div><strong>Créé le :</strong> {formatDate(event.createdAt)}</div>
+            <div className="text-gray-900"><strong>Événement #{index + 1}</strong></div>
+            <div className="text-gray-800"><strong>Nom :</strong> {event.name}</div>
+            <div className="text-gray-800"><strong>Sport :</strong> {event.sport}</div>
+            <div className="text-gray-800"><strong>Date :</strong> {event.date ? formatDate(event.date) : 'Non définie'}</div>
+            <div className="text-gray-800"><strong>Lieu :</strong> {event.location}, {event.city}</div>
+            <div className="text-gray-800"><strong>Créé le :</strong> {formatDate(event.createdAt)}</div>
             {event.description && (
-              <div><strong>Description :</strong> {event.description}</div>
+              <div className="text-gray-800"><strong>Description :</strong> {event.description}</div>
             )}
           </div>
         ))
@@ -95,10 +95,10 @@ export default function DataViewer({ userData, loading }: DataViewerProps) {
       ) : (
         userData.participations.map((participation, index) => (
           <div key={participation.id} className="bg-gray-50 p-3 rounded border">
-            <div><strong>Participation #{index + 1}</strong></div>
-            <div><strong>Événement :</strong> {participation.eventName}</div>
-            <div><strong>Date de l&apos;événement :</strong> {participation.eventDate ? formatDate(participation.eventDate) : 'Non définie'}</div>
-            <div><strong>Rejoint le :</strong> {formatDate(participation.joinedAt)}</div>
+            <div className="text-gray-900"><strong>Participation #{index + 1}</strong></div>
+            <div className="text-gray-800"><strong>Événement :</strong> {participation.eventName}</div>
+            <div className="text-gray-800"><strong>Date de l&apos;événement :</strong> {participation.eventDate ? formatDate(participation.eventDate) : 'Non définie'}</div>
+            <div className="text-gray-800"><strong>Rejoint le :</strong> {formatDate(participation.joinedAt)}</div>
           </div>
         ))
       )}
@@ -115,10 +115,10 @@ export default function DataViewer({ userData, loading }: DataViewerProps) {
       ) : (
         userData.messages.map((message, index) => (
           <div key={message.id} className="bg-gray-50 p-3 rounded border">
-            <div><strong>Message #{index + 1}</strong></div>
-            <div><strong>Contenu :</strong> {message.message}</div>
-            <div><strong>Envoyé le :</strong> {formatDate(message.timestamp)}</div>
-            <div><strong>Dans l&apos;événement :</strong> {message.eventId}</div>
+            <div className="text-gray-900"><strong>Message #{index + 1}</strong></div>
+            <div className="text-gray-800"><strong>Contenu :</strong> {message.message}</div>
+            <div className="text-gray-800"><strong>Envoyé le :</strong> {formatDate(message.timestamp)}</div>
+            <div className="text-gray-800"><strong>Dans l&apos;événement :</strong> {message.eventId}</div>
           </div>
         ))
       )}
@@ -134,10 +134,10 @@ export default function DataViewer({ userData, loading }: DataViewerProps) {
         <div className="text-gray-500 italic">Aucun consentement enregistré</div>
       ) : (
         <div className="space-y-2">
-          <div><strong>Analytics :</strong> {userData.consent.analytics ? '✅ Autorisé' : '❌ Refusé'}</div>
-          <div><strong>Marketing :</strong> {userData.consent.marketing ? '✅ Autorisé' : '❌ Refusé'}</div>
-          <div><strong>Version :</strong> {userData.consent.version}</div>
-          <div><strong>Dernière mise à jour :</strong> {new Date(userData.consent.timestamp).toLocaleString('fr-FR')}</div>
+          <div className="text-gray-800"><strong>Analytics :</strong> {userData.consent.analytics ? '✅ Autorisé' : '❌ Refusé'}</div>
+          <div className="text-gray-800"><strong>Marketing :</strong> {userData.consent.marketing ? '✅ Autorisé' : '❌ Refusé'}</div>
+          <div className="text-gray-800"><strong>Version :</strong> {userData.consent.version}</div>
+          <div className="text-gray-800"><strong>Dernière mise à jour :</strong> {new Date(userData.consent.timestamp).toLocaleString('fr-FR')}</div>
         </div>
       )}
     </div>
