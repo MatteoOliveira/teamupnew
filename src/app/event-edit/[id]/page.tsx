@@ -147,7 +147,8 @@ export default function EventEditPage() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('.address-suggestions') && !target.closest('input[type="text"]')) {
+      // Ne fermer que si on clique vraiment en dehors des suggestions
+      if (!target.closest('.address-suggestions')) {
         setShowSuggestions(false);
       }
     };
@@ -167,6 +168,7 @@ export default function EventEditPage() {
 
   // Fonction d'autocomplétion Google Maps
   const searchAddress = async (query: string) => {
+    console.log('🔍 Recherche d\'adresse:', query);
     if (query.length < 3) {
       setAddressSuggestions([]);
       setShowSuggestions(false);
@@ -178,6 +180,7 @@ export default function EventEditPage() {
         `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&type=housenumber&autocomplete=1`
       );
       const data = await response.json();
+      console.log('📍 Suggestions reçues:', data.features?.length || 0);
       setAddressSuggestions(data.features || []);
       setShowSuggestions(true);
     } catch (error) {
@@ -521,7 +524,11 @@ export default function EventEditPage() {
                       resetAddressSelection();
                     }
                   }}
-                  onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
+                  onFocus={() => {
+                    if (addressSuggestions.length > 0) {
+                      setShowSuggestions(true);
+                    }
+                  }}
                   className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
                 />
                 
