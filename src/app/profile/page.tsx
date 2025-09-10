@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { doc, setDoc, getDoc, collection, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { deleteUser } from 'firebase/auth';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +11,7 @@ import Button from '@/components/Button';
 import { Menu } from '@headlessui/react';
 import { getFCMToken } from '@/lib/firebase-messaging';
 import { EventData, ParticipantData, UserStats, StatsPeriod } from '@/types/stats';
-import { calculateUserStats, getStatsPeriod } from '@/utils/statsCalculator';
+import { getStatsPeriod } from '@/utils/statsCalculator';
 import { useAnalytics } from '@/hooks/useAnalytics';
 // import Image from 'next/image'; // Désactivé pour éviter les erreurs 400
 
@@ -91,8 +91,6 @@ export default function ProfilePage() {
   
   // États pour les statistiques dynamiques
   const [selectedPeriod, setSelectedPeriod] = useState<StatsPeriod>(getStatsPeriod('all'));
-  const [allEvents, setAllEvents] = useState<EventData[]>([]);
-  const [allParticipants, setAllParticipants] = useState<ParticipantData[]>([]);
   
   // Refs pour le graphique des événements par mois
   const chartContainerRef = useRef<HTMLDivElement>(null);
@@ -210,7 +208,7 @@ export default function ProfilePage() {
     if (user) {
       trackPageView('profile');
     }
-  }, [user]);
+  }, [user, trackPageView]);
 
   // Charger les événements liés à l'utilisateur
   useEffect(() => {
@@ -1167,7 +1165,7 @@ export default function ProfilePage() {
                 <li>Votre historique d'activité</li>
               </ul>
               <p className="text-sm text-gray-600 mb-4">
-                Tapez <strong>"SUPPRIMER"</strong> dans le champ ci-dessous pour confirmer :
+                Tapez <strong>&quot;SUPPRIMER&quot;</strong> dans le champ ci-dessous pour confirmer :
               </p>
               <input
                 type="text"

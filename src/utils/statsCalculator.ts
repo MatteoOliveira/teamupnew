@@ -14,18 +14,18 @@ const CHART_COLORS = {
   gray: '#6B7280'
 };
 
-const SPORT_COLORS = [
-  CHART_COLORS.blue,
-  CHART_COLORS.green,
-  CHART_COLORS.purple,
-  CHART_COLORS.yellow,
-  CHART_COLORS.red,
-  CHART_COLORS.orange,
-  CHART_COLORS.pink,
-  CHART_COLORS.indigo,
-  CHART_COLORS.teal,
-  CHART_COLORS.gray
-];
+// const SPORT_COLORS = [
+//   CHART_COLORS.blue,
+//   CHART_COLORS.green,
+//   CHART_COLORS.purple,
+//   CHART_COLORS.yellow,
+//   CHART_COLORS.red,
+//   CHART_COLORS.orange,
+//   CHART_COLORS.pink,
+//   CHART_COLORS.indigo,
+//   CHART_COLORS.teal,
+//   CHART_COLORS.gray
+// ];
 
 // Fonction pour obtenir la période sélectionnée
 export function getStatsPeriod(periodKey: 'all' | 'month' | 'year' | 'week'): StatsPeriod {
@@ -132,7 +132,7 @@ export function calculateUserStats(
     : 0;
   
   // Calculer le score d'activité (basé sur la fréquence et la diversité)
-  const activityScore = calculateActivityScore(filteredEvents, userId);
+  const activityScore = calculateActivityScore(filteredEvents);
   
   // Calculer les événements par mois
   const eventsByMonth = calculateEventsByMonth(filteredEvents);
@@ -141,8 +141,8 @@ export function calculateUserStats(
   const sportDistribution = calculateSportDistribution(filteredEvents);
   
   // Calculer les objectifs
-  const monthlyGoal = calculateMonthlyGoal(events, participants, userId, period);
-  const newSportsGoal = calculateNewSportsGoal(events, participants, userId, period);
+  const monthlyGoal = calculateMonthlyGoal(events, participants, userId);
+  const newSportsGoal = calculateNewSportsGoal(events, participants, userId);
   
   return {
     totalEvents,
@@ -160,7 +160,7 @@ export function calculateUserStats(
 }
 
 // Calculer le score d'activité (0-5)
-function calculateActivityScore(events: EventData[], userId: string): number {
+function calculateActivityScore(events: EventData[]): number {
   if (events.length === 0) return 0;
   
   // Facteurs de score
@@ -241,7 +241,7 @@ function calculateSportDistribution(events: EventData[]): { sport: string; count
 }
 
 // Calculer l'objectif mensuel
-function calculateMonthlyGoal(events: EventData[], participants: ParticipantData[], userId: string, period: StatsPeriod): { current: number; target: number } {
+function calculateMonthlyGoal(events: EventData[], participants: ParticipantData[], userId: string): { current: number; target: number } {
   const currentMonthEvents = events.filter(event => {
     if (!event.date?.seconds) return false;
     const eventDate = new Date(event.date.seconds * 1000);
@@ -258,7 +258,7 @@ function calculateMonthlyGoal(events: EventData[], participants: ParticipantData
 }
 
 // Calculer l'objectif nouveaux sports
-function calculateNewSportsGoal(events: EventData[], participants: ParticipantData[], userId: string, period: StatsPeriod): { current: number; target: number } {
+function calculateNewSportsGoal(events: EventData[], participants: ParticipantData[], userId: string): { current: number; target: number } {
   const userEvents = events.filter(event => 
     event.createdBy === userId || participants.some(p => p.userId === userId && p.eventId === event.id)
   );

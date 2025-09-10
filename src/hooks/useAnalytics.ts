@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { collection, addDoc, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { useState, useCallback } from 'react';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
 import { EventData, ParticipantData, UserStats as NewUserStats, StatsPeriod } from '@/types/stats';
@@ -10,7 +10,7 @@ export interface AnalyticsEvent {
   userId: string;
   action: string;
   category: 'event' | 'user' | 'navigation' | 'engagement';
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: Date;
   metadata?: {
     userAgent?: string;
@@ -40,7 +40,7 @@ export const useAnalytics = () => {
   const trackEvent = useCallback(async (
     action: string,
     category: AnalyticsEvent['category'],
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ) => {
     if (!user) return;
 
