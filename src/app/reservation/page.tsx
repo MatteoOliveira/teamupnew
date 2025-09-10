@@ -20,6 +20,50 @@ const TileLayer = lazy(() => import('react-leaflet').then(mod => ({ default: mod
 const Marker = lazy(() => import('react-leaflet').then(mod => ({ default: mod.Marker })));
 const Popup = lazy(() => import('react-leaflet').then(mod => ({ default: mod.Popup })));
 
+// Composant pour configurer les icônes Leaflet
+function LeafletIconConfig() {
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.L) {
+      // Configurer les nouvelles icônes WebP
+      window.L.Icon.Default.mergeOptions({
+        iconUrl: '/marker-icon.webp',
+        iconRetinaUrl: '/marker-icon-2x.webp',
+        shadowUrl: '/marker-shadow.webp',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+    }
+  }, []);
+
+  return null; // Ce composant ne rend rien
+}
+
+// Configuration globale des icônes Leaflet (s'exécute immédiatement)
+if (typeof window !== "undefined") {
+  // Attendre que Leaflet soit chargé
+  const configureIcons = () => {
+    if (window.L && window.L.Icon && window.L.Icon.Default) {
+      window.L.Icon.Default.mergeOptions({
+        iconUrl: '/marker-icon.webp',
+        iconRetinaUrl: '/marker-icon-2x.webp',
+        shadowUrl: '/marker-shadow.webp',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+    } else {
+      // Réessayer après un court délai
+      setTimeout(configureIcons, 100);
+    }
+  };
+  
+  // Démarrer la configuration
+  configureIcons();
+}
+
 
 interface UserProfile {
   name: string;
@@ -167,21 +211,7 @@ export default function ReservationPage() {
 
   // Les composants MapContainer, TileLayer, Marker, Popup sont maintenant lazy-loaded
 
-  // Configuration des icônes Leaflet pour utiliser les WebP
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.L) {
-      // Configurer les nouvelles icônes WebP
-      window.L.Icon.Default.mergeOptions({
-        iconUrl: '/marker-icon.webp',
-        iconRetinaUrl: '/marker-icon-2x.webp',
-        shadowUrl: '/marker-shadow.webp',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
-    }
-  }, []);
+  // La configuration des icônes est maintenant gérée par le composant LeafletIconConfig
 
   // Référence vers la carte Leaflet
   const mapRef = useRef<LeafletMap | null>(null);
@@ -554,6 +584,7 @@ export default function ReservationPage() {
                         scrollWheelZoom={true}
                         ref={(mapInstance: LeafletMap) => { mapRef.current = mapInstance; }}
                       >
+                        <LeafletIconConfig />
                         <ZoomToEvent lat={zoomTarget.lat} lng={zoomTarget.lng} />
                         <TileLayer
                           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
