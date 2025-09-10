@@ -103,6 +103,9 @@ export default function ReservationPage() {
   // État pour le lazy loading de la carte
   const [isMapVisible, setIsMapVisible] = useState(false);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(6); // Commencer avec zoom France entière
+  const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
+  const [loadingPhase, setLoadingPhase] = useState<'france' | 'local' | 'complete'>('france');
   // Fonction pour zoomer sur un événement et scroller vers la carte
   const zoomToEvent = (lat: number, lng: number) => {
     setZoomTarget({ lat, lng });
@@ -111,39 +114,92 @@ export default function ReservationPage() {
     }
   };
 
-  // Précharge des tuiles critiques
+  // Précharge progressive : France entière → détails locaux
   useEffect(() => {
     if (position && isMapVisible) {
-      // Précharger les tuiles critiques autour de la position de l'utilisateur
-      const preloadTiles = () => {
-        const zoom = 8;
-        const lat = position.lat;
-        const lng = position.lng;
+      const preloadTilesProgressive = () => {
+        // Phase 1: Charger la France entière (zoom 6 - vue d'ensemble)
+        const franceZoom = 6;
+        const franceCenter = { lat: 46.2276, lng: 2.2137 }; // Centre de la France
         
-        // Calculer les coordonnées de tuile
-        const tileX = Math.floor((lng + 180) / 360 * Math.pow(2, zoom));
-        const tileY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
+        // Calculer les tuiles pour la France entière
+        const franceTileX = Math.floor((franceCenter.lng + 180) / 360 * Math.pow(2, franceZoom));
+        const franceTileY = Math.floor((1 - Math.log(Math.tan(franceCenter.lat * Math.PI / 180) + 1 / Math.cos(franceCenter.lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, franceZoom));
         
-        // Précharger les tuiles autour de la position
-        const tiles = [
-          { x: tileX, y: tileY },
-          { x: tileX + 1, y: tileY },
-          { x: tileX, y: tileY + 1 },
-          { x: tileX + 1, y: tileY + 1 },
-          { x: tileX - 1, y: tileY },
-          { x: tileX, y: tileY - 1 },
-          { x: tileX - 1, y: tileY - 1 }
+        // Tuiles pour couvrir la France (zoom 6)
+        const franceTiles = [
+          { x: franceTileX - 1, y: franceTileY - 1 },
+          { x: franceTileX, y: franceTileY - 1 },
+          { x: franceTileX + 1, y: franceTileY - 1 },
+          { x: franceTileX - 1, y: franceTileY },
+          { x: franceTileX, y: franceTileY },
+          { x: franceTileX + 1, y: franceTileY },
+          { x: franceTileX - 1, y: franceTileY + 1 },
+          { x: franceTileX, y: franceTileY + 1 },
+          { x: franceTileX + 1, y: franceTileY + 1 }
         ];
         
-        tiles.forEach(tile => {
-          const img = new Image();
-          img.src = `https://tile.openstreetmap.org/${zoom}/${tile.x}/${tile.y}.png`;
+        // Phase 1: Charger la France entière
+        setLoadingPhase('france');
+        franceTiles.forEach((tile, index) => {
+          setTimeout(() => {
+            const img = new Image();
+            img.src = `https://tile.openstreetmap.org/${franceZoom}/${tile.x}/${tile.y}.png`;
+          }, index * 50); // Chargement échelonné
         });
+        
+        // Phase 2: Après 500ms, charger les détails locaux (zoom 8)
+        setTimeout(() => {
+          setLoadingPhase('local');
+          const localZoom = 8;
+          const lat = position.lat;
+          const lng = position.lng;
+          
+          const localTileX = Math.floor((lng + 180) / 360 * Math.pow(2, localZoom));
+          const localTileY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, localZoom));
+          
+          // Tuiles locales pour les détails
+          const localTiles = [
+            { x: localTileX, y: localTileY },
+            { x: localTileX + 1, y: localTileY },
+            { x: localTileX, y: localTileY + 1 },
+            { x: localTileX + 1, y: localTileY + 1 },
+            { x: localTileX - 1, y: localTileY },
+            { x: localTileX, y: localTileY - 1 },
+            { x: localTileX - 1, y: localTileY - 1 }
+          ];
+          
+          localTiles.forEach((tile, index) => {
+            setTimeout(() => {
+              const img = new Image();
+              img.src = `https://tile.openstreetmap.org/${localZoom}/${tile.x}/${tile.y}.png`;
+            }, index * 100); // Chargement plus espacé pour les détails
+          });
+          
+          // Phase 3: Marquer comme terminé après 2 secondes
+          setTimeout(() => {
+            setLoadingPhase('complete');
+          }, 2000);
+        }, 500);
       };
       
-      preloadTiles();
+      preloadTilesProgressive();
     }
   }, [position, isMapVisible]);
+
+  // Initialiser le centre de la carte
+  useEffect(() => {
+    if (position) {
+      // Commencer avec le centre de la France, puis zoomer vers la position utilisateur
+      setMapCenter([46.2276, 2.2137]); // Centre de la France
+      
+      // Après 1 seconde, zoomer vers la position de l'utilisateur
+      setTimeout(() => {
+        setMapCenter([position.lat, position.lng]);
+        setCurrentZoom(8);
+      }, 1000);
+    }
+  }, [position]);
 
   // Intersection Observer pour le lazy loading de la carte
   useEffect(() => {
@@ -423,13 +479,26 @@ export default function ReservationPage() {
         {position && (
           <div className="mb-6 relative z-10" ref={mapContainerRef}>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="w-5 h-5 text-blue-500">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                  </svg>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-5 h-5 text-blue-500">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">Carte des événements</h2>
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">Carte des événements</h2>
+                
+                {/* Indicateur de progression */}
+                {isMapVisible && loadingPhase !== 'complete' && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span>
+                      {loadingPhase === 'france' && 'Chargement de la France...'}
+                      {loadingPhase === 'local' && 'Chargement des détails...'}
+                    </span>
+                  </div>
+                )}
               </div>
               
               {/* Placeholder pendant le chargement */}
@@ -452,10 +521,10 @@ export default function ReservationPage() {
               {/* Carte réelle avec lazy loading */}
               {isMapVisible && (
                 <div style={{ height: 300, width: "100%", zIndex: 1, borderRadius: '8px', overflow: 'hidden' }}>
-                  {isMapLoaded ? (
+                  {isMapLoaded && mapCenter ? (
                     <MapContainer
-                      center={[position.lat, position.lng]}
-                      zoom={8}
+                      center={mapCenter}
+                      zoom={currentZoom}
                       style={{ height: "100%", width: "100%", zIndex: 1 }}
                       scrollWheelZoom={true}
                       whenCreated={(mapInstance: LeafletMap) => { mapRef.current = mapInstance; }}
