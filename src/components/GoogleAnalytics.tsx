@@ -13,12 +13,6 @@ export default function GoogleAnalytics() {
       // Charger Google Analytics de manière asynchrone
       const loadGoogleAnalytics = async () => {
         try {
-          const { getAnalytics } = await import('firebase/analytics');
-          const { initializeApp } = await import('firebase/app');
-          
-          // Initialiser Analytics seulement si nécessaire
-          const analytics = getAnalytics();
-          
           // Configuration optimisée pour réduire la taille
           if (typeof window !== 'undefined' && window.gtag) {
             window.gtag('config', 'G-XP9K67C013', {

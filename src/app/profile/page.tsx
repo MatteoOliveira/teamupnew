@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy } from 'react';
 import { doc, setDoc, getDoc, collection, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { deleteUser } from 'firebase/auth';
@@ -15,9 +15,10 @@ import { getStatsPeriod } from '@/utils/statsCalculator';
 import { useAnalytics } from '@/hooks/useAnalytics';
 
 // Lazy loading des composants lourds pour réduire le JavaScript initial
-const StatsChart = lazy(() => import('@/components/StatsChart'));
-const AdvancedMetrics = lazy(() => import('@/components/AdvancedMetrics'));
-const GoalsSection = lazy(() => import('@/components/GoalsSection'));
+// Ces composants seront utilisés quand la section statistiques sera implémentée
+// const StatsChart = lazy(() => import('@/components/StatsChart'));
+// const AdvancedMetrics = lazy(() => import('@/components/AdvancedMetrics'));
+// const GoalsSection = lazy(() => import('@/components/GoalsSection'));
 // import Image from 'next/image'; // Désactivé pour éviter les erreurs 400
 
 const TABS = [
