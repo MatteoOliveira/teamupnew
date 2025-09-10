@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation';
 import Input from '@/components/Input';
 import Button from '@/components/Button';
 import { Menu } from '@headlessui/react';
-import { getFCMToken } from '@/lib/firebase-messaging';
 import { UserStats, StatsPeriod } from '@/types/stats';
 import { getStatsPeriod } from '@/utils/statsCalculator';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -19,6 +18,7 @@ import DataEditor from '@/components/DataEditor';
 import DataExporter from '@/components/DataExporter';
 import DataPreferences from '@/components/DataPreferences';
 import PushNotificationManager from '@/components/PushNotificationManager';
+import SettingsSection from '@/components/SettingsSection';
 
 // Lazy loading des composants lourds pour réduire le JavaScript initial
 // Ces composants seront utilisés quand la section statistiques sera implémentée
@@ -77,8 +77,6 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings'>('profile');
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [message, setMessage] = useState('');
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [pushToken, setPushToken] = useState<string | null>(null);
   const [notifications, setNotifications] = useState(defaultNotifications);
   const [darkMode, setDarkMode] = useState(false);
   const [myEvents, setMyEvents] = useState<Event[]>([]);
@@ -154,10 +152,6 @@ export default function ProfilePage() {
           setSport(data.sport || '');
           setCity(data.city || '');
           if (data.notifications) setNotifications({ ...defaultNotifications, ...data.notifications });
-          if (data.fcmToken) {
-            setPushEnabled(true);
-            setPushToken(data.fcmToken);
-          }
         }
         setProfileLoaded(true);
       });
@@ -422,28 +416,6 @@ export default function ProfilePage() {
     }
   };
 
-  // Activer les notifications push
-  const enablePushNotifications = async () => {
-    if (!user) return;
-    const token = await getFCMToken();
-    if (token) {
-      await setDoc(doc(db, 'users', user.uid), { fcmToken: token }, { merge: true });
-      setPushEnabled(true);
-      setPushToken(token);
-      setMessage('Notifications push activées !');
-    } else {
-      setMessage('Impossible d’activer les notifications push (permission refusée ou navigateur non supporté).');
-    }
-  };
-
-  // Désactiver les notifications push (supprimer le token)
-  const disablePushNotifications = async () => {
-    if (!user) return;
-    await setDoc(doc(db, 'users', user.uid), { fcmToken: null }, { merge: true });
-    setPushEnabled(false);
-    setPushToken(null);
-    setMessage('Notifications push désactivées.');
-  };
 
   // Gérer le changement de préférences de notifications
   const handleNotificationChange = (key: keyof typeof defaultNotifications) => {
@@ -643,97 +615,151 @@ export default function ProfilePage() {
 
       {/* Onglet Réglages */}
       <section id="tabpanel-settings" role="tabpanel" hidden={activeTab !== 'settings'} aria-labelledby="tab-settings">
-        <h2 className="text-xl font-semibold mb-4 text-black">Réglages</h2>
-        {/* Notifications push */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-black mb-2">Notifications push</h3>
-          {pushEnabled ? (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-green-700">Notifications activées</span>
-              <Button onClick={disablePushNotifications} className="bg-red-500 hover:bg-red-600">Désactiver</Button>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center space-x-2 mb-6">
+            <div className="w-5 h-5 text-purple-500">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </div>
-          ) : (
-            <Button onClick={enablePushNotifications} className="bg-blue-500 hover:bg-blue-600">Activer les notifications push sur cet appareil</Button>
-          )}
-          {pushToken && (
-            <div className="text-xs text-gray-500 break-all mt-1">Token : {pushToken}</div>
-          )}
-        </div>
-        {/* Préférences de notifications */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-black mb-2">Préférences de notifications</h3>
-          <form onSubmit={e => { e.preventDefault(); saveNotifications(); }}>
-            <div className="flex flex-col gap-2">
-              {Object.entries(defaultNotifications).map(([key, label]) => (
-                <label key={key} className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-gray-900">Réglages</h2>
+          </div>
+
+          {/* Section Notifications Push */}
+          <SettingsSection
+            title="🔔 Notifications Push"
+            icon={
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            }
+            defaultOpen={true}
+          >
+            <PushNotificationManager />
+          </SettingsSection>
+
+          {/* Section Droits RGPD */}
+          <SettingsSection
+            title="🔐 Mes Droits RGPD"
+            icon={
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            }
+          >
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 mb-4">
+                Conformément au RGPD, vous disposez de droits sur vos données personnelles.
+              </p>
+              
+              <DataViewer userData={userData} loading={userDataLoading} />
+              <DataEditor 
+                userData={userData} 
+                onDataUpdated={() => {
+                  window.location.reload();
+                }} 
+              />
+              <DataExporter userData={userData} />
+              <DataPreferences />
+            </div>
+          </SettingsSection>
+
+          {/* Section Préférences d'Affichage */}
+          <SettingsSection
+            title="🎨 Préférences d'Affichage"
+            icon={
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
+              </svg>
+            }
+          >
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-md font-medium text-gray-900 mb-2">Mode sombre</h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Le mode sombre n&apos;est activé que si vous le choisissez explicitement ci-dessous. 
+                  L&apos;application démarre toujours en mode clair par défaut.
+                </p>
+                <label className="flex items-center space-x-3">
                   <input
                     type="checkbox"
-                    checked={notifications[key as keyof typeof defaultNotifications]}
-                    onChange={() => handleNotificationChange(key as keyof typeof defaultNotifications)}
-                    aria-checked={notifications[key as keyof typeof defaultNotifications]}
-                    aria-label={key}
+                    checked={darkMode}
+                    onChange={handleDarkModeToggle}
+                    aria-checked={darkMode}
+                    aria-label="Activer le mode sombre"
+                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                   />
-                  <span className="text-black">{label}</span>
+                  <span className="text-gray-900">Activer le mode sombre</span>
                 </label>
-              ))}
+              </div>
             </div>
-            <Button type="submit" className="mt-3 bg-blue-500 hover:bg-blue-600">Enregistrer</Button>
-          </form>
-        </div>
-        {/* Dark mode */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-black mb-2">Mode sombre</h3>
-          <p className="text-sm text-gray-600 mb-2">Le mode sombre n&apos;est activé que si vous le choisissez explicitement ci-dessous. L&apos;application démarre toujours en mode clair par défaut.</p>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={darkMode}
-              onChange={handleDarkModeToggle}
-              aria-checked={darkMode}
-              aria-label="Activer le mode sombre"
-            />
-            <span className="text-black">Activer le mode sombre</span>
-          </label>
-        </div>
+          </SettingsSection>
 
-        {/* Section Droits RGPD */}
-        <div className="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">
-            🔐 Mes Droits RGPD
-          </h3>
-          <p className="text-blue-700 text-sm mb-4">
-            Conformément au RGPD, vous disposez de droits sur vos données personnelles.
-          </p>
-          
-          <div className="space-y-4">
-            <DataViewer userData={userData} loading={userDataLoading} />
-            <DataEditor 
-              userData={userData} 
-              onDataUpdated={() => {
-                // Rafraîchir les données après modification
-                window.location.reload();
-              }} 
-            />
-            <DataExporter userData={userData} />
-            <DataPreferences />
-            
-            {/* Notifications Push */}
-            <PushNotificationManager />
-          </div>
-        </div>
-
-        {/* Suppression de compte */}
-        <div className="mb-6 p-4 border border-red-200 rounded-lg bg-red-50">
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Zone de danger</h3>
-          <p className="text-sm text-red-700 mb-4">
-            La suppression de votre compte est définitive. Toutes vos données (profil, événements créés, participations) seront supprimées et ne pourront pas être récupérées.
-          </p>
-          <Button 
-            onClick={() => setShowDeleteModal(true)}
-            className="bg-red-600 hover:bg-red-700 text-white"
+          {/* Section Notifications (Anciennes) */}
+          <SettingsSection
+            title="📧 Préférences de Notifications"
+            icon={
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            }
           >
-            Supprimer mon compte
-          </Button>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 mb-4">
+                Configurez vos préférences de notifications pour les événements et messages.
+              </p>
+              
+              <form onSubmit={e => { e.preventDefault(); saveNotifications(); }}>
+                <div className="space-y-3">
+                  {Object.entries(defaultNotifications).map(([key, label]) => (
+                    <label key={key} className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={notifications[key as keyof typeof defaultNotifications]}
+                        onChange={() => handleNotificationChange(key as keyof typeof defaultNotifications)}
+                        aria-checked={notifications[key as keyof typeof defaultNotifications]}
+                        aria-label={key}
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-gray-900">{label}</span>
+                    </label>
+                  ))}
+                </div>
+                <Button type="submit" className="mt-4 bg-purple-600 hover:bg-purple-700 text-white">
+                  Enregistrer les préférences
+                </Button>
+              </form>
+            </div>
+          </SettingsSection>
+
+          {/* Section Zone de Danger */}
+          <SettingsSection
+            title="⚠️ Zone de Danger"
+            icon={
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            }
+            className="border-red-200 bg-red-50"
+          >
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-md font-medium text-red-800 mb-2">Supprimer mon compte</h4>
+                <p className="text-sm text-red-700 mb-4">
+                  La suppression de votre compte est définitive. Toutes vos données (profil, événements créés, participations) 
+                  seront supprimées et ne pourront pas être récupérées.
+                </p>
+                <Button 
+                  onClick={() => setShowDeleteModal(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Supprimer mon compte
+                </Button>
+              </div>
+            </div>
+          </SettingsSection>
         </div>
       </section>
 
