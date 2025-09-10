@@ -165,6 +165,8 @@ export function usePushNotifications() {
         return false;
       }
 
+      console.log('🔑 Token FCM obtenu:', token.substring(0, 20) + '...');
+
       // Sauvegarder le token dans Firestore
       await setDoc(doc(db, 'users', user.uid), {
         fcmToken: token,
@@ -172,12 +174,16 @@ export function usePushNotifications() {
         lastTokenUpdate: new Date(),
       }, { merge: true });
 
+      console.log('💾 Token sauvegardé dans Firestore');
+
       setState(prev => ({
         ...prev,
         isSubscribed: true,
         token: token,
         isLoading: false,
       }));
+
+      console.log('✅ État local mis à jour: isSubscribed = true');
 
       return true;
     } catch (error) {
@@ -274,12 +280,20 @@ export function usePushNotifications() {
           const hasToken = !!userData.fcmToken;
           const isEnabled = userData.pushNotificationsEnabled === true;
           
+          console.log('🔍 État Firestore:', {
+            hasToken,
+            isEnabled,
+            fcmToken: userData.fcmToken ? 'Présent' : 'Absent',
+            pushNotificationsEnabled: userData.pushNotificationsEnabled
+          });
+          
           setState(prev => ({ 
             ...prev, 
             isSubscribed: hasToken && isEnabled,
             token: userData.fcmToken || null
           }));
         } else {
+          console.log('🔍 Document utilisateur non trouvé');
           setState(prev => ({ ...prev, isSubscribed: false }));
         }
       } catch (error) {

@@ -253,10 +253,12 @@ export default function PushNotificationManager() {
           
           {/* Debug info */}
           <div className="mt-2 p-2 bg-white rounded border text-xs">
-            <div className="text-gray-600">
-              <strong>Debug :</strong> Permission: {permission.granted ? '✅ Accordée' : permission.denied ? '❌ Refusée' : '⏳ Non demandée'} | 
-              Abonnement: {isSubscribed ? '✅ Actif' : '❌ Inactif'} | 
-              Token: {stateToken ? '✅ Présent' : '❌ Absent'}
+            <div className="text-gray-600 space-y-1">
+              <div><strong>Debug :</strong></div>
+              <div>• Permission: {permission.granted ? '✅ Accordée' : permission.denied ? '❌ Refusée' : '⏳ Non demandée'}</div>
+              <div>• Abonnement: {isSubscribed ? '✅ Actif' : '❌ Inactif'}</div>
+              <div>• Token: {stateToken ? '✅ Présent' : '❌ Absent'}</div>
+              <div>• Support: {isSupported ? '✅ Oui' : '❌ Non'}</div>
             </div>
           </div>
         </div>
