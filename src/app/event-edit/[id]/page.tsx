@@ -272,7 +272,11 @@ export default function EventEditPage() {
     data: { eventId: string; action: string };
   }>) => {
     try {
+      console.log('🔔 === ENVOI PUSH NOTIFICATIONS ===');
+      console.log('🔔 Nombre de notifications:', notifications.length);
+      
       for (const notification of notifications) {
+        console.log('🔔 Traitement notification pour:', notification.userId);
         // Récupérer le token FCM de l'utilisateur
         const userDoc = await getDoc(doc(db, 'users', notification.userId));
         if (!userDoc.exists()) continue;
@@ -326,11 +330,20 @@ export default function EventEditPage() {
 
   const notifyParticipants = async (eventId: string, changeSummary: string[]) => {
     try {
+      console.log('🔔 === DÉBUT NOTIFICATIONS ===');
+      console.log('🔔 EventId:', eventId);
+      console.log('🔔 Changements:', changeSummary);
+      
       // Récupérer tous les participants
       const participantsQuery = query(collection(db, 'event_participants'), where('eventId', '==', eventId));
       const participantsSnapshot = await getDocs(participantsQuery);
       
-      if (participantsSnapshot.empty) return;
+      console.log('🔔 Participants trouvés:', participantsSnapshot.size);
+      
+      if (participantsSnapshot.empty) {
+        console.log('🔔 Aucun participant trouvé, arrêt des notifications');
+        return;
+      }
       
       // Générer le message de notification
       const changesText = changeSummary.length > 0 
@@ -365,7 +378,9 @@ export default function EventEditPage() {
       console.log(`Notifications sauvegardées pour ${notifications.length} participants`);
       
       // Envoyer les notifications push réelles
+      console.log('🔔 Envoi des notifications push...');
       await sendPushNotifications(notifications);
+      console.log('🔔 Notifications push envoyées !');
       
     } catch (error) {
       console.error('Erreur lors de l\'envoi des notifications:', error);
@@ -444,8 +459,13 @@ export default function EventEditPage() {
       await updateDoc(doc(db, 'events', event.id), updateData);
 
       // Envoyer des notifications aux participants si des changements ont été détectés
+      console.log('🔔 Changements détectés:', changeSummary);
       if (changeSummary.length > 0) {
+        console.log('🔔 Envoi des notifications aux participants...');
         await notifyParticipants(event.id, changeSummary);
+        console.log('🔔 Notifications envoyées !');
+      } else {
+        console.log('🔔 Aucun changement détecté, pas de notification');
       }
 
       setMessage('Événement modifié avec succès !');
