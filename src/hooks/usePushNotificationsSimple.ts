@@ -168,9 +168,10 @@ export function usePushNotificationsSimple() {
       addDebugLog('🔑 Génération du token FCM...');
       const messaging = getMessaging();
       
-      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "BAjaKTombbQFolVsg8nRR1J0Lq9j0d4qHlkLCI0gz2F4ya3XOBQdP_obmgn800G4j3OG4lR7b5lYGKQFyaW8-F0";
       addDebugLog(`🔑 Clé VAPID disponible: ${!!vapidKey}`);
       addDebugLog(`🔑 Clé VAPID (début): ${vapidKey?.substring(0, 10)}...`);
+      addDebugLog(`🔑 Source VAPID: ${process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY ? 'Variable env' : 'Clé par défaut'}`);
       
       if (!vapidKey) {
         throw new Error('Clé VAPID manquante');
