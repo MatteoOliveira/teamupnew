@@ -141,8 +141,14 @@ export function usePushNotifications() {
       const messaging = getMessaging();
       
       // Vérifier si la clé VAPID est disponible
-      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "BLx8K9vQ2xYz3a4b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3u4v5w6x7y8z9";
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
       console.log('🔑 Clé VAPID disponible:', !!vapidKey);
+      
+      if (!vapidKey) {
+        console.error('❌ Clé VAPID manquante !');
+        setState(prev => ({ ...prev, isLoading: false, error: 'Clé VAPID manquante - Contactez l\'administrateur' }));
+        return false;
+      }
       
       const token = await getToken(messaging, {
         vapidKey: vapidKey,
