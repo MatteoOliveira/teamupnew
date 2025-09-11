@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useEventCache } from '@/hooks/useEventCache';
 import OfflineEventDetails from './OfflineEventDetails';
 
@@ -46,7 +47,11 @@ export default function SimpleEventCard({ event, onZoomToEvent }: SimpleEventCar
 
   return (
     <>
-      <div onClick={handleCardClick} className="block">
+      {isCached && isFuture ? (
+        <div onClick={handleCardClick} className="block">
+      ) : (
+        <Link href={`/event/${event.id}`} className="block">
+      )}
         <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1">
@@ -110,7 +115,11 @@ export default function SimpleEventCard({ event, onZoomToEvent }: SimpleEventCar
             </div>
           </div>
         </div>
-      </div>
+      {isCached && isFuture ? (
+        </div>
+      ) : (
+        </Link>
+      )}
 
       {/* Modal des détails hors ligne */}
       {showOfflineDetails && (
