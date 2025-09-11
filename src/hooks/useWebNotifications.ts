@@ -28,7 +28,7 @@ export function useWebNotifications() {
     console.log('🔔 Écoute des notifications web natives pour:', user.uid);
 
     const notificationsQuery = query(
-      collection(db, 'web_notifications'),
+      collection(db, 'notifications'),
       where('userId', '==', user.uid),
       orderBy('createdAt', 'desc'),
       limit(10)
@@ -49,9 +49,11 @@ export function useWebNotifications() {
       setNotifications(newNotifications);
       setUnreadCount(newNotifications.length);
 
-      // Afficher les nouvelles notifications
+      // Afficher les nouvelles notifications (même système que "Tester sur mobile")
       newNotifications.forEach((notification) => {
         if (Notification.permission === 'granted') {
+          console.log('🔔 Affichage notification:', notification.title);
+          
           const webNotification = new Notification(notification.title, {
             body: notification.body,
             icon: '/icon-192x192.webp',
@@ -64,11 +66,12 @@ export function useWebNotifications() {
 
           // Rediriger vers l'événement quand on clique sur la notification
           webNotification.onclick = () => {
+            window.focus();
             window.open(`/event/${notification.eventId}`, '_blank');
             webNotification.close();
           };
 
-          // Fermer automatiquement après 5 secondes
+          // Fermer automatiquement après 5 secondes (comme le bouton test)
           setTimeout(() => {
             webNotification.close();
           }, 5000);

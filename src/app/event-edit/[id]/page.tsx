@@ -263,7 +263,7 @@ export default function EventEditPage() {
   };
 
   // Fonction pour envoyer des notifications aux participants
-  // Fonction pour envoyer les notifications web natives
+  // Fonction pour envoyer les notifications (même système que "Tester sur mobile")
   const sendPushNotifications = async (notifications: Array<{
     userId: string;
     title: string;
@@ -272,41 +272,43 @@ export default function EventEditPage() {
     data: { eventId: string; action: string };
   }>) => {
     try {
-      console.log('🔔 === ENVOI NOTIFICATIONS WEB NATIVES ===');
+      console.log('🔔 === ENVOI NOTIFICATIONS (SYSTÈME QUI FONCTIONNE) ===');
       console.log('🔔 Nombre de notifications:', notifications.length);
       
       for (const notification of notifications) {
         console.log('🔔 Traitement notification pour:', notification.userId);
         
-        // Vérifier si l'utilisateur a activé les notifications web natives
+        // Vérifier si l'utilisateur a activé les notifications
         const userDoc = await getDoc(doc(db, 'users', notification.userId));
         if (!userDoc.exists()) continue;
         
         const userData = userDoc.data();
-        const hasWebNotifications = userData.pushNotificationsEnabled === true;
+        const hasNotifications = userData.pushNotificationsEnabled === true;
         
-        if (!hasWebNotifications) {
+        if (!hasNotifications) {
           console.log(`Notifications désactivées pour l'utilisateur ${notification.userId}`);
           continue;
         }
         
-        // Créer une notification web native
-        const webNotification = {
+        // Sauvegarder la notification dans Firestore pour l'historique
+        const notificationRecord = {
           userId: notification.userId,
           title: notification.title,
           body: notification.body,
           eventId: notification.eventId,
           data: notification.data,
-          type: 'web_native',
+          type: 'event_update',
           createdAt: new Date()
         };
         
-        // Sauvegarder la notification dans Firestore
-        await addDoc(collection(db, 'web_notifications'), webNotification);
-        console.log(`Notification web native sauvegardée pour ${notification.userId}`);
+        await addDoc(collection(db, 'notifications'), notificationRecord);
+        console.log(`Notification sauvegardée pour ${notification.userId}`);
+        
+        // IMPORTANT: Le système de notification réel se fait côté client
+        // via le hook useWebNotifications qui écoute la collection 'notifications'
       }
     } catch (error) {
-      console.error('Erreur envoi notifications web natives:', error);
+      console.error('Erreur envoi notifications:', error);
     }
   };
 
