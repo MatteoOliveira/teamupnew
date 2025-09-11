@@ -517,7 +517,7 @@ export default function EventEditPage() {
       console.log('🔔 Changements détectés:', changeSummary);
       if (changeSummary.length > 0) {
         console.log('🔔 Envoi des notifications aux participants...');
-        await notifyParticipants(event.id, changeSummary, editedEvent);
+        await notifyParticipants(event.id, changeSummary, event);
         console.log('🔔 Notifications envoyées !');
       } else {
         console.log('🔔 Aucun changement détecté, pas de notification');
