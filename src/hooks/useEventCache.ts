@@ -53,7 +53,7 @@ export function useEventCache() {
     loadCachedEvents();
   }, [loadCachedEvents]);
 
-  const cacheEvent = useCallback((event: Event) => {
+  const cacheEvent = useCallback((event: Event, participants?: any[]) => {
     console.log('🔄 CACHE: Tentative pour', event.name, 'ID:', event.id.slice(0, 8));
     console.log('📅 CACHE: Date event', event.date);
     
@@ -79,7 +79,8 @@ export function useEventCache() {
     const cachedEvent: CachedEvent = {
       ...event,
       cachedAt: new Date(),
-      isOfflineAvailable: true
+      isOfflineAvailable: true,
+      participants: participants || []
     };
 
     setCachedEvents(prev => {

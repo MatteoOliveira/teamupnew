@@ -31,4 +31,5 @@ export interface Participant {
 export interface CachedEvent extends Event {
   cachedAt: Date;
   isOfflineAvailable: boolean;
+  participants?: Participant[];
 }

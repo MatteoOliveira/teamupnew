@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useEventCache } from '@/hooks/useEventCache';
-import { Event } from '@/types/event';
+import { useOfflineMessages } from '@/hooks/useOfflineMessages';
+import { Event, Participant } from '@/types/event';
+import { MapPinIcon, CalendarIcon, UsersIcon, UserIcon, ClockIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 
 interface OfflineEventDetailsProps {
   eventId: string;
@@ -11,8 +13,13 @@ interface OfflineEventDetailsProps {
 
 export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDetailsProps) {
   const { getCachedEvent } = useEventCache();
+  const { addOfflineMessage, getOfflineMessagesForEvent } = useOfflineMessages();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showParticipants, setShowParticipants] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+  const [messageType, setMessageType] = useState<'message' | 'confirmation'>('message');
 
   useEffect(() => {
     console.log('🔍 OFFLINE: Recherche ID:', eventId.slice(0, 8));
@@ -53,6 +60,16 @@ export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDe
     };
     return colors[sport] || 'bg-gray-500';
   };
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() && event) {
+      addOfflineMessage(event.id, newMessage.trim(), messageType);
+      setNewMessage('');
+      setShowMessages(false);
+    }
+  };
+
+  const offlineMessages = event ? getOfflineMessagesForEvent(event.id) : [];
 
   if (loading) {
     return (
@@ -149,12 +166,38 @@ export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDe
 
           {/* Participants */}
           <div className="bg-purple-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-purple-900 mb-2">👥 Participants</h3>
-            <p className="text-purple-800">
-              Maximum {event.maxParticipants} participants
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-purple-900">👥 Participants</h3>
+              <button
+                onClick={() => setShowParticipants(!showParticipants)}
+                className="text-purple-600 hover:text-purple-800 text-sm font-medium"
+              >
+                {showParticipants ? 'Masquer' : 'Voir la liste'}
+              </button>
+            </div>
+            <p className="text-purple-800 mb-2">
+              {event.currentParticipants || 0} / {event.maxParticipants} participants
             </p>
+            
+            {showParticipants && (event as any).participants && (event as any).participants.length > 0 ? (
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {(event as any).participants.map((participant: Participant) => (
+                  <div key={participant.id} className="flex items-center justify-between bg-white p-2 rounded border">
+                    <div>
+                      <span className="font-medium text-gray-900">{participant.userName}</span>
+                      <span className="text-sm text-gray-600 ml-2">({participant.contact})</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : showParticipants ? (
+              <p className="text-purple-600 text-sm italic">
+                Aucun participant enregistré en cache
+              </p>
+            ) : null}
+            
             {event.isReserved && (
-              <p className="text-purple-600 text-sm mt-1">
+              <p className="text-purple-600 text-sm mt-2">
                 ⚠️ Événement réservé
               </p>
             )}
@@ -167,6 +210,89 @@ export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDe
               <p className="text-yellow-800">{event.contactInfo}</p>
             </div>
           )}
+
+          {/* Messages Hors Ligne */}
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-blue-900">💬 Messages</h3>
+              <button
+                onClick={() => setShowMessages(!showMessages)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                {showMessages ? 'Masquer' : 'Écrire un message'}
+              </button>
+            </div>
+            
+            {/* Messages existants */}
+            {offlineMessages.length > 0 && (
+              <div className="space-y-2 max-h-32 overflow-y-auto mb-3">
+                {offlineMessages.map((msg) => (
+                  <div key={msg.id} className="bg-white p-2 rounded border-l-4 border-blue-400">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-blue-600 font-medium">
+                        {msg.type === 'confirmation' ? '✅ Confirmation' : '💬 Message'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {msg.createdAt.toLocaleTimeString('fr-FR')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-800 mt-1">{msg.content}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Formulaire de nouveau message */}
+            {showMessages && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-blue-900 mb-1">
+                    Type de message
+                  </label>
+                  <select
+                    value={messageType}
+                    onChange={(e) => setMessageType(e.target.value as 'message' | 'confirmation')}
+                    className="w-full border border-blue-300 rounded-md px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="message">💬 Message</option>
+                    <option value="confirmation">✅ Confirmation</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-blue-900 mb-1">
+                    Contenu
+                  </label>
+                  <textarea
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Tapez votre message ou confirmation..."
+                    className="w-full border border-blue-300 rounded-md px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim()}
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Envoyer hors ligne
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMessages(false);
+                      setNewMessage('');
+                    }}
+                    className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Indicateur Hors Ligne */}
           <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-400">
