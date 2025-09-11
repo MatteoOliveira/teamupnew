@@ -1,14 +1,25 @@
-// PWA sans service worker pour éviter les conflits avec Firebase
+// PWA avec service worker minimal pour éviter les conflits
 const withPWA = require('next-pwa')({
   dest: 'public',
-  register: false, // Pas d'enregistrement automatique du service worker
+  register: true,
   skipWaiting: true,
-  disable: false, // PWA activée mais sans service worker
+  disable: false,
   buildExcludes: [/middleware-manifest\.json$/, /build-manifest\.json$/],
   publicExcludes: ['!robots.txt', '!sitemap.xml'],
-  // Pas de service worker personnalisé
-  sw: false,
-  runtimeCaching: [], // Pas de cache
+  // Service worker minimal
+  sw: 'sw-minimal.js',
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 50,
+        },
+      },
+    },
+  ],
 })
 
 /** @type {import('next').NextConfig} */
