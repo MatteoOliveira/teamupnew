@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { collection, query, orderBy, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export interface AdminAnalytics {
@@ -143,12 +143,12 @@ const generatePeakActivity = (days: number) => {
   return data;
 };
 
-const generateEventsPerDay = (events: any[], days: number) => {
-  const data = [];
+const generateEventsPerDay = (events: unknown[], days: number) => {
+  const data: { date: string; count: number }[] = [];
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
-    const dayEvents = events.filter(event => {
+    const dayEvents = events.filter((event: any) => {
       const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
       const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
       const targetDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -162,8 +162,8 @@ const generateEventsPerDay = (events: any[], days: number) => {
   return data;
 };
 
-const generateUserGrowth = (users: any[], days: number) => {
-  const data = [];
+const generateUserGrowth = (users: unknown[], days: number) => {
+  const data: { date: string; count: number }[] = [];
   const totalUsers = users.length;
   
   for (let i = days - 1; i >= 0; i--) {

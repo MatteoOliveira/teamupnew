@@ -3,23 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { collection, query, orderBy, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Event } from '@/types/event';
 import { ArrowLeftIcon, ChartBarIcon, CalendarIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useAdminAnalytics } from '@/hooks/useAdminAnalytics';
 import AdminCharts from '@/components/AdminCharts';
 
-interface AdminStats {
-  totalEvents: number;
-  futureEvents: number;
-  pastEvents: number;
-  totalUsers: number;
-  eventsToday: number;
-  avgSessionTime: number;
-  peakActivity: { date: string; users: number }[];
-  eventsPerDay: { date: string; count: number }[];
-}
 
 export default function AdminPage() {
   const { user, loading } = useAuth();
