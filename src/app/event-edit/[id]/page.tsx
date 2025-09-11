@@ -264,7 +264,7 @@ export default function EventEditPage() {
 
   // Fonction pour envoyer des notifications aux participants
   // Fonction pour envoyer les notifications FCM (fonctionne même PWA fermée)
-  const sendFCMNotifications = async (participants: string[], eventData: any) => {
+  const sendFCMNotifications = async (participants: string[], eventData: Event) => {
     console.log('🚀 === ENVOI NOTIFICATIONS FCM ===');
     console.log('🚀 Participants à notifier:', participants);
 

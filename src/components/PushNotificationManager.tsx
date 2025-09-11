@@ -25,7 +25,6 @@ export default function PushNotificationManager() {
     isSubscribed: fcmSubscribed,
     error: fcmError,
     requestPermission: requestFCMPermission,
-    subscribe: subscribeFCM,
     unsubscribe: unsubscribeFCM
   } = useFCMNotifications();
 

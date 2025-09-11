@@ -4,12 +4,13 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-comp
 
 // Configuration Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBQjKjKjKjKjKjKjKjKjKjKjKjKjKjKjKjK",
+  apiKey: "AIzaSyDEhV0f2kWRyorZGi6QoFEuQvSabUq8qGU",
   authDomain: "teamup-7a2d6.firebaseapp.com",
   projectId: "teamup-7a2d6",
-  storageBucket: "teamup-7a2d6.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdefghijklmnop"
+  storageBucket: "teamup-7a2d6.firebasestorage.app",
+  messagingSenderId: "535498065920",
+  appId: "1:535498065920:web:9c23eb124e7af9748030e5",
+  measurementId: "G-XP9K67C013"
 };
 
 // Initialiser Firebase

@@ -46,7 +46,7 @@ export function useFCMNotifications() {
       setState(prev => ({ ...prev, error: 'Erreur lors de la demande de permission' }));
       return false;
     }
-  }, [isSupported]);
+  }, [isSupported, subscribe]);
 
   // S'abonner aux notifications FCM
   const subscribe = useCallback(async () => {
@@ -142,7 +142,7 @@ export function useFCMNotifications() {
     });
 
     return unsubscribe;
-  }, [messaging, state.isSubscribed]);
+  }, [state.isSubscribed]);
 
   // Initialiser automatiquement
   useEffect(() => {
