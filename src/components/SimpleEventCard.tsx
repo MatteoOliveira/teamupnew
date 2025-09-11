@@ -45,15 +45,8 @@ export default function SimpleEventCard({ event, onZoomToEvent }: SimpleEventCar
     }
   };
 
-  return (
-    <>
-      {isCached && isFuture ? (
-        <div onClick={handleCardClick} className="block">
-          <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group">
-      ) : (
-        <Link href={`/event/${event.id}`} className="block">
-          <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group">
-      )}
+  const cardContent = (
+    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors">{event.name}</h3>
@@ -116,11 +109,20 @@ export default function SimpleEventCard({ event, onZoomToEvent }: SimpleEventCar
             </div>
           </div>
           </div>
-        {isCached && isFuture ? (
-          </div>
-        ) : (
-          </Link>
-        )}
+    </div>
+  );
+
+  return (
+    <>
+      {isCached && isFuture ? (
+        <div onClick={handleCardClick} className="block">
+          {cardContent}
+        </div>
+      ) : (
+        <Link href={`/event/${event.id}`} className="block">
+          {cardContent}
+        </Link>
+      )}
 
       {/* Modal des détails hors ligne */}
       {showOfflineDetails && (
