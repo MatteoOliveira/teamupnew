@@ -143,11 +143,11 @@ export default function AdminDashboard() {
 
         {/* Statistiques Principales */}
         {analytics && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
-                <CalendarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-                <div className="ml-3 sm:ml-4">
+                <CalendarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+                <div className="ml-3 sm:ml-4 min-w-0">
                   <p className="text-xs sm:text-sm font-medium text-gray-600">Total Événements</p>
                   <p className="text-lg sm:text-2xl font-bold text-gray-900">{analytics.totalEvents}</p>
                   <p className="text-xs text-green-600">+{analytics.eventsToday} aujourd&apos;hui</p>
@@ -157,8 +157,8 @@ export default function AdminDashboard() {
 
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
-                <UsersIcon className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
-                <div className="ml-3 sm:ml-4">
+                <UsersIcon className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
+                <div className="ml-3 sm:ml-4 min-w-0">
                   <p className="text-xs sm:text-sm font-medium text-gray-600">Utilisateurs</p>
                   <p className="text-lg sm:text-2xl font-bold text-gray-900">{analytics.totalUsers}</p>
                   <p className="text-xs text-blue-600">{analytics.activeUsers} actifs</p>
@@ -168,8 +168,8 @@ export default function AdminDashboard() {
 
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
-                <ClockIcon className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
-                <div className="ml-3 sm:ml-4">
+                <ClockIcon className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 flex-shrink-0" />
+                <div className="ml-3 sm:ml-4 min-w-0">
                   <p className="text-xs sm:text-sm font-medium text-gray-600">Temps Moyen</p>
                   <p className="text-lg sm:text-2xl font-bold text-gray-900">{analytics.avgSessionTime}min</p>
                   <p className="text-xs text-purple-600">par session</p>
@@ -179,8 +179,8 @@ export default function AdminDashboard() {
 
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
-                <ChartBarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
-                <div className="ml-3 sm:ml-4">
+                <ChartBarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600 flex-shrink-0" />
+                <div className="ml-3 sm:ml-4 min-w-0">
                   <p className="text-xs sm:text-sm font-medium text-gray-600">Rétention</p>
                   <p className="text-lg sm:text-2xl font-bold text-gray-900">{analytics.retentionRate.toFixed(1)}%</p>
                   <p className="text-xs text-orange-600">taux de rétention</p>
@@ -222,31 +222,47 @@ export default function AdminDashboard() {
               
               return (
                 <div key={event.id} className="px-4 sm:px-6 py-4 hover:bg-gray-50">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                  <div className="flex flex-col space-y-3">
                     <div className="flex-1">
-                      <h3 className="text-sm sm:text-lg font-medium text-gray-900">{event.name}</h3>
-                      <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{event.description}</p>
-                      <div className="mt-2 flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500">
-                        <span>📅 {eventDate.toLocaleDateString('fr-FR')}</span>
-                        <span>⏰ {eventDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-                        <span>📍 {event.location}</span>
-                        <span>👥 {event.currentParticipants || 0} participants</span>
-                      </div>
+                      <h3 className="text-sm sm:text-lg font-medium text-gray-900 line-clamp-1">{event.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mt-1">{event.description}</p>
                     </div>
-                    <div className="flex items-center justify-between sm:justify-end space-x-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        isFuture
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {isFuture ? 'Futur' : 'Passé'}
-                      </span>
-                      <button
-                        onClick={() => router.push(`/event/${event.id}`)}
-                        className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium"
-                      >
-                        Voir
-                      </button>
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                      <div className="flex flex-wrap gap-2 text-xs sm:text-sm text-gray-500">
+                        <span className="flex items-center">
+                          <span className="mr-1">📅</span>
+                          {eventDate.toLocaleDateString('fr-FR')}
+                        </span>
+                        <span className="flex items-center">
+                          <span className="mr-1">⏰</span>
+                          {eventDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <span className="flex items-center">
+                          <span className="mr-1">📍</span>
+                          <span className="truncate max-w-32 sm:max-w-none">{event.location}</span>
+                        </span>
+                        <span className="flex items-center">
+                          <span className="mr-1">👥</span>
+                          {event.currentParticipants || 0}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between sm:justify-end space-x-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          isFuture
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {isFuture ? 'Futur' : 'Passé'}
+                        </span>
+                        <button
+                          onClick={() => router.push(`/event/${event.id}`)}
+                          className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium px-2 py-1 rounded hover:bg-blue-50"
+                        >
+                          Voir
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

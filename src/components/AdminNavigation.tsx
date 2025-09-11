@@ -27,7 +27,7 @@ export default function AdminNavigation({ currentPage }: AdminNavigationProps) {
       {/* Menu burger pour mobile */}
       <div className="sm:hidden">
         <Menu as="div" className="relative">
-          <Menu.Button className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <Menu.Button className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
             <span className="flex items-center space-x-2">
               <div className="w-4 h-4 text-blue-500">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@ export default function AdminNavigation({ currentPage }: AdminNavigationProps) {
                         active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
                       } ${
                         currentPage === tab.key ? 'bg-blue-50 text-blue-700 font-semibold' : ''
-                      } flex items-center space-x-3 w-full text-left px-4 py-3 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md mx-2`}
+                      } flex items-center space-x-3 w-full text-left px-4 py-3 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md mx-2 transition-colors`}
                     >
                       <div className={`w-2 h-2 rounded-full ${currentPage === tab.key ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
                       <span className="text-lg">{tab.icon}</span>

@@ -23,19 +23,19 @@ export default function AdminCharts({ analytics }: AdminChartsProps) {
     const maxValue = getMaxValue(data);
     
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 sm:space-y-3">
         {data.map((item, index) => {
           const value = 'count' in item ? item.count : item.users;
           const percentage = (value / maxValue) * 100;
           
           return (
-            <div key={index} className="flex items-center space-x-3">
-              <div className="w-16 text-xs text-gray-600 text-right">
+            <div key={index} className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-12 sm:w-16 text-xs text-gray-600 text-right flex-shrink-0">
                 {formatDate(item.date)}
               </div>
-              <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+              <div className="flex-1 bg-gray-200 rounded-full h-3 sm:h-4 relative">
                 <div
-                  className={`h-4 rounded-full ${color} transition-all duration-500`}
+                  className={`h-3 sm:h-4 rounded-full ${color} transition-all duration-500`}
                   style={{ width: `${percentage}%` }}
                 ></div>
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
@@ -54,22 +54,22 @@ export default function AdminCharts({ analytics }: AdminChartsProps) {
     const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-purple-500'];
     
     return (
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {data.map((item, index) => {
           const percentage = (item.count / total) * 100;
           const color = colors[index % colors.length];
           
           return (
-            <div key={index} className="flex items-center space-x-3">
-              <div className={`w-4 h-4 rounded-full ${color}`}></div>
-              <div className="flex-1">
+            <div key={index} className="flex items-center space-x-2 sm:space-x-3">
+              <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full ${color} flex-shrink-0`}></div>
+              <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700">{item.sport}</span>
-                  <span className="text-sm text-gray-500">{item.count} événements</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">{item.sport}</span>
+                  <span className="text-xs sm:text-sm text-gray-500 ml-2">{item.count}</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2 mt-1">
                   <div
-                    className={`h-2 rounded-full ${color} transition-all duration-500`}
+                    className={`h-1.5 sm:h-2 rounded-full ${color} transition-all duration-500`}
                     style={{ width: `${percentage}%` }}
                   ></div>
                 </div>
@@ -82,13 +82,13 @@ export default function AdminCharts({ analytics }: AdminChartsProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Analytics</h3>
-        <div className="flex space-x-2">
+    <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Analytics</h3>
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setActiveChart('activity')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+            className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
               activeChart === 'activity'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -98,7 +98,7 @@ export default function AdminCharts({ analytics }: AdminChartsProps) {
           </button>
           <button
             onClick={() => setActiveChart('events')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+            className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
               activeChart === 'events'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -108,7 +108,7 @@ export default function AdminCharts({ analytics }: AdminChartsProps) {
           </button>
           <button
             onClick={() => setActiveChart('users')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+            className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
               activeChart === 'users'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -118,7 +118,7 @@ export default function AdminCharts({ analytics }: AdminChartsProps) {
           </button>
           <button
             onClick={() => setActiveChart('sports')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+            className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
               activeChart === 'sports'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -129,31 +129,31 @@ export default function AdminCharts({ analytics }: AdminChartsProps) {
         </div>
       </div>
 
-      <div className="h-64">
+      <div className="h-48 sm:h-64">
         {activeChart === 'activity' && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-4">Utilisateurs actifs (7 derniers jours)</h4>
+            <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">Utilisateurs actifs (7 derniers jours)</h4>
             {renderBarChart(analytics.peakActivity, 'bg-gradient-to-r from-blue-500 to-blue-600')}
           </div>
         )}
 
         {activeChart === 'events' && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-4">Événements créés (7 derniers jours)</h4>
+            <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">Événements créés (7 derniers jours)</h4>
             {renderBarChart(analytics.eventsPerDay, 'bg-gradient-to-r from-green-500 to-green-600')}
           </div>
         )}
 
         {activeChart === 'users' && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-4">Croissance des utilisateurs (30 derniers jours)</h4>
+            <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">Croissance des utilisateurs (30 derniers jours)</h4>
             {renderBarChart(analytics.userGrowth, 'bg-gradient-to-r from-purple-500 to-purple-600')}
           </div>
         )}
 
         {activeChart === 'sports' && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-4">Sports les plus populaires</h4>
+            <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">Sports les plus populaires</h4>
             {renderPieChart(analytics.popularSports)}
           </div>
         )}
