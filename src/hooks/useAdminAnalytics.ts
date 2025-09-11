@@ -43,24 +43,38 @@ export const useAdminAnalytics = () => {
       const events = eventsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as Array<{
+        id: string;
+        date?: Date | string | { seconds: number };
+        sport?: string;
+        [key: string]: unknown;
+      }>;
 
       // Calculer les statistiques de base
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
       const futureEvents = events.filter(event => {
-        const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
+        if (!event.date) return false;
+        const eventDate = event.date instanceof Date ? event.date : 
+          typeof event.date === 'string' ? new Date(event.date) :
+          new Date(event.date.seconds * 1000);
         return eventDate >= today;
       });
 
       const pastEvents = events.filter(event => {
-        const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
+        if (!event.date) return false;
+        const eventDate = event.date instanceof Date ? event.date : 
+          typeof event.date === 'string' ? new Date(event.date) :
+          new Date(event.date.seconds * 1000);
         return eventDate < today;
       });
 
       const eventsToday = events.filter(event => {
-        const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
+        if (!event.date) return false;
+        const eventDate = event.date instanceof Date ? event.date : 
+          typeof event.date === 'string' ? new Date(event.date) :
+          new Date(event.date.seconds * 1000);
         const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
         return eventDay.getTime() === today.getTime();
       }).length;
