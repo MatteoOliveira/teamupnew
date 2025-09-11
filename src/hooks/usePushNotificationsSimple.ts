@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getMessaging, getToken, isSupported } from 'firebase/messaging';
+import { isSupported } from 'firebase/messaging';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
-import { registerServiceWorker } from '@/lib/serviceWorker';
 
 interface PushNotificationState {
   isSupported: boolean;
