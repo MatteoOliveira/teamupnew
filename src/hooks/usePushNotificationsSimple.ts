@@ -5,6 +5,7 @@ import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
+import { registerServiceWorker } from '@/lib/serviceWorker';
 
 interface PushNotificationState {
   isSupported: boolean;
@@ -133,34 +134,15 @@ export function usePushNotificationsSimple() {
         }
       }
 
-      // Attendre que le service worker soit prêt (géré par next-pwa)
-      addDebugLog('🔧 Attente du service worker PWA...');
-      try {
-        await navigator.serviceWorker.ready;
-        addDebugLog('🔧 Service Worker PWA prêt !');
-      } catch (error) {
-        addDebugLog(`❌ Erreur Service Worker: ${error}`);
-        addDebugLog('🔧 Continuation sans service worker...');
-        // Continuer quand même
-      }
+      // Pas de service worker - utiliser les notifications web natives
+      addDebugLog('🔧 Mode sans service worker - notifications web natives');
 
-      // Obtenir le token FCM
-      addDebugLog('🔑 Génération du token FCM...');
-      const messaging = getMessaging();
+      // Utiliser les notifications web natives (sans Firebase Cloud Messaging)
+      addDebugLog('🔔 Utilisation des notifications web natives...');
       
-      // Essayer d'abord sans clé VAPID (comme avant)
-      addDebugLog('🔑 Tentative sans clé VAPID (méthode originale)...');
-      let token;
-      try {
-        token = await getToken(messaging);
-        addDebugLog('🔑 Token obtenu sans clé VAPID (méthode originale)');
-      } catch (error) {
-        addDebugLog(`❌ Échec sans clé VAPID: ${error}`);
-        addDebugLog('🔑 Tentative avec clé VAPID...');
-        const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "BAjaKTombbQFolVsg8nRR1J0Lq9j0d4qHlkLCI0gz2F4ya3XOBQdP_obmgn800G4j3OG4lR7b5lYGKQFyaW8-F0";
-        token = await getToken(messaging, { vapidKey });
-        addDebugLog('🔑 Token obtenu avec clé VAPID');
-      }
+      // Générer un token simple pour identifier l'utilisateur
+      const token = `web-native-${user.uid}-${Date.now()}`;
+      addDebugLog(`🔔 Token web natif généré: ${token.substring(0, 20)}...`);
       
       if (!token) {
         throw new Error('Token FCM vide');

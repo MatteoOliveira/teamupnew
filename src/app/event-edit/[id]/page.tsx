@@ -263,7 +263,7 @@ export default function EventEditPage() {
   };
 
   // Fonction pour envoyer des notifications aux participants
-  // Fonction pour envoyer les notifications push réelles
+  // Fonction pour envoyer les notifications web natives
   const sendPushNotifications = async (notifications: Array<{
     userId: string;
     title: string;
@@ -272,59 +272,41 @@ export default function EventEditPage() {
     data: { eventId: string; action: string };
   }>) => {
     try {
-      console.log('🔔 === ENVOI PUSH NOTIFICATIONS ===');
+      console.log('🔔 === ENVOI NOTIFICATIONS WEB NATIVES ===');
       console.log('🔔 Nombre de notifications:', notifications.length);
       
       for (const notification of notifications) {
         console.log('🔔 Traitement notification pour:', notification.userId);
-        // Récupérer le token FCM de l'utilisateur
+        
+        // Vérifier si l'utilisateur a activé les notifications web natives
         const userDoc = await getDoc(doc(db, 'users', notification.userId));
         if (!userDoc.exists()) continue;
         
         const userData = userDoc.data();
-        const fcmToken = userData.fcmToken;
+        const hasWebNotifications = userData.pushNotificationsEnabled === true;
         
-        if (!fcmToken) {
-          console.log(`Aucun token FCM pour l'utilisateur ${notification.userId}`);
+        if (!hasWebNotifications) {
+          console.log(`Notifications désactivées pour l'utilisateur ${notification.userId}`);
           continue;
         }
         
-        // Envoyer la notification via Firebase Cloud Messaging
-        const message = {
-          token: fcmToken,
-          notification: {
-            title: notification.title,
-            body: notification.body,
-          },
+        // Créer une notification web native
+        const webNotification = {
+          userId: notification.userId,
+          title: notification.title,
+          body: notification.body,
+          eventId: notification.eventId,
           data: notification.data,
-          webpush: {
-            fcm_options: {
-              link: `/event/${notification.eventId}`
-            }
-          }
+          type: 'web_native',
+          createdAt: new Date()
         };
         
-        // Utiliser l'API REST de Firebase Cloud Messaging
-        // Note: La clé serveur doit être configurée sur Vercel
-        const serverKey = process.env.NEXT_PUBLIC_FIREBASE_SERVER_KEY || 'AAAAj8KTombbQFolVsg8nRR1J0Lq9j0d4qHlkLCI0gz2F4ya3XOBQdP_obmgn800G4j3OG4lR7b5lYGKQFyaW8-F0';
-        
-        const response = await fetch('https://fcm.googleapis.com/fcm/send', {
-          method: 'POST',
-          headers: {
-            'Authorization': `key=${serverKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(message),
-        });
-        
-        if (response.ok) {
-          console.log(`Notification push envoyée à ${notification.userId}`);
-        } else {
-          console.error(`Erreur envoi notification à ${notification.userId}:`, await response.text());
-        }
+        // Sauvegarder la notification dans Firestore
+        await addDoc(collection(db, 'web_notifications'), webNotification);
+        console.log(`Notification web native sauvegardée pour ${notification.userId}`);
       }
     } catch (error) {
-      console.error('Erreur envoi notifications push:', error);
+      console.error('Erreur envoi notifications web natives:', error);
     }
   };
 
