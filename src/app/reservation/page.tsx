@@ -9,6 +9,7 @@ import Button from '@/components/Button';
 import Link from "next/link";
 import dynamic from 'next/dynamic';
 import SimpleEventCard from '@/components/SimpleEventCard';
+import MobileDebug from '@/components/MobileDebug';
 
 // Dynamic import de la Map avec SSR désactivé
 const Map = dynamic(() => import('@/components/Map'), {
@@ -503,6 +504,9 @@ export default function ReservationPage() {
           </Button>
         </div>
       </div>
+      
+      {/* Debug Mobile */}
+      <MobileDebug />
     </div>
   );
 } 

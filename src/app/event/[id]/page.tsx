@@ -5,6 +5,7 @@ import { doc, getDoc, collection, addDoc, getDocs, query, where, deleteDoc, setD
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import { useEventCache } from "@/hooks/useEventCache";
+import MobileDebug from '@/components/MobileDebug';
 import Button from "@/components/Button";
 import { MapPinIcon, CalendarIcon, UsersIcon, UserIcon, ClockIcon, PhoneIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
@@ -534,6 +535,9 @@ export default function EventDetailPage() {
           </div>
         )}
       </div>
+      
+      {/* Debug Mobile */}
+      <MobileDebug />
     </div>
   );
 } 

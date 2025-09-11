@@ -54,27 +54,28 @@ export function useEventCache() {
   }, [loadCachedEvents]);
 
   const cacheEvent = useCallback((event: Event) => {
-    console.log('🔄 Tentative de cache pour l\'événement:', event.id, event.name);
-    console.log('📅 Date de l\'événement:', event.date);
+    console.log('🔄 CACHE: Tentative pour', event.name, 'ID:', event.id.slice(0, 8));
+    console.log('📅 CACHE: Date event', event.date);
     
     // Vérifier que l'événement est futur
     if (!event.date) {
-      console.log('❌ Événement sans date, pas de cache');
+      console.log('❌ CACHE: Pas de date - ÉCHEC');
       return false;
     }
     
     const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
     const now = new Date();
-    console.log('📅 Date de l\'événement:', eventDate);
-    console.log('📅 Date actuelle:', now);
-    console.log('📅 Événement futur?', eventDate > now);
+    const isFuture = eventDate > now;
+    console.log('📅 CACHE: Event date', eventDate.toLocaleString());
+    console.log('📅 CACHE: Now', now.toLocaleString());
+    console.log('📅 CACHE: Futur?', isFuture);
     
-    if (eventDate <= now) {
-      console.log('❌ Événement passé, pas de cache');
+    if (!isFuture) {
+      console.log('❌ CACHE: Événement passé - ÉCHEC');
       return false;
     }
 
-    console.log('✅ Événement futur, mise en cache...');
+    console.log('✅ CACHE: Événement futur - SUCCÈS');
     const cachedEvent: CachedEvent = {
       ...event,
       cachedAt: new Date(),
@@ -107,7 +108,7 @@ export function useEventCache() {
       }
 
       saveCachedEvents(newEvents);
-      console.log('💾 Événement mis en cache:', event.id, 'Total en cache:', newEvents.length);
+      console.log('💾 CACHE: Sauvegardé - Total:', newEvents.length);
       return newEvents;
     });
 

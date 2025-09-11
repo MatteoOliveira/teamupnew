@@ -15,12 +15,14 @@ export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDe
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('🔍 OfflineEventDetails - Recherche événement:', eventId);
+    console.log('🔍 OFFLINE: Recherche ID:', eventId.slice(0, 8));
     const cachedEvent = getCachedEvent(eventId);
-    console.log('🔍 OfflineEventDetails - Événement trouvé?', !!cachedEvent);
+    console.log('🔍 OFFLINE: Trouvé?', !!cachedEvent);
     if (cachedEvent) {
-      console.log('🔍 OfflineEventDetails - Événement:', cachedEvent.name);
+      console.log('🔍 OFFLINE: Event:', cachedEvent.name);
       setEvent(cachedEvent);
+    } else {
+      console.log('❌ OFFLINE: Événement non trouvé en cache');
     }
     setLoading(false);
   }, [eventId, getCachedEvent]);

@@ -36,10 +36,10 @@ export default function SimpleEventCard({ event, onZoomToEvent }: SimpleEventCar
   const isCached = isEventCached(event.id);
   const isFuture = event.date ? new Date(event.date.seconds * 1000) > new Date() : false;
   
-  console.log('🔍 SimpleEventCard - Événement:', event.id, event.name);
-  console.log('🔍 SimpleEventCard - En cache?', isCached);
-  console.log('🔍 SimpleEventCard - Futur?', isFuture);
-  console.log('🔍 SimpleEventCard - Mode:', isCached && isFuture ? 'HORS LIGNE' : 'NORMAL');
+  console.log('🔍 CARD: Event', event.name, 'ID:', event.id.slice(0, 8));
+  console.log('🔍 CARD: En cache?', isCached);
+  console.log('🔍 CARD: Futur?', isFuture);
+  console.log('🔍 CARD: Mode:', isCached && isFuture ? 'HORS LIGNE' : 'NORMAL');
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (isCached && isFuture) {
