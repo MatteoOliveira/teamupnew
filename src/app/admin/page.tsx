@@ -258,13 +258,13 @@ export default function AdminPage() {
                 <div key={event.id} className="px-6 py-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium text-gray-900">{event.title}</h3>
+                      <h3 className="text-lg font-medium text-gray-900">{event.name}</h3>
                       <p className="text-sm text-gray-600">{event.description}</p>
                       <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
                         <span>📅 {eventDate.toLocaleDateString('fr-FR')}</span>
                         <span>⏰ {eventDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                         <span>📍 {event.location}</span>
-                        <span>👥 {event.participants?.length || 0} participants</span>
+                        <span>👥 {event.currentParticipants || 0} participants</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
