@@ -581,6 +581,20 @@ export default function ProfilePage() {
                     🔧 Espace Admin
                   </button>
                 )}
+                {/* Bouton Debug User ID */}
+                <button
+                  onClick={() => {
+                    if (user?.uid) {
+                      navigator.clipboard.writeText(user.uid);
+                      alert(`User ID copié : ${user.uid}`);
+                    } else {
+                      alert('Utilisateur non connecté');
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500"
+                >
+                  📋 Copier User ID
+                </button>
               </div>
             </div>
           </nav>
