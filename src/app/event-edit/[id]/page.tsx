@@ -264,7 +264,13 @@ export default function EventEditPage() {
 
   // Fonction pour envoyer des notifications aux participants
   // Fonction pour envoyer les notifications push réelles
-  const sendPushNotifications = async (notifications: any[]) => {
+  const sendPushNotifications = async (notifications: Array<{
+    userId: string;
+    title: string;
+    body: string;
+    eventId: string;
+    data: { eventId: string; action: string };
+  }>) => {
     try {
       for (const notification of notifications) {
         // Récupérer le token FCM de l'utilisateur
