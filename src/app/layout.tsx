@@ -149,6 +149,15 @@ export default function RootLayout({
         <GoogleAnalytics />
         {/* Provider pour les notifications web natives */}
         <WebNotificationsProvider />
+        {/* Test de chargement du layout */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              console.log('🔔 === LAYOUT CHARGÉ ===');
+              console.log('🔔 WebNotificationsProvider devrait être chargé');
+            `,
+          }}
+        />
       </body>
     </html>
   );

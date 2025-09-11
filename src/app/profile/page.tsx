@@ -60,6 +60,22 @@ interface Registration {
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+
+  // Test direct des notifications
+  useEffect(() => {
+    console.log('🔔 === PAGE PROFIL CHARGÉE ===');
+    console.log('🔔 Permission notifications:', Notification.permission);
+    console.log('🔔 Support notifications:', 'Notification' in window);
+    
+    // Test direct d'une notification
+    if (Notification.permission === 'granted') {
+      console.log('🔔 Test notification direct...');
+      new Notification('Test Direct', {
+        body: 'Ceci est un test direct depuis la page profil',
+        icon: '/icon-192x192.webp'
+      });
+    }
+  }, []);
   const { getUserStats, trackPageView, trackProfileUpdate } = useAnalytics();
   
   
