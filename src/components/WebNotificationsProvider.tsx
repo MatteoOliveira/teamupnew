@@ -10,6 +10,9 @@ export default function WebNotificationsProvider() {
     setIsClient(true);
   }, []);
 
+  // Toujours appeler le hook, mais il gère les vérifications SSR
+  const { notifications, unreadCount } = useWebNotifications();
+
   // Ne pas s'exécuter côté serveur
   if (!isClient) {
     return null;
@@ -25,11 +28,6 @@ export default function WebNotificationsProvider() {
   console.log('Support notifications:', 'Notification' in window);
   console.log('Window object:', typeof window);
   console.log('Document object:', typeof document);
-  
-  // Ce composant initialise simplement le hook pour écouter les notifications
-  // Le hook gère déjà les vérifications SSR
-  const { notifications, unreadCount } = useWebNotifications();
-  
   console.log('État notifications:', { count: notifications.length, unread: unreadCount });
   
   // Pas de rendu visible, juste l'initialisation du hook

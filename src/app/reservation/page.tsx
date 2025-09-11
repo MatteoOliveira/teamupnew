@@ -255,9 +255,9 @@ export default function ReservationPage() {
                 setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
                 setGeoError(null);
               },
-              () => {
+              (error) => {
                 // Si la deuxième tentative échoue aussi, on garde l'erreur
-                console.log('Deuxième tentative de géolocalisation échouée');
+                console.log('Deuxième tentative de géolocalisation échouée:', error);
               },
               {
                 enableHighAccuracy: false,
