@@ -106,37 +106,6 @@ export function usePushNotifications() {
     }
   }, [state.isSupported]);
 
-  // Obtenir le token FCM
-  const getFCMToken = useCallback(async (): Promise<string | null> => {
-    if (!state.isSupported || !state.permission.granted) {
-      return null;
-    }
-
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      const messaging = getMessaging();
-      const token = await getToken(messaging, {
-        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
-      });
-
-      setState(prev => ({
-        ...prev,
-        token,
-        isLoading: false,
-      }));
-
-      return token;
-    } catch (error) {
-      console.error('Erreur obtention token FCM:', error);
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: 'Erreur lors de l\'obtention du token',
-      }));
-      return null;
-    }
-  }, [state.isSupported, state.permission]);
 
   // S'abonner aux notifications
   const subscribe = useCallback(async (): Promise<boolean> => {
@@ -156,9 +125,9 @@ export function usePushNotifications() {
         console.log('🔧 Service Worker prêt:', registration.active?.scriptURL);
       }
       
-      // Demander la permission si nécessaire
-      if (!state.permission.granted) {
-        console.log('📝 Demande de permission...');
+      // Vérifier la permission directement depuis l'API
+      if (Notification.permission !== 'granted') {
+        console.log('📝 Permission non accordée, demande en cours...');
         const granted = await requestPermission();
         console.log('📝 Permission accordée:', granted);
         if (!granted) {
@@ -167,8 +136,13 @@ export function usePushNotifications() {
         }
       }
 
-      // Obtenir le token FCM
-      const token = await getFCMToken();
+      // Obtenir le token FCM directement
+      console.log('🔑 Obtention du token FCM...');
+      const messaging = getMessaging();
+      const token = await getToken(messaging, {
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+      });
+
       if (!token) {
         setState(prev => ({ ...prev, isLoading: false, error: 'Impossible d\'obtenir le token FCM' }));
         return false;
@@ -245,7 +219,7 @@ export function usePushNotifications() {
       }));
       return false;
     }
-  }, [user, state.isSupported, requestPermission, getFCMToken]);
+  }, [user, state.isSupported, requestPermission]);
 
   // Se désabonner des notifications
   const unsubscribe = useCallback(async (): Promise<boolean> => {
