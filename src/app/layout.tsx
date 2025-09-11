@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import CookieBanner from '@/components/CookieBanner';
 import WebNotificationsProvider from '@/components/WebNotificationsProvider';
+import OfflineDetector from '@/components/OfflineDetector';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -149,6 +150,8 @@ export default function RootLayout({
         <GoogleAnalytics />
         {/* Provider pour les notifications web natives */}
         <WebNotificationsProvider />
+        {/* Détecteur de mode hors ligne */}
+        <OfflineDetector />
         {/* Test de chargement du layout */}
         <script
           dangerouslySetInnerHTML={{

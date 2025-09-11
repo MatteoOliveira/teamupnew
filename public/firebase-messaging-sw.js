@@ -56,3 +56,71 @@ self.addEventListener('notificationclick', (event) => {
     );
   }
 });
+
+// Gérer l'installation de la PWA
+self.addEventListener('install', (event) => {
+  console.log('[firebase-messaging-sw.js] Service Worker installé');
+  self.skipWaiting(); // Activer immédiatement le nouveau service worker
+});
+
+// Gérer l'activation de la PWA
+self.addEventListener('activate', (event) => {
+  console.log('[firebase-messaging-sw.js] Service Worker activé');
+  event.waitUntil(clients.claim()); // Prendre le contrôle de tous les clients
+});
+
+// Gérer les requêtes réseau pour le cache hors ligne
+self.addEventListener('fetch', (event) => {
+  // Stratégie de cache pour les pages HTML
+  if (event.request.destination === 'document') {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        if (response) {
+          return response;
+        }
+        
+        return fetch(event.request).then((fetchResponse) => {
+          // Mettre en cache les pages HTML
+          if (fetchResponse.status === 200) {
+            const responseClone = fetchResponse.clone();
+            caches.open('pages-cache').then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return fetchResponse;
+        }).catch(() => {
+          // Fallback vers la page d'accueil si hors ligne
+          return caches.match('/');
+        });
+      })
+    );
+  }
+  
+  // Stratégie de cache pour les assets statiques
+  if (event.request.url.includes('/_next/static/')) {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request).then((fetchResponse) => {
+          return caches.open('static-cache').then((cache) => {
+            cache.put(event.request, fetchResponse.clone());
+            return fetchResponse;
+          });
+        });
+      })
+    );
+  }
+  
+  // Stratégie de cache pour les images
+  if (event.request.destination === 'image') {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request).then((fetchResponse) => {
+          return caches.open('images-cache').then((cache) => {
+            cache.put(event.request, fetchResponse.clone());
+            return fetchResponse;
+          });
+        });
+      })
+    );
+  }
+});
