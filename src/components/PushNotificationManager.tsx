@@ -218,9 +218,27 @@ export default function PushNotificationManager() {
                {(!permission.granted || !isSubscribed) && (
                  <Button
                    onClick={async () => {
+                     console.log('🖱️ === CLIC BOUTON ACTIVATION ===');
+                     console.log('📊 État avant activation:', {
+                       isSupported,
+                       permission: permission.granted ? 'Accordée' : permission.denied ? 'Refusée' : 'Non demandée',
+                       isSubscribed,
+                       isLoading,
+                       token: token ? 'Présent' : 'Absent'
+                     });
+                     
                      setMessage('');
                      setMessageType('');
+                     
                      const success = await subscribe();
+                     
+                     console.log('📊 Résultat activation:', success);
+                     console.log('📊 État après activation:', {
+                       isSubscribed,
+                       token: token ? 'Présent' : 'Absent',
+                       error
+                     });
+                     
                      if (success) {
                        setMessage('Notifications activées avec succès !');
                        setMessageType('success');

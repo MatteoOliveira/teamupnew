@@ -159,6 +159,7 @@ export function usePushNotificationsSimple() {
       console.log('💾 Sauvegarde réussie');
 
       // Mettre à jour l'état
+      console.log('🔄 Mise à jour de l\'état local...');
       setState(prev => ({
         ...prev,
         isSubscribed: true,
@@ -168,6 +169,12 @@ export function usePushNotificationsSimple() {
       }));
 
       console.log('✅ === SUBSCRIPTION RÉUSSIE ===');
+      console.log('📊 État final:', {
+        isSubscribed: true,
+        token: token ? 'Présent' : 'Absent',
+        isLoading: false,
+        error: null
+      });
       return true;
       
     } catch (error) {
@@ -228,7 +235,12 @@ export function usePushNotificationsSimple() {
     
     const initializeState = async () => {
       try {
+        console.log('🔄 === INITIALISATION ÉTAT ===');
+        console.log('👤 Utilisateur:', user.uid);
+        
         checkPermission();
+        
+        console.log('📖 Lecture Firestore...');
         const userDoc = await doc(db, 'users', user.uid);
         const userSnap = await getDoc(userDoc);
         
@@ -237,20 +249,32 @@ export function usePushNotificationsSimple() {
           const hasToken = !!userData.fcmToken;
           const isEnabled = userData.pushNotificationsEnabled === true;
           
-          console.log('🔄 État Firestore:', {
+          console.log('📊 Données Firestore:', {
             hasToken,
             isEnabled,
-            fcmToken: userData.fcmToken ? 'Présent' : 'Absent'
+            fcmToken: userData.fcmToken ? 'Présent' : 'Absent',
+            pushNotificationsEnabled: userData.pushNotificationsEnabled,
+            lastTokenUpdate: userData.lastTokenUpdate
           });
+          
+          const newState = {
+            isSubscribed: hasToken && isEnabled,
+            token: userData.fcmToken || null
+          };
+          
+          console.log('🔄 Nouvel état calculé:', newState);
           
           setState(prev => ({
             ...prev,
-            isSubscribed: hasToken && isEnabled,
-            token: userData.fcmToken || null
+            ...newState
           }));
+          
+          console.log('✅ État initialisé');
+        } else {
+          console.log('❌ Document utilisateur non trouvé');
         }
       } catch (error) {
-        console.error('Erreur initialisation:', error);
+        console.error('❌ Erreur initialisation:', error);
       }
     };
     
