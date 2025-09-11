@@ -8,6 +8,9 @@ interface InputProps {
   required?: boolean;
   className?: string;
   disabled?: boolean;
+  min?: string;
+  max?: string;
+  'aria-label'?: string;
 }
 
 export default function Input({ 
@@ -17,7 +20,10 @@ export default function Input({
   onChange, 
   required = false,
   className = "",
-  disabled = false
+  disabled = false,
+  min,
+  max,
+  'aria-label': ariaLabel
 }: InputProps) {
   return (
     <input
@@ -27,6 +33,9 @@ export default function Input({
       onChange={onChange}
       required={required}
       disabled={disabled}
+      min={min}
+      max={max}
+      aria-label={ariaLabel}
       className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black ${className}`}
     />
   );
