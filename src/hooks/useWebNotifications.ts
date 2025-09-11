@@ -23,9 +23,14 @@ export function useWebNotifications() {
 
   // Écouter les notifications en temps réel
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      console.log('🔔 Pas d\'utilisateur connecté, arrêt de l\'écoute');
+      return;
+    }
 
-    console.log('🔔 Écoute des notifications web natives pour:', user.uid);
+    console.log('🔔 === DÉBUT ÉCOUTE NOTIFICATIONS ===');
+    console.log('🔔 Utilisateur connecté:', user.uid);
+    console.log('🔔 Permission notifications:', Notification.permission);
 
     const notificationsQuery = query(
       collection(db, 'notifications'),

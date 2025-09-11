@@ -37,6 +37,48 @@ export default function PushNotificationManager() {
     }
   };
 
+  const handleTestEventNotification = async () => {
+    setMessage('');
+    setMessageType('');
+    
+    try {
+      // Vérifier la permission avant d'envoyer la notification
+      if (Notification.permission !== 'granted') {
+        setMessage('Permission non accordée. Veuillez d\'abord activer les notifications.');
+        setMessageType('error');
+        return;
+      }
+
+      // Simuler une notification d'événement
+      const testNotification = new Notification('🎯 Test Événement Modifié', {
+        body: 'L\'événement "Test Football" a été modifié : le nom, la date ont été changés.',
+        icon: '/icon-192x192.webp',
+        badge: '/icon-192x192.webp',
+        tag: 'event-test',
+        requireInteraction: true,
+        silent: false
+      });
+
+      // Gérer les clics sur la notification
+      testNotification.onclick = () => {
+        window.focus();
+        testNotification.close();
+      };
+
+      // Gérer la fermeture automatique après 5 secondes
+      setTimeout(() => {
+        testNotification.close();
+      }, 5000);
+
+      setMessage('🎯 Notification d\'événement de test envoyée !');
+      setMessageType('success');
+    } catch (error) {
+      console.error('Erreur test notification événement:', error);
+      setMessage(`Erreur lors de l'envoi de la notification de test: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      setMessageType('error');
+    }
+  };
+
   const handleTestNotification = async () => {
     setMessage('');
     setMessageType('');
@@ -266,6 +308,14 @@ export default function PushNotificationManager() {
               📱 Tester sur mobile
             </Button>
           )}
+
+          {/* Bouton de test de notification d'événement */}
+          <Button
+            onClick={handleTestEventNotification}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            🎯 Test Notification Événement
+          </Button>
 
           {/* Bouton de rechargement d'état */}
           <Button
