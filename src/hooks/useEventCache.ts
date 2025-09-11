@@ -31,6 +31,7 @@ export function useEventCache() {
         
         // Filtrer uniquement les événements futurs
         const futureEvents = events.filter((event: CachedEvent) => {
+          if (!event.date) return false;
           const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
           return eventDate > new Date();
         });
@@ -54,6 +55,7 @@ export function useEventCache() {
 
   const cacheEvent = useCallback((event: Event) => {
     // Vérifier que l'événement est futur
+    if (!event.date) return false;
     const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
     if (eventDate <= new Date()) {
       return false;
@@ -113,6 +115,7 @@ export function useEventCache() {
     const now = new Date();
     setCachedEvents(prev => {
       const validEvents = prev.filter(event => {
+        if (!event.date) return false;
         const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
         return eventDate > now;
       });

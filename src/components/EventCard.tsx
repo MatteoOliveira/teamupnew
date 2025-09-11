@@ -15,7 +15,8 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
   const { isEventCached } = useEventCache();
   const [showOfflineDetails, setShowOfflineDetails] = useState(false);
 
-  const formatDate = (dateInput: string | { seconds: number }) => {
+  const formatDate = (dateInput: string | { seconds: number } | undefined) => {
+    if (!dateInput) return 'Date non définie';
     const date = typeof dateInput === 'string' ? new Date(dateInput) : new Date(dateInput.seconds * 1000);
     return date.toLocaleDateString('fr-FR', {
       weekday: 'short',
@@ -41,7 +42,7 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
   };
 
   const isCached = isEventCached(event.id);
-  const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
+  const eventDate = event.date ? (typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000)) : new Date();
   const isFuture = eventDate > new Date();
 
   const handleCardClick = (e: React.MouseEvent) => {

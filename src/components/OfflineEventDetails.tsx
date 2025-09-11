@@ -22,7 +22,8 @@ export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDe
     setLoading(false);
   }, [eventId, getCachedEvent]);
 
-  const formatDate = (dateInput: string | { seconds: number }) => {
+  const formatDate = (dateInput: string | { seconds: number } | undefined) => {
+    if (!dateInput) return 'Date non définie';
     const date = typeof dateInput === 'string' ? new Date(dateInput) : new Date(dateInput.seconds * 1000);
     return date.toLocaleDateString('fr-FR', {
       weekday: 'long',
