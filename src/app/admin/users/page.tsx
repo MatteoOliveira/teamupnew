@@ -69,15 +69,25 @@ export default function AdminUsers() {
       try {
         setLoadingData(true);
 
-        const usersQuery = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+        const usersQuery = query(collection(db, 'users'));
         const usersSnapshot = await getDocs(usersQuery);
         const usersData = usersSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         })) as User[];
 
-        setUsers(usersData);
-        setFilteredUsers(usersData);
+        console.log('🔍 Utilisateurs récupérés:', usersData.length);
+        console.log('📋 Données utilisateurs:', usersData);
+
+        // Tri côté client par nom
+        const sortedUsers = usersData.sort((a, b) => {
+          const nameA = a.name || a.email || '';
+          const nameB = b.name || b.email || '';
+          return nameA.localeCompare(nameB);
+        });
+
+        setUsers(sortedUsers);
+        setFilteredUsers(sortedUsers);
 
       } catch (error) {
         console.error('Erreur chargement utilisateurs:', error);
