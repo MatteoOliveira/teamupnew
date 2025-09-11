@@ -6,8 +6,8 @@ const withPWA = require('next-pwa')({
   disable: false,
   buildExcludes: [/middleware-manifest\.json$/, /build-manifest\.json$/],
   publicExcludes: ['!robots.txt', '!sitemap.xml'],
-  // Service worker minimal
-  sw: 'sw-minimal.js',
+  // Service worker FCM
+  sw: 'firebase-messaging-sw.js',
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,

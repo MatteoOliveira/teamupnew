@@ -263,6 +263,70 @@ export default function EventEditPage() {
   };
 
   // Fonction pour envoyer des notifications aux participants
+  // Fonction pour envoyer les notifications FCM (fonctionne même PWA fermée)
+  const sendFCMNotifications = async (participants: string[], eventData: any) => {
+    console.log('🚀 === ENVOI NOTIFICATIONS FCM ===');
+    console.log('🚀 Participants à notifier:', participants);
+
+    try {
+      // Récupérer les tokens FCM des participants
+      const participantTokens = [];
+      for (const participantId of participants) {
+        const userDoc = await getDoc(doc(db, 'users', participantId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.fcmToken) {
+            participantTokens.push(userData.fcmToken);
+            console.log('🚀 Token FCM trouvé pour:', participantId);
+          }
+        }
+      }
+
+      console.log('🚀 Tokens FCM trouvés:', participantTokens.length);
+
+      if (participantTokens.length === 0) {
+        console.log('🚀 Aucun token FCM trouvé, utilisation du système web');
+        return false;
+      }
+
+      // Envoyer via FCM REST API
+      const message = {
+        registration_ids: participantTokens,
+        notification: {
+          title: '🎯 Événement Modifié',
+          body: `L'événement "${eventData.name}" a été modifié : ${getChangeSummary(eventData)}`,
+          icon: '/icon-192x192.webp',
+          badge: '/icon-192x192.webp'
+        },
+        data: {
+          eventId: id as string,
+          action: 'event_modified',
+          url: `/event/${id}`
+        }
+      };
+
+      const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `key=${process.env.FIREBASE_SERVER_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(message)
+      });
+
+      if (response.ok) {
+        console.log('🚀 Notifications FCM envoyées avec succès');
+        return true;
+      } else {
+        console.error('🚀 Erreur FCM:', await response.text());
+        return false;
+      }
+    } catch (error) {
+      console.error('🚀 Erreur lors de l\'envoi FCM:', error);
+      return false;
+    }
+  };
+
   // Fonction pour envoyer les notifications (même système que "Tester sur mobile")
   const sendPushNotifications = async (notifications: Array<{
     userId: string;
@@ -361,10 +425,16 @@ export default function EventEditPage() {
       await Promise.all(batch);
       console.log(`Notifications sauvegardées pour ${notifications.length} participants`);
       
-      // Envoyer les notifications push réelles
-      console.log('🔔 Envoi des notifications push...');
-      await sendPushNotifications(notifications);
-      console.log('🔔 Notifications push envoyées !');
+      // Essayer d'abord les notifications FCM (fonctionne même PWA fermée)
+      console.log('🚀 Tentative d\'envoi FCM...');
+      const fcmSuccess = await sendFCMNotifications(participantIds, eventData);
+      
+      if (!fcmSuccess) {
+        // Fallback vers le système web (fonctionne seulement PWA ouverte)
+        console.log('🔔 Fallback vers notifications web...');
+        await sendPushNotifications(notifications);
+        console.log('🔔 Notifications web envoyées !');
+      }
       
     } catch (error) {
       console.error('Erreur lors de l\'envoi des notifications:', error);

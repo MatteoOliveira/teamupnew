@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { usePushNotificationsSimple } from '@/hooks/usePushNotificationsSimple';
+import { useFCMNotifications } from '@/hooks/useFCMNotifications';
 import Button from '@/components/Button';
 
 export default function PushNotificationManager() {
@@ -17,6 +18,16 @@ export default function PushNotificationManager() {
     debugLogs,
     addDebugLog,
   } = usePushNotificationsSimple();
+
+  const {
+    token: fcmToken,
+    permission: fcmPermission,
+    isSubscribed: fcmSubscribed,
+    error: fcmError,
+    requestPermission: requestFCMPermission,
+    subscribe: subscribeFCM,
+    unsubscribe: unsubscribeFCM
+  } = useFCMNotifications();
 
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
@@ -336,6 +347,47 @@ export default function PushNotificationManager() {
       >
         🔔 Test Simple
       </Button>
+
+      {/* Section FCM */}
+      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        <h3 className="text-lg font-semibold text-blue-900 mb-3">🚀 Notifications Push Réelles (FCM)</h3>
+        
+        <div className="space-y-2 text-sm">
+          <p><strong>Permission FCM:</strong> {fcmPermission}</p>
+          <p><strong>Abonnement FCM:</strong> {fcmSubscribed ? 'Actif' : 'Inactif'}</p>
+          <p><strong>Token FCM:</strong> {fcmToken ? 'Présent' : 'Absent'}</p>
+          {fcmError && <p className="text-red-600"><strong>Erreur FCM:</strong> {fcmError}</p>}
+        </div>
+
+        <div className="mt-4 space-x-2">
+          <Button
+            onClick={async () => {
+              const success = await requestFCMPermission();
+              if (success) {
+                setMessage('Notifications FCM activées !');
+                setMessageType('success');
+              } else {
+                setMessage('Erreur lors de l\'activation FCM');
+                setMessageType('error');
+              }
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            🚀 Activer FCM
+          </Button>
+
+          <Button
+            onClick={async () => {
+              await unsubscribeFCM();
+              setMessage('Notifications FCM désactivées');
+              setMessageType('success');
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            🚫 Désactiver FCM
+          </Button>
+        </div>
+      </div>
 
           {/* Bouton de rechargement d'état */}
           <Button

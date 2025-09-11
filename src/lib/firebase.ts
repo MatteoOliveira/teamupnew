@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
+import { getMessaging } from 'firebase/messaging';
 
 // Configuration Firebase
 const firebaseConfig = {
@@ -20,6 +21,9 @@ const app = initializeApp(firebaseConfig);
 // Exporter les services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Messaging (seulement côté client)
+export const messaging = typeof window !== 'undefined' ? getMessaging(app) : null;
 
 // Configuration Google OAuth
 export const googleProvider = new GoogleAuthProvider();
