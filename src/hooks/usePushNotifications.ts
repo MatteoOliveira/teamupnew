@@ -139,8 +139,13 @@ export function usePushNotifications() {
       // Obtenir le token FCM directement
       console.log('🔑 Obtention du token FCM...');
       const messaging = getMessaging();
+      
+      // Vérifier si la clé VAPID est disponible
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "BLx8K9vQ2xYz3a4b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3u4v5w6x7y8z9";
+      console.log('🔑 Clé VAPID disponible:', !!vapidKey);
+      
       const token = await getToken(messaging, {
-        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+        vapidKey: vapidKey,
       });
 
       if (!token) {
