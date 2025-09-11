@@ -427,6 +427,7 @@ export default function EventEditPage() {
       
       // Essayer d'abord les notifications FCM (fonctionne même PWA fermée)
       console.log('🚀 Tentative d\'envoi FCM...');
+      const participantIds = notifications.map(n => n.userId);
       const fcmSuccess = await sendFCMNotifications(participantIds, eventData);
       
       if (!fcmSuccess) {
