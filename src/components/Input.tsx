@@ -11,6 +11,12 @@ interface InputProps {
   min?: string;
   max?: string;
   'aria-label'?: string;
+  'aria-describedby'?: string;
+  'aria-invalid'?: boolean;
+  'aria-required'?: boolean;
+  id?: string;
+  name?: string;
+  autoComplete?: string;
 }
 
 export default function Input({ 
@@ -23,7 +29,13 @@ export default function Input({
   disabled = false,
   min,
   max,
-  'aria-label': ariaLabel
+  'aria-label': ariaLabel,
+  'aria-describedby': ariaDescribedby,
+  'aria-invalid': ariaInvalid,
+  'aria-required': ariaRequired,
+  id,
+  name,
+  autoComplete
 }: InputProps) {
   return (
     <input
@@ -35,8 +47,14 @@ export default function Input({
       disabled={disabled}
       min={min}
       max={max}
+      id={id}
+      name={name}
+      autoComplete={autoComplete}
       aria-label={ariaLabel}
-      className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black ${className}`}
+      aria-describedby={ariaDescribedby}
+      aria-invalid={ariaInvalid}
+      aria-required={ariaRequired || required}
+      className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors duration-200 ${className}`}
     />
   );
 } 

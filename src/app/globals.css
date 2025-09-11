@@ -79,3 +79,176 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ==========================================
+   ACCESSIBILITÉ
+   ========================================== */
+
+/* Masquer visuellement mais garder accessible aux lecteurs d'écran */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus visible pour tous les éléments interactifs */
+*:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Améliorer le contraste pour les textes */
+.text-gray-600 {
+  color: #374151; /* Amélioration du contraste */
+}
+
+.text-gray-500 {
+  color: #4b5563; /* Amélioration du contraste */
+}
+
+/* Styles pour les états de focus améliorés */
+.focus-visible:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Amélioration du contraste pour les boutons */
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+  border: 2px solid transparent;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-primary:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Amélioration du contraste pour les liens */
+a:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  text-decoration: underline;
+}
+
+/* Styles pour les éléments de navigation */
+[role="navigation"] a:focus,
+[role="navigation"] button:focus {
+  background-color: #eff6ff;
+  border-radius: 4px;
+}
+
+/* Amélioration du contraste pour les cartes */
+.card {
+  border: 1px solid #e5e7eb;
+  background-color: white;
+}
+
+.card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles pour les modales et overlays */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Amélioration du contraste pour les messages d'erreur */
+.error-message {
+  color: #dc2626;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+}
+
+/* Amélioration du contraste pour les messages de succès */
+.success-message {
+  color: #059669;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+}
+
+/* Styles pour les indicateurs de statut */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-indicator.reserved {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.status-indicator.offline {
+  background-color: #f0fdf4;
+  color: #059669;
+}
+
+/* Amélioration de la lisibilité des icônes */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+}
+
+/* Styles pour les animations réduites (respect des préférences utilisateur) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Amélioration du contraste en mode sombre */
+@media (prefers-color-scheme: dark) {
+  .text-gray-600 {
+    color: #d1d5db;
+  }
+  
+  .text-gray-500 {
+    color: #9ca3af;
+  }
+  
+  .card {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .btn-primary {
+    background-color: #3b82f6;
+  }
+  
+  .btn-primary:hover {
+    background-color: #2563eb;
+  }
+}

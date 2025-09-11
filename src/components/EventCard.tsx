@@ -56,8 +56,31 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
 
   return (
     <>
-      <div className="card card-hover animate-up">
-        <div onClick={handleCardClick} className="cursor-pointer">
+      <article 
+        className="card card-hover animate-up"
+        role="article"
+        aria-labelledby={`event-title-${event.id}`}
+        aria-describedby={`event-description-${event.id}`}
+      >
+        <div 
+          onClick={handleCardClick} 
+          className="cursor-pointer"
+          role="button"
+          tabIndex={0}
+          aria-label={`Voir les détails de l'événement ${event.name}`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              // Créer un événement de clic simulé pour la navigation clavier
+              const clickEvent = new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+              });
+              handleCardClick(clickEvent as unknown as React.MouseEvent<HTMLDivElement>);
+            }
+          }}
+        >
           <div className="p-4 sm:p-6">
             {/* Header avec sport et date */}
             <div className="flex items-start justify-between mb-4">
@@ -66,7 +89,10 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
                   <span className="text-2xl">{event.sportEmoji || '🏃'}</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-lg leading-tight">
+                  <h3 
+                    id={`event-title-${event.id}`}
+                    className="font-semibold text-gray-900 text-lg leading-tight"
+                  >
                     {event.name}
                   </h3>
                   <p className="text-sm text-gray-600">{event.sport || 'Sport non défini'}</p>
@@ -85,7 +111,10 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
 
             {/* Description */}
             {event.description && (
-              <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+              <p 
+                id={`event-description-${event.id}`}
+                className="text-gray-600 text-sm mb-4 line-clamp-2"
+              >
                 {event.description}
               </p>
             )}
@@ -134,28 +163,33 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
               {isCached && isFuture ? (
                 <button
                   onClick={() => setShowOfflineDetails(true)}
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 text-center"
+                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-center transition-colors duration-200"
+                  aria-label={`Voir les détails de l'événement ${event.name} (version hors ligne)`}
                 >
                   Voir détails (Hors ligne)
                 </button>
               ) : (
                 <Link
                   href={`/event/${event.id}`}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 text-center"
+                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-center transition-colors duration-200"
+                  aria-label={`Voir les détails de l'événement ${event.name}`}
                 >
                   Voir détails
                 </Link>
               )}
               
               {!event.isReserved && (
-                <button className="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300">
+                <button 
+                  className="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+                  aria-label={`Rejoindre l'événement ${event.name}`}
+                >
                   Rejoindre
                 </button>
               )}
             </div>
           </div>
         )}
-      </div>
+      </article>
 
       {/* Modal des détails hors ligne */}
       {showOfflineDetails && (
