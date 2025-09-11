@@ -333,6 +333,7 @@ export default function ReservationPage() {
         setGeoError("Ville non trouvée. Veuillez vérifier l'orthographe.");
       }
     } catch (error) {
+      console.error('Erreur lors de la recherche de la ville:', error);
       setGeoError("Erreur lors de la recherche de la ville. Veuillez réessayer.");
     }
   };
