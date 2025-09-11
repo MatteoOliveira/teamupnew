@@ -230,7 +230,7 @@ export function usePushNotifications() {
       }));
       return false;
     }
-  }, [user, state.isSupported, requestPermission]);
+  }, [user, state.isSupported, requestPermission, state.permission]);
 
   // Se désabonner des notifications
   const unsubscribe = useCallback(async (): Promise<boolean> => {

@@ -52,7 +52,7 @@ export function usePushNotificationsSimple() {
       }
     };
     checkSupport();
-  }, []);
+  }, [addDebugLog]);
 
   // Vérifier la permission
   const checkPermission = useCallback(() => {
@@ -137,7 +137,7 @@ export function usePushNotificationsSimple() {
       if ('serviceWorker' in navigator) {
         addDebugLog('🔧 Attente du service worker...');
         try {
-          const registration = await navigator.serviceWorker.ready;
+          await navigator.serviceWorker.ready;
           addDebugLog('🔧 Service Worker prêt');
         } catch (error) {
           addDebugLog(`❌ Erreur Service Worker: ${error}`);
@@ -211,7 +211,7 @@ export function usePushNotificationsSimple() {
       }));
       return false;
     }
-  }, [user, state.isSupported, requestPermission]);
+  }, [user, state.isSupported, requestPermission, addDebugLog]);
 
   // Se désabonner
   const unsubscribe = useCallback(async (): Promise<boolean> => {
