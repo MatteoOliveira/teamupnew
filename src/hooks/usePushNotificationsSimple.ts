@@ -133,50 +133,35 @@ export function usePushNotificationsSimple() {
         }
       }
 
-      // Attendre le service worker avec timeout
+      // Attendre le service worker (méthode originale simple)
       if ('serviceWorker' in navigator) {
         addDebugLog('🔧 Attente du service worker...');
-        addDebugLog(`🔧 Service Workers enregistrés: ${navigator.serviceWorker.controller ? 'Oui' : 'Non'}`);
-        
         try {
-          // Timeout de 5 secondes pour le service worker
-          addDebugLog('🔧 Démarrage du timeout (5s)...');
-          const registrationPromise = navigator.serviceWorker.ready;
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Service Worker timeout après 5s')), 5000)
-          );
-          
-          const registration = await Promise.race([registrationPromise, timeoutPromise]) as ServiceWorkerRegistration;
-          addDebugLog(`🔧 Service Worker prêt: ${registration.active?.scriptURL}`);
-          
-          // Vérifier que le service worker est vraiment actif
-          if (!registration.active) {
-            throw new Error('Service Worker non actif');
-          }
-          
-          addDebugLog('🔧 Service Worker vérifié et actif');
+          const registration = await navigator.serviceWorker.ready;
+          addDebugLog('🔧 Service Worker prêt');
         } catch (error) {
           addDebugLog(`❌ Erreur Service Worker: ${error}`);
-          addDebugLog('🔧 Tentative de génération de token sans service worker...');
-          // Continuer sans le service worker, parfois ça marche quand même
+          // Continuer quand même
         }
-      } else {
-        addDebugLog('❌ Service Worker non supporté');
       }
 
       // Obtenir le token FCM
       addDebugLog('🔑 Génération du token FCM...');
       const messaging = getMessaging();
       
-      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "BAjaKTombbQFolVsg8nRR1J0Lq9j0d4qHlkLCI0gz2F4ya3XOBQdP_obmgn800G4j3OG4lR7b5lYGKQFyaW8-F0";
-      addDebugLog(`🔑 Clé VAPID disponible: ${!!vapidKey}`);
-      addDebugLog(`🔑 Clé VAPID (début): ${vapidKey?.substring(0, 10)}...`);
-      addDebugLog(`🔑 Source VAPID: ${process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY ? 'Variable env' : 'Clé par défaut'}`);
-      
-      // Utiliser directement la clé VAPID officielle Firebase
-      addDebugLog('🔑 Utilisation de la clé VAPID officielle Firebase...');
-      const token = await getToken(messaging, { vapidKey });
-      addDebugLog('🔑 Token FCM généré avec succès !');
+      // Essayer d'abord sans clé VAPID (comme avant)
+      addDebugLog('🔑 Tentative sans clé VAPID (méthode originale)...');
+      let token;
+      try {
+        token = await getToken(messaging);
+        addDebugLog('🔑 Token obtenu sans clé VAPID (méthode originale)');
+      } catch (error) {
+        addDebugLog(`❌ Échec sans clé VAPID: ${error}`);
+        addDebugLog('🔑 Tentative avec clé VAPID...');
+        const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || "BAjaKTombbQFolVsg8nRR1J0Lq9j0d4qHlkLCI0gz2F4ya3XOBQdP_obmgn800G4j3OG4lR7b5lYGKQFyaW8-F0";
+        token = await getToken(messaging, { vapidKey });
+        addDebugLog('🔑 Token obtenu avec clé VAPID');
+      }
       
       if (!token) {
         throw new Error('Token FCM vide');
