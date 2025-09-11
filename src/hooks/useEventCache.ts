@@ -84,7 +84,11 @@ export function useEventCache() {
       // Limiter à 50 événements maximum
       if (newEvents.length > 50) {
         newEvents = newEvents
-          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          .sort((a, b) => {
+            const dateA = a.date ? (typeof a.date === 'string' ? new Date(a.date) : new Date(a.date.seconds * 1000)) : new Date(0);
+            const dateB = b.date ? (typeof b.date === 'string' ? new Date(b.date) : new Date(b.date.seconds * 1000)) : new Date(0);
+            return dateA.getTime() - dateB.getTime();
+          })
           .slice(0, 50);
       }
 
