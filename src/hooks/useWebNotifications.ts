@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
 
@@ -35,7 +35,6 @@ export function useWebNotifications() {
     const notificationsQuery = query(
       collection(db, 'notifications'),
       where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc'),
       limit(10)
     );
 
@@ -50,6 +49,9 @@ export function useWebNotifications() {
           createdAt: data.createdAt.toDate()
         } as WebNotification);
       });
+
+      // Tri côté client par date décroissante
+      newNotifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
       setNotifications(newNotifications);
       setUnreadCount(newNotifications.length);
