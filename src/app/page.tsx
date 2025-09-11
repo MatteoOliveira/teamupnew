@@ -3,6 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import Button from '@/components/Button';
+import OfflineIndicator from '@/components/OfflineIndicator';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -48,6 +49,9 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Indicateur hors ligne */}
+      <OfflineIndicator />
+      
       {/* Message hors ligne */}
       {!isOnline && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">

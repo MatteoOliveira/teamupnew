@@ -76,6 +76,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.match(event.request).then((response) => {
         if (response) {
+          console.log('[SW] Page trouvée en cache:', event.request.url);
           return response;
         }
         
@@ -85,12 +86,39 @@ self.addEventListener('fetch', (event) => {
             const responseClone = fetchResponse.clone();
             caches.open('pages-cache').then((cache) => {
               cache.put(event.request, responseClone);
+              console.log('[SW] Page mise en cache:', event.request.url);
             });
           }
           return fetchResponse;
         }).catch(() => {
+          console.log('[SW] Hors ligne, fallback vers page d\'accueil');
           // Fallback vers la page d'accueil si hors ligne
-          return caches.match('/');
+          return caches.match('/').then((fallbackResponse) => {
+            if (fallbackResponse) {
+              return fallbackResponse;
+            }
+            // Si même la page d'accueil n'est pas en cache, retourner une page d'erreur
+            return new Response(`
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <title>TeamUp - Hors Ligne</title>
+                  <meta name="viewport" content="width=device-width, initial-scale=1">
+                  <style>
+                    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                    .offline { color: #f59e0b; }
+                  </style>
+                </head>
+                <body>
+                  <h1 class="offline">📱 Mode Hors Ligne</h1>
+                  <p>Vous êtes hors ligne. Veuillez vous reconnecter pour accéder à cette page.</p>
+                  <button onclick="window.location.href='/'">Retour à l'accueil</button>
+                </body>
+              </html>
+            `, {
+              headers: { 'Content-Type': 'text/html' }
+            });
+          });
         });
       })
     );
@@ -115,6 +143,36 @@ self.addEventListener('fetch', (event) => {
           return fetchResponse;
         }).catch(() => {
           // Fallback vers la page d'accueil si hors ligne
+          return caches.match('/');
+        });
+      })
+    );
+  }
+  
+  // Stratégie de cache pour les pages spécifiques (profil, réservation, etc.)
+  if (event.request.destination === 'document' && 
+      (event.request.url.includes('/profile') || 
+       event.request.url.includes('/reservation') ||
+       event.request.url.includes('/event/') ||
+       event.request.url.includes('/choose-experience'))) {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        if (response) {
+          console.log('[SW] Page spécifique trouvée en cache:', event.request.url);
+          return response;
+        }
+        
+        return fetch(event.request).then((fetchResponse) => {
+          if (fetchResponse.status === 200) {
+            const responseClone = fetchResponse.clone();
+            caches.open('pages-cache').then((cache) => {
+              cache.put(event.request, responseClone);
+              console.log('[SW] Page spécifique mise en cache:', event.request.url);
+            });
+          }
+          return fetchResponse;
+        }).catch(() => {
+          console.log('[SW] Page spécifique hors ligne, fallback vers accueil');
           return caches.match('/');
         });
       })
