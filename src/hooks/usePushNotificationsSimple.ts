@@ -214,6 +214,19 @@ export function usePushNotificationsSimple() {
 
       addDebugLog('✅ === SUBSCRIPTION RÉUSSIE ===');
       addDebugLog(`📊 État final: isSubscribed=true, token=${token ? 'Présent' : 'Absent'}`);
+      
+      // Forcer la mise à jour de l'état après un délai
+      setTimeout(() => {
+        setState(prev => ({
+          ...prev,
+          isSubscribed: true,
+          token: token,
+          isLoading: false,
+          error: null,
+        }));
+        addDebugLog('🔄 État UI forcé mis à jour');
+      }, 100);
+      
       return true;
       
     } catch (error) {

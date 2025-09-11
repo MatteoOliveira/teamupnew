@@ -263,6 +263,61 @@ export default function EventEditPage() {
   };
 
   // Fonction pour envoyer des notifications aux participants
+  // Fonction pour envoyer les notifications push réelles
+  const sendPushNotifications = async (notifications: any[]) => {
+    try {
+      for (const notification of notifications) {
+        // Récupérer le token FCM de l'utilisateur
+        const userDoc = await getDoc(doc(db, 'users', notification.userId));
+        if (!userDoc.exists()) continue;
+        
+        const userData = userDoc.data();
+        const fcmToken = userData.fcmToken;
+        
+        if (!fcmToken) {
+          console.log(`Aucun token FCM pour l'utilisateur ${notification.userId}`);
+          continue;
+        }
+        
+        // Envoyer la notification via Firebase Cloud Messaging
+        const message = {
+          token: fcmToken,
+          notification: {
+            title: notification.title,
+            body: notification.body,
+          },
+          data: notification.data,
+          webpush: {
+            fcm_options: {
+              link: `/event/${notification.eventId}`
+            }
+          }
+        };
+        
+        // Utiliser l'API REST de Firebase Cloud Messaging
+        // Note: La clé serveur doit être configurée sur Vercel
+        const serverKey = process.env.NEXT_PUBLIC_FIREBASE_SERVER_KEY || 'AAAAj8KTombbQFolVsg8nRR1J0Lq9j0d4qHlkLCI0gz2F4ya3XOBQdP_obmgn800G4j3OG4lR7b5lYGKQFyaW8-F0';
+        
+        const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `key=${serverKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(message),
+        });
+        
+        if (response.ok) {
+          console.log(`Notification push envoyée à ${notification.userId}`);
+        } else {
+          console.error(`Erreur envoi notification à ${notification.userId}:`, await response.text());
+        }
+      }
+    } catch (error) {
+      console.error('Erreur envoi notifications push:', error);
+    }
+  };
+
   const notifyParticipants = async (eventId: string, changeSummary: string[]) => {
     try {
       // Récupérer tous les participants
@@ -301,7 +356,10 @@ export default function EventEditPage() {
       );
       
       await Promise.all(batch);
-      console.log(`Notifications envoyées à ${notifications.length} participants`);
+      console.log(`Notifications sauvegardées pour ${notifications.length} participants`);
+      
+      // Envoyer les notifications push réelles
+      await sendPushNotifications(notifications);
       
     } catch (error) {
       console.error('Erreur lors de l\'envoi des notifications:', error);
