@@ -117,18 +117,19 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 space-y-3 sm:space-y-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <button
                 onClick={() => router.push('/profile')}
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors text-sm sm:text-base"
               >
-                <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                Retour au profil
+                <ArrowLeftIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Retour au profil</span>
+                <span className="sm:hidden">Retour</span>
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard Administrateur</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Dashboard Administrateur</h1>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500">
               Connecté en tant que : {user?.email}
             </div>
           </div>
@@ -137,83 +138,83 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Navigation Admin */}
-        <div className="mb-8">
-          <nav className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+        <div className="mb-6 sm:mb-8">
+          <nav className="flex flex-wrap gap-1 sm:gap-0 sm:space-x-1 bg-gray-100 p-1 rounded-lg w-full sm:w-fit">
             <button
               onClick={() => router.push('/admin/dashboard')}
-              className="px-4 py-2 rounded-md text-sm font-medium bg-white text-gray-900 shadow-sm"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-white text-gray-900 shadow-sm"
             >
-              📊 Dashboard
+              📊 <span className="hidden sm:inline">Dashboard</span>
             </button>
             <button
               onClick={() => router.push('/admin/users')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
             >
-              👥 Utilisateurs
+              👥 <span className="hidden sm:inline">Utilisateurs</span>
             </button>
             <button
               onClick={() => router.push('/admin/events')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
             >
-              📅 Événements
+              📅 <span className="hidden sm:inline">Événements</span>
             </button>
             <button
               onClick={() => router.push('/admin/analytics')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
             >
-              📈 Analytics
+              📈 <span className="hidden sm:inline">Analytics</span>
             </button>
             <button
               onClick={() => router.push('/admin/settings')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
             >
-              ⚙️ Paramètres
+              ⚙️ <span className="hidden sm:inline">Paramètres</span>
             </button>
           </nav>
         </div>
 
         {/* Statistiques Principales */}
         {analytics && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
-                <CalendarIcon className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Événements</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.totalEvents}</p>
+                <CalendarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Événements</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{analytics.totalEvents}</p>
                   <p className="text-xs text-green-600">+{analytics.eventsToday} aujourd&apos;hui</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
-                <UsersIcon className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Utilisateurs</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.totalUsers}</p>
+                <UsersIcon className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Utilisateurs</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{analytics.totalUsers}</p>
                   <p className="text-xs text-blue-600">{analytics.activeUsers} actifs</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
-                <ClockIcon className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Temps Moyen</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.avgSessionTime}min</p>
+                <ClockIcon className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Temps Moyen</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{analytics.avgSessionTime}min</p>
                   <p className="text-xs text-purple-600">par session</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <div className="flex items-center">
-                <ChartBarIcon className="h-8 w-8 text-orange-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Rétention</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.retentionRate.toFixed(1)}%</p>
+                <ChartBarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Rétention</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{analytics.retentionRate.toFixed(1)}%</p>
                   <p className="text-xs text-orange-600">taux de rétention</p>
                 </div>
               </div>
@@ -230,12 +231,12 @@ export default function AdminDashboard() {
 
         {/* Événements Récents */}
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-900">Événements Récents</h2>
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Événements Récents</h2>
               <button
                 onClick={() => router.push('/admin/events')}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium self-start sm:self-auto"
               >
                 Voir tous →
               </button>
@@ -252,19 +253,19 @@ export default function AdminDashboard() {
               const isFuture = eventDate >= new Date();
               
               return (
-                <div key={event.id} className="px-6 py-4 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
+                <div key={event.id} className="px-4 sm:px-6 py-4 hover:bg-gray-50">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium text-gray-900">{event.name}</h3>
-                      <p className="text-sm text-gray-600">{event.description}</p>
-                      <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+                      <h3 className="text-sm sm:text-lg font-medium text-gray-900">{event.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{event.description}</p>
+                      <div className="mt-2 flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500">
                         <span>📅 {eventDate.toLocaleDateString('fr-FR')}</span>
                         <span>⏰ {eventDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                         <span>📍 {event.location}</span>
                         <span>👥 {event.currentParticipants || 0} participants</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-between sm:justify-end space-x-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         isFuture
                           ? 'bg-green-100 text-green-800'
@@ -274,7 +275,7 @@ export default function AdminDashboard() {
                       </span>
                       <button
                         onClick={() => router.push(`/event/${event.id}`)}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium"
                       >
                         Voir
                       </button>
@@ -286,7 +287,7 @@ export default function AdminDashboard() {
           </div>
 
           {events.length === 0 && (
-            <div className="px-6 py-8 text-center text-gray-500">
+            <div className="px-4 sm:px-6 py-8 text-center text-gray-500">
               Aucun événement trouvé.
             </div>
           )}

@@ -176,18 +176,19 @@ export default function AdminUsers() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 space-y-3 sm:space-y-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <button
                 onClick={() => router.push('/admin/dashboard')}
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors text-sm sm:text-base"
               >
-                <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                Retour au dashboard
+                <ArrowLeftIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Retour au dashboard</span>
+                <span className="sm:hidden">Retour</span>
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">Gestion des Utilisateurs</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Gestion des Utilisateurs</h1>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500">
               {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''}
             </div>
           </div>
@@ -196,63 +197,63 @@ export default function AdminUsers() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Navigation Admin */}
-        <div className="mb-8">
-          <nav className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+        <div className="mb-6 sm:mb-8">
+          <nav className="flex flex-wrap gap-1 sm:gap-0 sm:space-x-1 bg-gray-100 p-1 rounded-lg w-full sm:w-fit">
             <button
               onClick={() => router.push('/admin/dashboard')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
             >
-              📊 Dashboard
+              📊 <span className="hidden sm:inline">Dashboard</span>
             </button>
             <button
               onClick={() => router.push('/admin/users')}
-              className="px-4 py-2 rounded-md text-sm font-medium bg-white text-gray-900 shadow-sm"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-white text-gray-900 shadow-sm"
             >
-              👥 Utilisateurs
+              👥 <span className="hidden sm:inline">Utilisateurs</span>
             </button>
             <button
               onClick={() => router.push('/admin/events')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
             >
-              📅 Événements
+              📅 <span className="hidden sm:inline">Événements</span>
             </button>
             <button
               onClick={() => router.push('/admin/analytics')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
             >
-              📈 Analytics
+              📈 <span className="hidden sm:inline">Analytics</span>
             </button>
             <button
               onClick={() => router.push('/admin/settings')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
             >
-              ⚙️ Paramètres
+              ⚙️ <span className="hidden sm:inline">Paramètres</span>
             </button>
           </nav>
         </div>
 
         {/* Filtres et Recherche */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:gap-4">
             {/* Recherche */}
             <div className="flex-1">
               <div className="relative">
-                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <MagnifyingGlassIcon className="h-4 w-4 sm:h-5 sm:w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Rechercher par nom, email ou ville..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-8 sm:pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
             {/* Filtres */}
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2 sm:space-x-2 sm:flex-nowrap">
               <button
                 onClick={() => setFilter('all')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   filter === 'all'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -262,7 +263,7 @@ export default function AdminUsers() {
               </button>
               <button
                 onClick={() => setFilter('admin')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   filter === 'admin'
                     ? 'bg-red-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -272,7 +273,7 @@ export default function AdminUsers() {
               </button>
               <button
                 onClick={() => setFilter('users')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   filter === 'users'
                     ? 'bg-green-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -286,43 +287,43 @@ export default function AdminUsers() {
 
         {/* Liste des Utilisateurs */}
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Liste des Utilisateurs</h2>
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">Liste des Utilisateurs</h2>
           </div>
 
           <div className="divide-y divide-gray-200">
             {filteredUsers.map((user) => (
-              <div key={user.id} className="px-6 py-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
+              <div key={user.id} className="px-4 sm:px-6 py-4 hover:bg-gray-50">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                  <div className="flex items-start space-x-3 sm:space-x-4">
                     <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                        <UserIcon className="h-6 w-6 text-gray-600" />
+                      <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                        <UserIcon className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-lg font-medium text-gray-900 truncate">
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+                        <h3 className="text-sm sm:text-lg font-medium text-gray-900 truncate">
                           {user.name || 'Nom non défini'}
                         </h3>
                         {user.isAdmin && (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 w-fit">
                             Admin
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600">{user.email}</p>
-                      <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                      <p className="text-xs sm:text-sm text-gray-600 truncate">{user.email}</p>
+                      <div className="mt-1 flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500">
                         <span>📍 {user.city || 'Ville non définie'}</span>
                         {user.age && <span>🎂 {user.age} ans</span>}
-                        <span>🔔 Notifications: {user.notifications ? 'Activées' : 'Désactivées'}</span>
+                        <span>🔔 {user.notifications ? 'Activées' : 'Désactivées'}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                     <button
                       onClick={() => toggleAdminStatus(user.id, user.isAdmin || false)}
-                      className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      className={`w-full sm:w-auto px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                         user.isAdmin
                           ? 'bg-red-100 text-red-700 hover:bg-red-200'
                           : 'bg-green-100 text-green-700 hover:bg-green-200'
@@ -332,7 +333,7 @@ export default function AdminUsers() {
                     </button>
                     <button
                       onClick={() => router.push(`/admin/users/${user.id}`)}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      className="w-full sm:w-auto text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium text-center sm:text-left"
                     >
                       Voir détails
                     </button>
@@ -343,7 +344,7 @@ export default function AdminUsers() {
           </div>
 
           {filteredUsers.length === 0 && (
-            <div className="px-6 py-8 text-center text-gray-500">
+            <div className="px-4 sm:px-6 py-8 text-center text-gray-500">
               Aucun utilisateur trouvé.
             </div>
           )}
