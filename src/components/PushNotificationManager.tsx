@@ -309,13 +309,33 @@ export default function PushNotificationManager() {
             </Button>
           )}
 
-          {/* Bouton de test de notification d'événement */}
-          <Button
-            onClick={handleTestEventNotification}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
-          >
-            🎯 Test Notification Événement
-          </Button>
+      {/* Bouton de test de notification d'événement */}
+      <Button
+        onClick={handleTestEventNotification}
+        className="bg-purple-600 hover:bg-purple-700 text-white"
+      >
+        🎯 Test Notification Événement
+      </Button>
+
+      {/* Bouton de test simple */}
+      <Button
+        onClick={() => {
+          if (Notification.permission === 'granted') {
+            new Notification('Test Simple', {
+              body: 'Ceci est un test simple',
+              icon: '/icon-192x192.webp'
+            });
+            setMessage('Notification simple envoyée !');
+            setMessageType('success');
+          } else {
+            setMessage('Permission non accordée');
+            setMessageType('error');
+          }
+        }}
+        className="bg-green-600 hover:bg-green-700 text-white"
+      >
+        🔔 Test Simple
+      </Button>
 
           {/* Bouton de rechargement d'état */}
           <Button

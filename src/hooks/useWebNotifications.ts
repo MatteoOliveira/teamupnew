@@ -39,10 +39,15 @@ export function useWebNotifications() {
     );
 
     const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+      console.log('🔔 === SNAPSHOT REÇU ===');
+      console.log('🔔 Nombre de documents:', snapshot.size);
+      console.log('🔔 Documents modifiés:', snapshot.docChanges().length);
+      
       const newNotifications: WebNotification[] = [];
       
       snapshot.forEach((doc) => {
         const data = doc.data();
+        console.log('🔔 Document trouvé:', doc.id, data);
         newNotifications.push({
           id: doc.id,
           ...data,
@@ -53,6 +58,7 @@ export function useWebNotifications() {
       // Tri côté client par date décroissante
       newNotifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
+      console.log('🔔 Notifications finales:', newNotifications.length);
       setNotifications(newNotifications);
       setUnreadCount(newNotifications.length);
 

@@ -177,7 +177,7 @@ export default function EventEditPage() {
 
     try {
       const response = await fetch(
-        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&type=housenumber&autocomplete=1`
+        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`
       );
       const data = await response.json();
       console.log('📍 Suggestions reçues:', data.features?.length || 0);
