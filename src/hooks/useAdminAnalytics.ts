@@ -148,8 +148,14 @@ const generateEventsPerDay = (events: unknown[], days: number) => {
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
-    const dayEvents = events.filter((event: any) => {
-      const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
+    const dayEvents = events.filter((event: unknown) => {
+      const eventData = event as { date?: Date | string | { seconds: number } };
+      if (!eventData.date) return false;
+      
+      const eventDate = eventData.date instanceof Date ? eventData.date : 
+        typeof eventData.date === 'string' ? new Date(eventData.date) :
+        new Date(eventData.date.seconds * 1000);
+      
       const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
       const targetDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       return eventDay.getTime() === targetDay.getTime();
