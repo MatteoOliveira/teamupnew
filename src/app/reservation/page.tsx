@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import Link from "next/link";
 import dynamic from 'next/dynamic';
+import SimpleEventCard from '@/components/SimpleEventCard';
 
 // Dynamic import de la Map avec SSR désactivé
 const Map = dynamic(() => import('@/components/Map'), {
@@ -436,7 +437,7 @@ export default function ReservationPage() {
               </div>
               <div className="grid gap-3">
                 {nearbyEvents.map(event => (
-                  <Link key={event.id} href={`/event/${event.id}`} className="block">
+                  <SimpleEventCard key={event.id} event={event} onZoomToEvent={zoomToEvent} />
                     <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
