@@ -126,6 +126,7 @@ export default function ProfilePage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Initialiser l'onglet depuis l'URL hash au montage
   useEffect(() => {
@@ -167,6 +168,7 @@ export default function ProfilePage() {
           setAge(data.age || '');
           setSportLevels(data.sportLevels || []);
           setAvailabilities(data.availabilities || []);
+          setIsAdmin(data.isAdmin === true);
         }
         setProfileLoaded(true);
       });
@@ -528,6 +530,22 @@ export default function ProfilePage() {
                         )}
                       </Menu.Item>
                     ))}
+                    {/* Bouton Admin Mobile */}
+                    {isAdmin && (
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={() => window.location.href = '/admin'}
+                            className={`${
+                              active ? 'bg-red-50 text-red-900' : 'text-red-700'
+                            } flex items-center space-x-3 w-full text-left px-4 py-3 text-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 rounded-md mx-2`}
+                          >
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <span>🔧 Espace Admin</span>
+                          </button>
+                        )}
+                      </Menu.Item>
+                    )}
                   </div>
                 </Menu.Items>
               </Menu>
@@ -554,6 +572,15 @@ export default function ProfilePage() {
                     {tab.label}
                   </button>
                 ))}
+                {/* Bouton Admin */}
+                {isAdmin && (
+                  <button
+                    onClick={() => window.location.href = '/admin'}
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 border border-red-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  >
+                    🔧 Espace Admin
+                  </button>
+                )}
               </div>
             </div>
           </nav>
