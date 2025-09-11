@@ -133,14 +133,20 @@ export function usePushNotificationsSimple() {
         }
       }
 
-      // Attendre le service worker (méthode originale simple)
+      // Attendre le service worker avec timeout
       if ('serviceWorker' in navigator) {
         addDebugLog('🔧 Attente du service worker...');
         try {
-          await navigator.serviceWorker.ready;
+          // Timeout de 3 secondes pour éviter le blocage
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Service Worker timeout après 3s')), 3000)
+          );
+          
+          await Promise.race([navigator.serviceWorker.ready, timeoutPromise]);
           addDebugLog('🔧 Service Worker prêt');
         } catch (error) {
           addDebugLog(`❌ Erreur Service Worker: ${error}`);
+          addDebugLog('🔧 Continuation sans service worker...');
           // Continuer quand même
         }
       }
