@@ -133,12 +133,35 @@ export function usePushNotificationsSimple() {
         }
       }
 
-      // Attendre le service worker
+      // Attendre le service worker avec timeout
       if ('serviceWorker' in navigator) {
         addDebugLog('🔧 Attente du service worker...');
-        const registration = await navigator.serviceWorker.ready;
-        addDebugLog(`🔧 Service Worker prêt: ${registration.active?.scriptURL}`);
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Attendre 2 secondes
+        addDebugLog(`🔧 Service Workers enregistrés: ${navigator.serviceWorker.controller ? 'Oui' : 'Non'}`);
+        
+        try {
+          // Timeout de 5 secondes pour le service worker
+          addDebugLog('🔧 Démarrage du timeout (5s)...');
+          const registrationPromise = navigator.serviceWorker.ready;
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Service Worker timeout après 5s')), 5000)
+          );
+          
+          const registration = await Promise.race([registrationPromise, timeoutPromise]) as ServiceWorkerRegistration;
+          addDebugLog(`🔧 Service Worker prêt: ${registration.active?.scriptURL}`);
+          
+          // Vérifier que le service worker est vraiment actif
+          if (!registration.active) {
+            throw new Error('Service Worker non actif');
+          }
+          
+          addDebugLog('🔧 Service Worker vérifié et actif');
+        } catch (error) {
+          addDebugLog(`❌ Erreur Service Worker: ${error}`);
+          addDebugLog('🔧 Tentative de génération de token sans service worker...');
+          // Continuer sans le service worker, parfois ça marche quand même
+        }
+      } else {
+        addDebugLog('❌ Service Worker non supporté');
       }
 
       // Obtenir le token FCM
