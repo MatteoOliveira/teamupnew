@@ -242,7 +242,7 @@ export function usePushNotifications() {
       }));
       return false;
     }
-  }, [user, state.isSupported, state.permission.granted, requestPermission, getFCMToken]);
+  }, [user, state.isSupported, requestPermission, getFCMToken]);
 
   // Se désabonner des notifications
   const unsubscribe = useCallback(async (): Promise<boolean> => {
@@ -340,30 +340,12 @@ export function usePushNotifications() {
             token: userData.fcmToken || null
           }));
           
-          // Auto-activer les notifications si l'utilisateur n'a pas encore de préférence définie OU si les notifications sont désactivées
-          if ((!userData.hasOwnProperty('pushNotificationsEnabled') || userData.pushNotificationsEnabled === false) && state.isSupported) {
-            console.log('🚀 Auto-activation des notifications pour utilisateur');
-            // Demander la permission automatiquement
-            requestPermission().then((granted) => {
-              if (granted) {
-                subscribe(); // Activation immédiate après permission
-              }
-            });
-          }
+          // L'auto-activation est maintenant gérée dans un useEffect séparé
         } else {
           console.log('🔍 Document utilisateur non trouvé - Auto-activation');
           setState(prev => ({ ...prev, isSubscribed: false }));
           
-          // Nouvel utilisateur - auto-activer les notifications
-          if (state.isSupported) {
-            console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
-            // Demander la permission automatiquement
-            requestPermission().then((granted) => {
-              if (granted) {
-                subscribe(); // Activation immédiate après permission
-              }
-            });
-          }
+          // L'auto-activation est maintenant gérée dans un useEffect séparé
         }
       } catch (error) {
         console.error('Erreur initialisation état notifications:', error);
@@ -372,7 +354,46 @@ export function usePushNotifications() {
     };
 
     initializeState();
-  }, [user, checkPermission, state.isSupported, subscribe, requestPermission]);
+  }, [user, checkPermission, state.isSupported]);
+
+  // Auto-activation séparée pour éviter les boucles infinies
+  useEffect(() => {
+    if (!user || !state.isSupported) return;
+
+    const autoActivate = async () => {
+      try {
+        // Vérifier l'état d'abonnement depuis Firestore
+        const userDoc = await doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userDoc);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          // Auto-activer les notifications si l'utilisateur n'a pas encore de préférence définie OU si les notifications sont désactivées
+          if ((!userData.hasOwnProperty('pushNotificationsEnabled') || userData.pushNotificationsEnabled === false)) {
+            console.log('🚀 Auto-activation des notifications pour utilisateur');
+            // Demander la permission automatiquement
+            const granted = await requestPermission();
+            if (granted) {
+              await subscribe(); // Activation immédiate après permission
+            }
+          }
+        } else {
+          // Nouvel utilisateur - auto-activer les notifications
+          console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
+          const granted = await requestPermission();
+          if (granted) {
+            await subscribe(); // Activation immédiate après permission
+          }
+        }
+      } catch (error) {
+        console.error('Erreur auto-activation:', error);
+      }
+    };
+
+    // Délai pour éviter les conflits avec l'initialisation
+    const timeoutId = setTimeout(autoActivate, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [user, state.isSupported, requestPermission, subscribe]);
 
   // Configurer l'écoute des messages en premier plan
   useEffect(() => {
