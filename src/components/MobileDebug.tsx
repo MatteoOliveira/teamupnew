@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useEventCache } from '@/hooks/useEventCache';
 
 export default function MobileDebug() {
-  const { cachedEvents, isEventCached } = useEventCache();
+  const { cachedEvents } = useEventCache();
   const [isVisible, setIsVisible] = useState(false);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
 
