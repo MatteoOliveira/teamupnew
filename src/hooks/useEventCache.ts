@@ -1,12 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Event } from '@/types/event';
-
-interface CachedEvent extends Event {
-  cachedAt: Date;
-  isOfflineAvailable: boolean;
-}
+import { Event, CachedEvent } from '@/types/event';
 
 export function useEventCache() {
   const [cachedEvents, setCachedEvents] = useState<CachedEvent[]>([]);
@@ -35,9 +30,10 @@ export function useEventCache() {
         });
         
         // Filtrer uniquement les événements futurs
-        const futureEvents = events.filter((event: CachedEvent) => 
-          new Date(event.date) > new Date()
-        );
+        const futureEvents = events.filter((event: CachedEvent) => {
+          const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
+          return eventDate > new Date();
+        });
         
         setCachedEvents(futureEvents);
         
@@ -58,7 +54,8 @@ export function useEventCache() {
 
   const cacheEvent = useCallback((event: Event) => {
     // Vérifier que l'événement est futur
-    if (new Date(event.date) <= new Date()) {
+    const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
+    if (eventDate <= new Date()) {
       return false;
     }
 
@@ -115,7 +112,10 @@ export function useEventCache() {
   const clearExpiredEvents = useCallback(() => {
     const now = new Date();
     setCachedEvents(prev => {
-      const validEvents = prev.filter(event => new Date(event.date) > now);
+      const validEvents = prev.filter(event => {
+        const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
+        return eventDate > now;
+      });
       saveCachedEvents(validEvents);
       return validEvents;
     });

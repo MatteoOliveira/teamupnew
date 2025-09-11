@@ -3,27 +3,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useEventCache } from '@/hooks/useEventCache';
+import { Event } from '@/types/event';
 import OfflineEventDetails from './OfflineEventDetails';
-
-interface Event {
-  id: string;
-  name: string;
-  sport: string;
-  sportEmoji: string;
-  sportColor: string;
-  city: string;
-  location: string;
-  address?: string;
-  postcode?: string;
-  date: string;
-  endDate?: string;
-  description?: string;
-  maxParticipants: number;
-  contactInfo?: string;
-  createdBy: string;
-  createdAt: Date;
-  isReserved?: boolean;
-}
 
 interface EventCardProps {
   event: Event;
@@ -34,8 +15,8 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
   const { isEventCached } = useEventCache();
   const [showOfflineDetails, setShowOfflineDetails] = useState(false);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateInput: string | { seconds: number }) => {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : new Date(dateInput.seconds * 1000);
     return date.toLocaleDateString('fr-FR', {
       weekday: 'short',
       day: 'numeric',
@@ -60,7 +41,8 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
   };
 
   const isCached = isEventCached(event.id);
-  const isFuture = new Date(event.date) > new Date();
+  const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
+  const isFuture = eventDate > new Date();
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Si l'événement est en cache et futur, permettre l'accès hors ligne
