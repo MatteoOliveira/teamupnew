@@ -14,7 +14,24 @@ export default function AdminAnalytics() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const { analytics, loading: analyticsLoading, refetch } = useAdminAnalytics();
+
+  // Auto-refresh toutes les minutes
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    // Mise à jour initiale
+    setLastUpdate(new Date());
+
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refresh des analytics...');
+      refetch();
+      setLastUpdate(new Date());
+    }, 60000); // 60 secondes = 1 minute
+
+    return () => clearInterval(interval);
+  }, [isAdmin, refetch]);
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
@@ -76,23 +93,21 @@ export default function AdminAnalytics() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 space-y-2 sm:space-y-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <button
                 onClick={() => router.push('/admin/dashboard')}
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors text-sm sm:text-base"
               >
-                <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                Retour au dashboard
+                <ArrowLeftIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Retour au dashboard</span>
+                <span className="sm:hidden">Retour</span>
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">Analytics Avancés</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Analytics Avancés</h1>
             </div>
-            <button
-              onClick={refetch}
-              className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-            >
-              🔄 Actualiser
-            </button>
+            <div className="text-xs sm:text-sm text-gray-500">
+              Dernière mise à jour : {lastUpdate.toLocaleTimeString('fr-FR')}
+            </div>
           </div>
         </div>
       </div>
