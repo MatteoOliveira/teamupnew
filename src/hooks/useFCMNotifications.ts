@@ -24,30 +24,6 @@ export function useFCMNotifications() {
   // Vérifier le support des notifications
   const isSupported = typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator;
 
-  // Demander la permission
-  const requestPermission = useCallback(async () => {
-    if (!isSupported) {
-      setState(prev => ({ ...prev, error: 'Notifications non supportées' }));
-      return false;
-    }
-
-    try {
-      const permission = await Notification.requestPermission();
-      setState(prev => ({ ...prev, permission }));
-      
-      if (permission === 'granted') {
-        return await subscribe();
-      } else {
-        setState(prev => ({ ...prev, error: 'Permission refusée' }));
-        return false;
-      }
-    } catch (error) {
-      console.error('Erreur lors de la demande de permission:', error);
-      setState(prev => ({ ...prev, error: 'Erreur lors de la demande de permission' }));
-      return false;
-    }
-  }, [isSupported, subscribe]);
-
   // S'abonner aux notifications FCM
   const subscribe = useCallback(async () => {
     if (!messaging || !user) {
@@ -101,6 +77,30 @@ export function useFCMNotifications() {
       return false;
     }
   }, [user]);
+
+  // Demander la permission
+  const requestPermission = useCallback(async () => {
+    if (!isSupported) {
+      setState(prev => ({ ...prev, error: 'Notifications non supportées' }));
+      return false;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      setState(prev => ({ ...prev, permission }));
+      
+      if (permission === 'granted') {
+        return await subscribe();
+      } else {
+        setState(prev => ({ ...prev, error: 'Permission refusée' }));
+        return false;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la demande de permission:', error);
+      setState(prev => ({ ...prev, error: 'Erreur lors de la demande de permission' }));
+      return false;
+    }
+  }, [isSupported, subscribe]);
 
   // Se désabonner
   const unsubscribe = useCallback(async () => {
