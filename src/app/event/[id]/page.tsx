@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { doc, getDoc, collection, addDoc, getDocs, query, where, deleteDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
+import { useEventCache } from "@/hooks/useEventCache";
 import Button from "@/components/Button";
 import { MapPinIcon, CalendarIcon, UsersIcon, UserIcon, ClockIcon, PhoneIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
@@ -40,6 +41,7 @@ interface Participant {
 export default function EventDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { cacheEvent } = useEventCache();
   const router = useRouter();
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -59,7 +61,7 @@ export default function EventDetailPage() {
         const eventDoc = await getDoc(doc(db, "events", id as string));
         if (eventDoc.exists()) {
           const data = eventDoc.data();
-          setEvent({
+          const eventData = {
             id: eventDoc.id,
             name: data.name,
             city: data.city,
@@ -78,7 +80,12 @@ export default function EventDetailPage() {
             createdByName: data.createdByName,
             contactInfo: data.contactInfo,
             isReserved: data.isReserved,
-          });
+          };
+          
+          setEvent(eventData);
+          
+          // Mettre en cache l'événement s'il est futur
+          cacheEvent(eventData);
         } else {
           setMessage("Événement non trouvé");
         }
@@ -90,7 +97,7 @@ export default function EventDetailPage() {
       }
     };
     fetchEvent();
-  }, [id]);
+  }, [id, cacheEvent]);
 
   useEffect(() => {
     if (!id) return;

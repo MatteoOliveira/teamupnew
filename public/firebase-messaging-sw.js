@@ -96,6 +96,31 @@ self.addEventListener('fetch', (event) => {
     );
   }
   
+  // Stratégie de cache pour les pages d'événements
+  if (event.request.url.includes('/event/') && event.request.destination === 'document') {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        if (response) {
+          return response;
+        }
+        
+        return fetch(event.request).then((fetchResponse) => {
+          // Mettre en cache les pages d'événements
+          if (fetchResponse.status === 200) {
+            const responseClone = fetchResponse.clone();
+            caches.open('events-cache').then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return fetchResponse;
+        }).catch(() => {
+          // Fallback vers la page d'accueil si hors ligne
+          return caches.match('/');
+        });
+      })
+    );
+  }
+  
   // Stratégie de cache pour les assets statiques
   if (event.request.url.includes('/_next/static/')) {
     event.respondWith(
