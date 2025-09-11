@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { ArrowLeftIcon, CogIcon, BellIcon, ShieldCheckIcon, DatabaseIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, CogIcon, BellIcon, ShieldCheckIcon, ServerIcon } from '@heroicons/react/24/outline';
 
 export default function AdminSettings() {
   const { user, loading } = useAuth();
@@ -335,7 +335,7 @@ export default function AdminSettings() {
           {/* Actions Système */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center mb-4">
-              <DatabaseIcon className="h-6 w-6 text-gray-600 mr-2" />
+              <ServerIcon className="h-6 w-6 text-gray-600 mr-2" />
               <h3 className="text-lg font-semibold text-gray-900">Actions Système</h3>
             </div>
             

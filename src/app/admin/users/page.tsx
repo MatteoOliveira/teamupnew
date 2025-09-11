@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { collection, query, orderBy, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { ArrowLeftIcon, UserIcon, MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, UserIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 interface User {
   id: string;

@@ -11,10 +11,7 @@ import {
   ChartBarIcon, 
   CalendarIcon, 
   UsersIcon, 
-  ClockIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  XCircleIcon
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import { useAdminAnalytics } from '@/hooks/useAdminAnalytics';
 import AdminCharts from '@/components/AdminCharts';

@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { collection, query, orderBy, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Event } from '@/types/event';
-import { ArrowLeftIcon, CalendarIcon, MagnifyingGlassIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, MagnifyingGlassIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 
 export default function AdminEvents() {
   const { user, loading } = useAuth();
