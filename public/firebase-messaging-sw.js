@@ -154,7 +154,9 @@ self.addEventListener('fetch', (event) => {
       (event.request.url.includes('/profile') || 
        event.request.url.includes('/reservation') ||
        event.request.url.includes('/event/') ||
-       event.request.url.includes('/choose-experience'))) {
+       event.request.url.includes('/choose-experience') ||
+       event.request.url.includes('/conversation') ||
+       event.request.url.includes('/chat'))) {
     event.respondWith(
       caches.match(event.request).then((response) => {
         if (response) {

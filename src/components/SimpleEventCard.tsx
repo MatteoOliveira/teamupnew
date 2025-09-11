@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useEventCache } from '@/hooks/useEventCache';
-import OfflineEventDetails from './OfflineEventDetails';
+import OfflineEventDetailsFallback from './OfflineEventDetailsFallback';
 
 interface Event {
   id: string;
@@ -115,10 +115,7 @@ export default function SimpleEventCard({ event, onZoomToEvent }: SimpleEventCar
         </div>
 
         {showOfflineDetails && (
-          <OfflineEventDetails
-            eventId={event.id}
-            onClose={() => setShowOfflineDetails(false)}
-          />
+          <OfflineEventDetailsFallback eventId={event.id} />
         )}
       </>
     );
