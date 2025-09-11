@@ -11,22 +11,28 @@ interface CachedEvent extends Event {
 export function useEventCache() {
   const [cachedEvents, setCachedEvents] = useState<CachedEvent[]>([]);
 
-  // Charger les événements en cache au démarrage
-  useEffect(() => {
-    loadCachedEvents();
+  const saveCachedEvents = useCallback((events: CachedEvent[]) => {
+    try {
+      localStorage.setItem('teamup-cached-events', JSON.stringify(events));
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde du cache:', error);
+    }
   }, []);
 
   const loadCachedEvents = useCallback(() => {
     try {
       const cached = localStorage.getItem('teamup-cached-events');
       if (cached) {
-        const events = JSON.parse(cached).map((event: any) => ({
-          ...event,
-          cachedAt: new Date(event.cachedAt),
-          date: new Date(event.date),
-          endDate: new Date(event.endDate),
-          createdAt: new Date(event.createdAt)
-        }));
+        const events = JSON.parse(cached).map((event: unknown) => {
+          const eventData = event as Record<string, unknown>;
+          return {
+            ...eventData,
+            cachedAt: new Date(eventData.cachedAt as string),
+            date: new Date(eventData.date as string),
+            endDate: new Date(eventData.endDate as string),
+            createdAt: new Date(eventData.createdAt as string)
+          };
+        });
         
         // Filtrer uniquement les événements futurs
         const futureEvents = events.filter((event: CachedEvent) => 
@@ -43,15 +49,12 @@ export function useEventCache() {
     } catch (error) {
       console.error('Erreur lors du chargement du cache:', error);
     }
-  }, []);
+  }, [saveCachedEvents]);
 
-  const saveCachedEvents = useCallback((events: CachedEvent[]) => {
-    try {
-      localStorage.setItem('teamup-cached-events', JSON.stringify(events));
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde du cache:', error);
-    }
-  }, []);
+  // Charger les événements en cache au démarrage
+  useEffect(() => {
+    loadCachedEvents();
+  }, [loadCachedEvents]);
 
   const cacheEvent = useCallback((event: Event) => {
     // Vérifier que l'événement est futur
