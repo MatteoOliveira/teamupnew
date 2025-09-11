@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { useEventCache } from '@/hooks/useEventCache';
 import OfflineEventDetails from './OfflineEventDetails';
@@ -33,19 +32,6 @@ export default function SimpleEventCard({ event, onZoomToEvent }: SimpleEventCar
     return date.toLocaleString('fr-FR');
   };
 
-  const getSportColor = (sport: string) => {
-    const colors: Record<string, string> = {
-      'Football': 'bg-green-500',
-      'Basketball': 'bg-orange-500',
-      'Tennis': 'bg-yellow-500',
-      'Natation': 'bg-blue-500',
-      'Course': 'bg-red-500',
-      'Cyclisme': 'bg-purple-500',
-      'Volleyball': 'bg-pink-500',
-      'Badminton': 'bg-indigo-500'
-    };
-    return colors[sport] || 'bg-gray-500';
-  };
 
   const isCached = isEventCached(event.id);
   const isFuture = event.date ? new Date(event.date.seconds * 1000) > new Date() : false;
