@@ -63,7 +63,7 @@ export default function SportLevel({ sportLevels, onUpdate, isEditing }: SportLe
                 {isEditing ? (
                   <select
                     value={sportLevel.level}
-                    onChange={(e) => updateLevel(sportLevel.sport, e.target.value as any)}
+                    onChange={(e) => updateLevel(sportLevel.sport, e.target.value as 'débutant' | 'intermédiaire' | 'confirmé')}
                     className="text-sm border border-gray-300 rounded px-2 py-1"
                   >
                     {LEVELS.map(level => (
@@ -126,7 +126,7 @@ export default function SportLevel({ sportLevels, onUpdate, isEditing }: SportLe
                 </label>
                 <select
                   value={newLevel}
-                  onChange={(e) => setNewLevel(e.target.value as any)}
+                  onChange={(e) => setNewLevel(e.target.value as 'débutant' | 'intermédiaire' | 'confirmé')}
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                 >
                   {LEVELS.map(level => (
