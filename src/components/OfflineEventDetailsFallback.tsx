@@ -82,14 +82,14 @@ export default function OfflineEventDetailsFallback({ eventId }: OfflineEventDet
             <div className="text-6xl mb-4">📱</div>
             <h1 className="text-xl font-bold text-gray-900 mb-2">Mode Hors Ligne</h1>
             <p className="text-gray-600 mb-4">
-              Cet événement n'est pas disponible hors ligne. 
+              Cet événement n&apos;est pas disponible hors ligne. 
               Veuillez vous reconnecter pour voir les détails.
             </p>
             <button
               onClick={() => window.location.href = '/'}
               className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
             >
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </button>
           </div>
         </div>
