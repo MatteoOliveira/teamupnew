@@ -8,6 +8,7 @@ import { db } from '@/lib/firebase';
 import { ArrowLeftIcon, ChartBarIcon, CalendarIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useAdminAnalytics } from '@/hooks/useAdminAnalytics';
 import AdminCharts from '@/components/AdminCharts';
+import AdminNavigation from '@/components/AdminNavigation';
 
 export default function AdminAnalytics() {
   const { user, loading } = useAuth();
@@ -98,40 +99,7 @@ export default function AdminAnalytics() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Navigation Admin */}
-        <div className="mb-8">
-          <nav className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-            <button
-              onClick={() => router.push('/admin/dashboard')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              📊 Dashboard
-            </button>
-            <button
-              onClick={() => router.push('/admin/users')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              👥 Utilisateurs
-            </button>
-            <button
-              onClick={() => router.push('/admin/events')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              📅 Événements
-            </button>
-            <button
-              onClick={() => router.push('/admin/analytics')}
-              className="px-4 py-2 rounded-md text-sm font-medium bg-white text-gray-900 shadow-sm"
-            >
-              📈 Analytics
-            </button>
-            <button
-              onClick={() => router.push('/admin/settings')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              ⚙️ Paramètres
-            </button>
-          </nav>
-        </div>
+        <AdminNavigation currentPage="analytics" />
 
         {/* Métriques Principales */}
         {analytics && (

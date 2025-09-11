@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ArrowLeftIcon, CogIcon, BellIcon, ShieldCheckIcon, ServerIcon } from '@heroicons/react/24/outline';
+import AdminNavigation from '@/components/AdminNavigation';
 
 export default function AdminSettings() {
   const { user, loading } = useAuth();
@@ -158,44 +159,11 @@ export default function AdminSettings() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Navigation Admin */}
-        <div className="mb-8">
-          <nav className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-            <button
-              onClick={() => router.push('/admin/dashboard')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              📊 Dashboard
-            </button>
-            <button
-              onClick={() => router.push('/admin/users')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              👥 Utilisateurs
-            </button>
-            <button
-              onClick={() => router.push('/admin/events')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              📅 Événements
-            </button>
-            <button
-              onClick={() => router.push('/admin/analytics')}
-              className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              📈 Analytics
-            </button>
-            <button
-              onClick={() => router.push('/admin/settings')}
-              className="px-4 py-2 rounded-md text-sm font-medium bg-white text-gray-900 shadow-sm"
-            >
-              ⚙️ Paramètres
-            </button>
-          </nav>
-        </div>
+        <AdminNavigation currentPage="settings" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
           {/* Paramètres Généraux */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center mb-4">
               <CogIcon className="h-6 w-6 text-gray-600 mr-2" />
               <h3 className="text-lg font-semibold text-gray-900">Paramètres Généraux</h3>

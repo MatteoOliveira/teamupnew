@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { collection, query, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ArrowLeftIcon, UserIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import AdminNavigation from '@/components/AdminNavigation';
 
 interface User {
   id: string;
@@ -197,40 +198,7 @@ export default function AdminUsers() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Navigation Admin */}
-        <div className="mb-6 sm:mb-8">
-          <nav className="flex flex-wrap gap-1 sm:gap-0 sm:space-x-1 bg-gray-100 p-1 rounded-lg w-full sm:w-fit">
-            <button
-              onClick={() => router.push('/admin/dashboard')}
-              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              📊 <span className="hidden sm:inline">Dashboard</span>
-            </button>
-            <button
-              onClick={() => router.push('/admin/users')}
-              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-white text-gray-900 shadow-sm"
-            >
-              👥 <span className="hidden sm:inline">Utilisateurs</span>
-            </button>
-            <button
-              onClick={() => router.push('/admin/events')}
-              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              📅 <span className="hidden sm:inline">Événements</span>
-            </button>
-            <button
-              onClick={() => router.push('/admin/analytics')}
-              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              📈 <span className="hidden sm:inline">Analytics</span>
-            </button>
-            <button
-              onClick={() => router.push('/admin/settings')}
-              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white transition-colors"
-            >
-              ⚙️ <span className="hidden sm:inline">Paramètres</span>
-            </button>
-          </nav>
-        </div>
+        <AdminNavigation currentPage="users" />
 
         {/* Filtres et Recherche */}
         <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
