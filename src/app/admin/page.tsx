@@ -84,7 +84,14 @@ export default function AdminPage() {
   // Filtrer les événements
   const filteredEvents = events.filter(event => {
     if (filter === 'all') return true;
-    const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
+    
+    // Vérifier que event.date existe
+    if (!event.date) return false;
+    
+    const eventDate = event.date instanceof Date ? event.date : 
+      typeof event.date === 'string' ? new Date(event.date) :
+      new Date(event.date.seconds * 1000);
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -239,7 +246,12 @@ export default function AdminPage() {
 
           <div className="divide-y divide-gray-200">
             {filteredEvents.map((event) => {
-              const eventDate = event.date instanceof Date ? event.date : new Date(event.date);
+              // Vérifier que event.date existe
+              if (!event.date) return null;
+              
+              const eventDate = event.date instanceof Date ? event.date : 
+                typeof event.date === 'string' ? new Date(event.date) :
+                new Date(event.date.seconds * 1000);
               const isFuture = eventDate >= new Date();
               
               return (
