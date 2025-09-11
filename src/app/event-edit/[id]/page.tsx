@@ -294,7 +294,7 @@ export default function EventEditPage() {
         registration_ids: participantTokens,
         notification: {
           title: '🎯 Événement Modifié',
-          body: `L'événement "${eventData.name}" a été modifié : ${generateChangeSummary(eventData)}`,
+          body: `L'événement "${eventData.name}" a été modifié`,
           icon: '/icon-192x192.webp',
           badge: '/icon-192x192.webp'
         },
