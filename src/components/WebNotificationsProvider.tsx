@@ -6,6 +6,8 @@ export default function WebNotificationsProvider() {
   console.log('🔔 === WebNotificationsProvider initialisé ===');
   console.log('🔔 Permission notifications:', Notification.permission);
   console.log('🔔 Support notifications:', 'Notification' in window);
+  console.log('🔔 Window object:', typeof window);
+  console.log('🔔 Document object:', typeof document);
   
   // Ce composant initialise simplement le hook pour écouter les notifications
   const { notifications, unreadCount } = useWebNotifications();

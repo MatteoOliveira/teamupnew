@@ -17,7 +17,9 @@ interface WebNotification {
 }
 
 export function useWebNotifications() {
+  console.log('🔔 === useWebNotifications HOOK INITIALISÉ ===');
   const { user } = useAuth();
+  console.log('🔔 User dans hook:', user?.uid || 'Aucun utilisateur');
   const [notifications, setNotifications] = useState<WebNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
