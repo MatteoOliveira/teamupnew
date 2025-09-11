@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useEventCache } from '@/hooks/useEventCache';
 import { useOfflineMessages } from '@/hooks/useOfflineMessages';
-import { Event, Participant } from '@/types/event';
-import { MapPinIcon, CalendarIcon, UsersIcon, UserIcon, ClockIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { Event, Participant, CachedEvent } from '@/types/event';
+// Icons non utilisés supprimés pour éviter les erreurs ESLint
 
 interface OfflineEventDetailsProps {
   eventId: string;
@@ -179,9 +179,9 @@ export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDe
               {event.currentParticipants || 0} / {event.maxParticipants} participants
             </p>
             
-            {showParticipants && (event as any).participants && (event as any).participants.length > 0 ? (
+            {showParticipants && (event as CachedEvent).participants && (event as CachedEvent).participants!.length > 0 ? (
               <div className="space-y-2 max-h-40 overflow-y-auto">
-                {(event as any).participants.map((participant: Participant) => (
+                {(event as CachedEvent).participants!.map((participant: Participant) => (
                   <div key={participant.id} className="flex items-center justify-between bg-white p-2 rounded border">
                     <div>
                       <span className="font-medium text-gray-900">{participant.userName}</span>

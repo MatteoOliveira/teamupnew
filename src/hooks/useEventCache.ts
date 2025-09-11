@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Event, CachedEvent } from '@/types/event';
+import { Event, CachedEvent, Participant } from '@/types/event';
 
 export function useEventCache() {
   const [cachedEvents, setCachedEvents] = useState<CachedEvent[]>([]);
@@ -53,7 +53,7 @@ export function useEventCache() {
     loadCachedEvents();
   }, [loadCachedEvents]);
 
-  const cacheEvent = useCallback((event: Event, participants?: any[]) => {
+  const cacheEvent = useCallback((event: Event, participants?: Participant[]) => {
     console.log('🔄 CACHE: Tentative pour', event.name, 'ID:', event.id.slice(0, 8));
     console.log('📅 CACHE: Date event', event.date);
     
