@@ -5,7 +5,6 @@ import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
-import { registerServiceWorker } from '@/lib/serviceWorker';
 
 interface PushNotificationState {
   isSupported: boolean;
@@ -134,11 +133,11 @@ export function usePushNotificationsSimple() {
         }
       }
 
-      // Enregistrer le service worker manuellement
-      addDebugLog('🔧 Enregistrement du service worker...');
+      // Attendre que le service worker soit prêt (géré par next-pwa)
+      addDebugLog('🔧 Attente du service worker PWA...');
       try {
-        await registerServiceWorker();
-        addDebugLog('🔧 Service Worker enregistré et prêt !');
+        await navigator.serviceWorker.ready;
+        addDebugLog('🔧 Service Worker PWA prêt !');
       } catch (error) {
         addDebugLog(`❌ Erreur Service Worker: ${error}`);
         addDebugLog('🔧 Continuation sans service worker...');

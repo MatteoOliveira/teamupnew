@@ -26,6 +26,11 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "TeamUp",
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+  },
   formatDetection: {
     telephone: false,
   },
