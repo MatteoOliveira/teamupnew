@@ -5,6 +5,7 @@ import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
+import { registerServiceWorker } from '@/lib/serviceWorker';
 
 interface PushNotificationState {
   isSupported: boolean;
@@ -133,38 +134,15 @@ export function usePushNotificationsSimple() {
         }
       }
 
-      // Forcer l'enregistrement du service worker
-      if ('serviceWorker' in navigator) {
-        addDebugLog('🔧 Vérification du service worker...');
-        
-        // Vérifier si un service worker est déjà enregistré
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        addDebugLog(`🔧 Service Workers enregistrés: ${registrations.length}`);
-        
-        if (registrations.length === 0) {
-          addDebugLog('🔧 Aucun service worker trouvé, tentative d\'enregistrement...');
-          try {
-            const registration = await navigator.serviceWorker.register('/sw-unified.js');
-            addDebugLog(`🔧 Service Worker enregistré: ${registration.scope}`);
-          } catch (error) {
-            addDebugLog(`❌ Erreur enregistrement: ${error}`);
-          }
-        }
-        
-        addDebugLog('🔧 Attente du service worker...');
-        try {
-          // Timeout de 5 secondes
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Service Worker timeout après 5s')), 5000)
-          );
-          
-          await Promise.race([navigator.serviceWorker.ready, timeoutPromise]);
-          addDebugLog('🔧 Service Worker prêt');
-        } catch (error) {
-          addDebugLog(`❌ Erreur Service Worker: ${error}`);
-          addDebugLog('🔧 Continuation sans service worker...');
-          // Continuer quand même
-        }
+      // Enregistrer le service worker manuellement
+      addDebugLog('🔧 Enregistrement du service worker...');
+      try {
+        await registerServiceWorker();
+        addDebugLog('🔧 Service Worker enregistré et prêt !');
+      } catch (error) {
+        addDebugLog(`❌ Erreur Service Worker: ${error}`);
+        addDebugLog('🔧 Continuation sans service worker...');
+        // Continuer quand même
       }
 
       // Obtenir le token FCM

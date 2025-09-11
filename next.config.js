@@ -1,25 +1,26 @@
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-  buildExcludes: [/middleware-manifest\.json$/, /build-manifest\.json$/],
-  publicExcludes: ['!robots.txt', '!sitemap.xml', '!sw-unified.js'],
-  // Service worker unifié pour PWA + Firebase Cloud Messaging
-  sw: 'sw-unified.js', // RÉACTIVÉ pour les notifications
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'offlineCache',
-        expiration: {
-          maxEntries: 200,
-        },
-      },
-    },
-  ],
-})
+// PWA désactivé pour éviter les conflits avec notre service worker personnalisé
+// const withPWA = require('next-pwa')({
+//   dest: 'public',
+//   register: true,
+//   skipWaiting: true,
+//   disable: process.env.NODE_ENV === 'development',
+//   buildExcludes: [/middleware-manifest\.json$/, /build-manifest\.json$/],
+//   publicExcludes: ['!robots.txt', '!sitemap.xml', '!sw-unified.js'],
+//   // Service worker unifié pour PWA + Firebase Cloud Messaging
+//   sw: 'sw-unified.js', // RÉACTIVÉ pour les notifications
+//   runtimeCaching: [
+//     {
+//       urlPattern: /^https?.*/,
+//       handler: 'NetworkFirst',
+//       options: {
+//         cacheName: 'offlineCache',
+//         expiration: {
+//           maxEntries: 200,
+//         },
+//       },
+//     },
+//   ],
+// })
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -109,4 +110,5 @@ const nextConfig = {
   },
 }
 
+// Export sans PWA pour éviter les conflits
 module.exports = nextConfig 
