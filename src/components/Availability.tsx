@@ -105,9 +105,9 @@ export default function Availability({ availabilities, onUpdate, isEditing }: Av
                 <select
                   value={newDay}
                   onChange={(e) => setNewDay(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">Sélectionner un jour</option>
+                  <option value="" className="text-gray-500">Sélectionner un jour</option>
                   {DAYS.map(day => (
                     <option key={day} value={day}>{day}</option>
                   ))}
@@ -122,7 +122,7 @@ export default function Availability({ availabilities, onUpdate, isEditing }: Av
                   <select
                     value={newStartTime}
                     onChange={(e) => setNewStartTime(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {TIME_SLOTS.map(time => (
                       <option key={time} value={time}>{time}</option>
@@ -137,7 +137,7 @@ export default function Availability({ availabilities, onUpdate, isEditing }: Av
                   <select
                     value={newEndTime}
                     onChange={(e) => setNewEndTime(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {TIME_SLOTS.map(time => (
                       <option key={time} value={time}>{time}</option>

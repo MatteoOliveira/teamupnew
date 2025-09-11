@@ -64,7 +64,7 @@ export default function SportLevel({ sportLevels, onUpdate, isEditing }: SportLe
                   <select
                     value={sportLevel.level}
                     onChange={(e) => updateLevel(sportLevel.sport, e.target.value as 'débutant' | 'intermédiaire' | 'confirmé')}
-                    className="text-sm border border-gray-300 rounded px-2 py-1"
+                    className="text-sm border border-gray-300 rounded px-2 py-1 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {LEVELS.map(level => (
                       <option key={level.value} value={level.value}>
@@ -111,9 +111,9 @@ export default function SportLevel({ sportLevels, onUpdate, isEditing }: SportLe
                 <select
                   value={newSport}
                   onChange={(e) => setNewSport(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">Sélectionner un sport</option>
+                  <option value="" className="text-gray-500">Sélectionner un sport</option>
                   {SPORTS.map(sport => (
                     <option key={sport} value={sport}>{sport}</option>
                   ))}
@@ -127,7 +127,7 @@ export default function SportLevel({ sportLevels, onUpdate, isEditing }: SportLe
                 <select
                   value={newLevel}
                   onChange={(e) => setNewLevel(e.target.value as 'débutant' | 'intermédiaire' | 'confirmé')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {LEVELS.map(level => (
                     <option key={level.value} value={level.value}>
