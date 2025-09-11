@@ -18,6 +18,8 @@ import DataEditor from '@/components/DataEditor';
 import DataExporter from '@/components/DataExporter';
 import DataPreferences from '@/components/DataPreferences';
 import PushNotificationManager from '@/components/PushNotificationManager';
+import SportLevel, { SportLevel as SportLevelType } from '@/components/SportLevel';
+import Availability, { Availability as AvailabilityType } from '@/components/Availability';
 import SettingsSection from '@/components/SettingsSection';
 
 // Lazy loading des composants lourds pour réduire le JavaScript initial
@@ -83,6 +85,9 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [sport, setSport] = useState('');
   const [city, setCity] = useState("");
+  const [age, setAge] = useState<number | ''>('');
+  const [sportLevels, setSportLevels] = useState<SportLevelType[]>([]);
+  const [availabilities, setAvailabilities] = useState<AvailabilityType[]>([]);
   const [activeTab, setActiveTab] = useState<'profile' | 'myevents' | 'cityevents' | 'myregistrations' | 'pastevents' | 'history' | 'stats' | 'settings'>('profile');
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [message, setMessage] = useState('');
@@ -159,6 +164,9 @@ export default function ProfilePage() {
           setName(data.name || '');
           setSport(data.sport || '');
           setCity(data.city || '');
+          setAge(data.age || '');
+          setSportLevels(data.sportLevels || []);
+          setAvailabilities(data.availabilities || []);
         }
         setProfileLoaded(true);
       });
@@ -569,6 +577,9 @@ export default function ProfilePage() {
                   name,
                   sport,
                   city,
+                  age,
+                  sportLevels,
+                  availabilities,
                   email: user.email || '',
                   updatedAt: new Date(),
                 }, { merge: true });
@@ -622,6 +633,35 @@ export default function ProfilePage() {
                   className="w-full"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Âge
+                </label>
+                <Input 
+                  type="number" 
+                  placeholder="Votre âge" 
+                  value={age} 
+                  onChange={e => setAge(e.target.value ? parseInt(e.target.value) : '')} 
+                  aria-label="Âge"
+                  className="w-full"
+                  min="1"
+                  max="120"
+                />
+              </div>
+              {/* Sports et niveaux */}
+              <SportLevel 
+                sportLevels={sportLevels} 
+                onUpdate={setSportLevels} 
+                isEditing={true} 
+              />
+              
+              {/* Disponibilités */}
+              <Availability 
+                availabilities={availabilities} 
+                onUpdate={setAvailabilities} 
+                isEditing={true} 
+              />
+              
               <div className="flex justify-end">
                 <Button type="submit" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200">
                   Enregistrer les modifications
