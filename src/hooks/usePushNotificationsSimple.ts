@@ -133,13 +133,29 @@ export function usePushNotificationsSimple() {
         }
       }
 
-      // Attendre le service worker avec timeout
+      // Forcer l'enregistrement du service worker
       if ('serviceWorker' in navigator) {
+        addDebugLog('🔧 Vérification du service worker...');
+        
+        // Vérifier si un service worker est déjà enregistré
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        addDebugLog(`🔧 Service Workers enregistrés: ${registrations.length}`);
+        
+        if (registrations.length === 0) {
+          addDebugLog('🔧 Aucun service worker trouvé, tentative d\'enregistrement...');
+          try {
+            const registration = await navigator.serviceWorker.register('/sw-unified.js');
+            addDebugLog(`🔧 Service Worker enregistré: ${registration.scope}`);
+          } catch (error) {
+            addDebugLog(`❌ Erreur enregistrement: ${error}`);
+          }
+        }
+        
         addDebugLog('🔧 Attente du service worker...');
         try {
-          // Timeout de 3 secondes pour éviter le blocage
+          // Timeout de 5 secondes
           const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Service Worker timeout après 3s')), 3000)
+            setTimeout(() => reject(new Error('Service Worker timeout après 5s')), 5000)
           );
           
           await Promise.race([navigator.serviceWorker.ready, timeoutPromise]);
