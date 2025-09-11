@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { usePushNotificationsSimple } from '@/hooks/usePushNotificationsSimple';
 import Button from '@/components/Button';
 
 export default function PushNotificationManager() {
@@ -12,10 +12,9 @@ export default function PushNotificationManager() {
     isLoading,
     error,
     unsubscribe,
-    needsPermission,
-    token: stateToken,
-    forceActivation,
-  } = usePushNotifications();
+    subscribe,
+    token,
+  } = usePushNotificationsSimple();
 
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
@@ -189,7 +188,7 @@ export default function PushNotificationManager() {
 
       {/* Actions */}
       <div className="space-y-4">
-        {needsPermission && (
+        {!permission.granted && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -215,27 +214,27 @@ export default function PushNotificationManager() {
         )}
 
         <div className="flex flex-wrap gap-3">
-          {/* Bouton de force activation - visible si permission refusée ou abonnement inactif */}
-          {(!permission.granted || !isSubscribed) && (
-            <Button
-              onClick={async () => {
-                setMessage('');
-                setMessageType('');
-                const success = await forceActivation();
-                if (success) {
-                  setMessage('Notifications activées avec succès !');
-                  setMessageType('success');
-                } else {
-                  setMessage(error || 'Erreur lors de l\'activation des notifications');
-                  setMessageType('error');
-                }
-              }}
-              disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {isLoading ? 'Activation...' : 'Activer les notifications'}
-            </Button>
-          )}
+               {/* Bouton d'activation - visible si permission refusée ou abonnement inactif */}
+               {(!permission.granted || !isSubscribed) && (
+                 <Button
+                   onClick={async () => {
+                     setMessage('');
+                     setMessageType('');
+                     const success = await subscribe();
+                     if (success) {
+                       setMessage('Notifications activées avec succès !');
+                       setMessageType('success');
+                     } else {
+                       setMessage(error || 'Erreur lors de l\'activation des notifications');
+                       setMessageType('error');
+                     }
+                   }}
+                   disabled={isLoading}
+                   className="bg-blue-600 hover:bg-blue-700 text-white"
+                 >
+                   {isLoading ? 'Activation...' : 'Activer les notifications'}
+                 </Button>
+               )}
 
           {/* Bouton de désactivation - visible si abonné */}
           {isSubscribed && permission.granted && (
@@ -292,7 +291,7 @@ export default function PushNotificationManager() {
               <div><strong>Debug :</strong></div>
               <div>• Permission: {permission.granted ? '✅ Accordée' : permission.denied ? '❌ Refusée' : '⏳ Non demandée'}</div>
               <div>• Abonnement: {isSubscribed ? '✅ Actif' : '❌ Inactif'}</div>
-              <div>• Token: {stateToken ? '✅ Présent' : '❌ Absent'}</div>
+               <div>• Token: {token ? '✅ Présent' : '❌ Absent'}</div>
               <div>• Support: {isSupported ? '✅ Oui' : '❌ Non'}</div>
             </div>
           </div>
