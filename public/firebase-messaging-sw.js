@@ -1,211 +1,100 @@
-// Service Worker pour Firebase Cloud Messaging
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+/**
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-// Configuration Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyDEhV0f2kWRyorZGi6QoFEuQvSabUq8qGU",
-  authDomain: "teamup-7a2d6.firebaseapp.com",
-  projectId: "teamup-7a2d6",
-  storageBucket: "teamup-7a2d6.firebasestorage.app",
-  messagingSenderId: "535498065920",
-  appId: "1:535498065920:web:9c23eb124e7af9748030e5",
-  measurementId: "G-XP9K67C013"
-};
+// If the loader is already loaded, just stop.
+if (!self.define) {
+  let registry = {};
 
-// Initialiser Firebase
-firebase.initializeApp(firebaseConfig);
+  // Used for `eval` and `importScripts` where we can't get script URL by other means.
+  // In both cases, it's safe to use a global var because those functions are synchronous.
+  let nextDefineUri;
 
-// Initialiser Firebase Messaging
-const messaging = firebase.messaging();
-
-// Gérer les messages en arrière-plan
-messaging.onBackgroundMessage((payload) => {
-  console.log('[firebase-messaging-sw.js] Message reçu en arrière-plan:', payload);
-  
-  const notificationTitle = payload.notification?.title || 'TeamUp';
-  const notificationOptions = {
-    body: payload.notification?.body || 'Nouvelle notification',
-    icon: '/icon-192x192.webp',
-    badge: '/icon-192x192.webp',
-    tag: payload.data?.eventId || 'teamup-notification',
-    requireInteraction: true,
-    silent: false,
-    data: payload.data
+  const singleRequire = (uri, parentUri) => {
+    uri = new URL(uri + ".js", parentUri).href;
+    return registry[uri] || (
+      
+        new Promise(resolve => {
+          if ("document" in self) {
+            const script = document.createElement("script");
+            script.src = uri;
+            script.onload = resolve;
+            document.head.appendChild(script);
+          } else {
+            nextDefineUri = uri;
+            importScripts(uri);
+            resolve();
+          }
+        })
+      
+      .then(() => {
+        let promise = registry[uri];
+        if (!promise) {
+          throw new Error(`Module ${uri} didn’t register its module`);
+        }
+        return promise;
+      })
+    );
   };
 
-  // Afficher la notification
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+  self.define = (depsNames, factory) => {
+    const uri = nextDefineUri || ("document" in self ? document.currentScript.src : "") || location.href;
+    if (registry[uri]) {
+      // Module is already loading or loaded.
+      return;
+    }
+    let exports = {};
+    const require = depUri => singleRequire(depUri, uri);
+    const specialDeps = {
+      module: { uri },
+      exports,
+      require
+    };
+    registry[uri] = Promise.all(depsNames.map(
+      depName => specialDeps[depName] || require(depName)
+    )).then(deps => {
+      factory(...deps);
+      return exports;
+    });
+  };
+}
+define(['./workbox-e43f5367'], (function (workbox) { 'use strict';
 
-// Gérer les clics sur les notifications
-self.addEventListener('notificationclick', (event) => {
-  console.log('[firebase-messaging-sw.js] Notification cliquée:', event);
-  
-  event.notification.close();
-  
-  // Rediriger vers l'événement si disponible
-  if (event.notification.data?.eventId) {
-    event.waitUntil(
-      clients.openWindow(`/event/${event.notification.data.eventId}`)
-    );
-  } else {
-    // Rediriger vers la page d'accueil
-    event.waitUntil(
-      clients.openWindow('/')
-    );
-  }
-});
-
-// Gérer l'installation de la PWA
-self.addEventListener('install', (event) => {
-  console.log('[firebase-messaging-sw.js] Service Worker installé');
-  self.skipWaiting(); // Activer immédiatement le nouveau service worker
-});
-
-// Gérer l'activation de la PWA
-self.addEventListener('activate', (event) => {
-  console.log('[firebase-messaging-sw.js] Service Worker activé');
-  event.waitUntil(clients.claim()); // Prendre le contrôle de tous les clients
-});
-
-// Gérer les requêtes réseau pour le cache hors ligne
-self.addEventListener('fetch', (event) => {
-  // Stratégie de cache pour les pages HTML
-  if (event.request.destination === 'document') {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        if (response) {
-          console.log('[SW] Page trouvée en cache:', event.request.url);
-          return response;
-        }
-        
-        return fetch(event.request).then((fetchResponse) => {
-          // Mettre en cache les pages HTML
-          if (fetchResponse.status === 200) {
-            const responseClone = fetchResponse.clone();
-            caches.open('pages-cache').then((cache) => {
-              cache.put(event.request, responseClone);
-              console.log('[SW] Page mise en cache:', event.request.url);
-            });
-          }
-          return fetchResponse;
-        }).catch(() => {
-          console.log('[SW] Hors ligne, fallback vers page d\'accueil');
-          // Fallback vers la page d'accueil si hors ligne
-          return caches.match('/').then((fallbackResponse) => {
-            if (fallbackResponse) {
-              return fallbackResponse;
-            }
-            // Si même la page d'accueil n'est pas en cache, retourner une page d'erreur
-            return new Response(`
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <title>TeamUp - Hors Ligne</title>
-                  <meta name="viewport" content="width=device-width, initial-scale=1">
-                  <style>
-                    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-                    .offline { color: #f59e0b; }
-                  </style>
-                </head>
-                <body>
-                  <h1 class="offline">📱 Mode Hors Ligne</h1>
-                  <p>Vous êtes hors ligne. Veuillez vous reconnecter pour accéder à cette page.</p>
-                  <button onclick="window.location.href='/'">Retour à l'accueil</button>
-                </body>
-              </html>
-            `, {
-              headers: { 'Content-Type': 'text/html' }
-            });
+  importScripts();
+  self.skipWaiting();
+  workbox.clientsClaim();
+  workbox.registerRoute("/", new workbox.NetworkFirst({
+    "cacheName": "start-url",
+    plugins: [{
+      cacheWillUpdate: async ({
+        request,
+        response,
+        event,
+        state
+      }) => {
+        if (response && response.type === 'opaqueredirect') {
+          return new Response(response.body, {
+            status: 200,
+            statusText: 'OK',
+            headers: response.headers
           });
-        });
-      })
-    );
-  }
-  
-  // Stratégie de cache pour les pages d'événements
-  if (event.request.url.includes('/event/') && event.request.destination === 'document') {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        if (response) {
-          return response;
         }
-        
-        return fetch(event.request).then((fetchResponse) => {
-          // Mettre en cache les pages d'événements
-          if (fetchResponse.status === 200) {
-            const responseClone = fetchResponse.clone();
-            caches.open('events-cache').then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return fetchResponse;
-        }).catch(() => {
-          // Fallback vers la page d'accueil si hors ligne
-          return caches.match('/');
-        });
-      })
-    );
-  }
-  
-  // Stratégie de cache pour les pages spécifiques (profil, réservation, etc.)
-  if (event.request.destination === 'document' && 
-      (event.request.url.includes('/profile') || 
-       event.request.url.includes('/reservation') ||
-       event.request.url.includes('/event/') ||
-       event.request.url.includes('/choose-experience') ||
-       event.request.url.includes('/conversation') ||
-       event.request.url.includes('/chat'))) {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        if (response) {
-          console.log('[SW] Page spécifique trouvée en cache:', event.request.url);
-          return response;
-        }
-        
-        return fetch(event.request).then((fetchResponse) => {
-          if (fetchResponse.status === 200) {
-            const responseClone = fetchResponse.clone();
-            caches.open('pages-cache').then((cache) => {
-              cache.put(event.request, responseClone);
-              console.log('[SW] Page spécifique mise en cache:', event.request.url);
-            });
-          }
-          return fetchResponse;
-        }).catch(() => {
-          console.log('[SW] Page spécifique hors ligne, fallback vers accueil');
-          return caches.match('/');
-        });
-      })
-    );
-  }
-  
-  // Stratégie de cache pour les assets statiques
-  if (event.request.url.includes('/_next/static/')) {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request).then((fetchResponse) => {
-          return caches.open('static-cache').then((cache) => {
-            cache.put(event.request, fetchResponse.clone());
-            return fetchResponse;
-          });
-        });
-      })
-    );
-  }
-  
-  // Stratégie de cache pour les images
-  if (event.request.destination === 'image') {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request).then((fetchResponse) => {
-          return caches.open('images-cache').then((cache) => {
-            cache.put(event.request, fetchResponse.clone());
-            return fetchResponse;
-          });
-        });
-      })
-    );
-  }
-});
+        return response;
+      }
+    }]
+  }), 'GET');
+  workbox.registerRoute(/.*/i, new workbox.NetworkOnly({
+    "cacheName": "dev",
+    plugins: []
+  }), 'GET');
+
+}));

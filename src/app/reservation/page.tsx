@@ -81,6 +81,8 @@ export default function ReservationPage() {
   // Ajout géolocalisation
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [manualLocation, setManualLocation] = useState<string>('');
+  const [showManualInput, setShowManualInput] = useState<boolean>(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [nearbyEvents, setNearbyEvents] = useState<(Event & { distance: number })[]>([]);
   const [otherCityEvents, setOtherCityEvents] = useState<(Event & { distance: number })[]>([]);
@@ -220,13 +222,55 @@ export default function ReservationPage() {
   // Détection géolocalisation au chargement de la page
   useEffect(() => {
     if (navigator.geolocation) {
+      // Essayer d'abord avec une précision élevée
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          console.log('Position obtenue:', pos.coords);
           setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           setGeoError(null);
         },
-        () => {
-          setGeoError("Géolocalisation refusée ou indisponible");
+        (error) => {
+          console.log('Erreur géolocalisation:', error);
+          let errorMessage = "Géolocalisation refusée ou indisponible";
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Géolocalisation refusée. Veuillez autoriser l'accès à votre position dans les paramètres du navigateur.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Position indisponible. Vérifiez votre connexion internet et votre GPS.";
+              break;
+            case error.TIMEOUT:
+              errorMessage = "Délai d'attente dépassé. Veuillez réessayer.";
+              break;
+            default:
+              errorMessage = "Impossible de déterminer votre position. Vous pouvez saisir votre ville manuellement.";
+          }
+          setGeoError(errorMessage);
+          
+          // Essayer une deuxième fois avec des paramètres moins stricts
+          setTimeout(() => {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                console.log('Position obtenue (2ème tentative):', pos.coords);
+                setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                setGeoError(null);
+              },
+              () => {
+                // Si la deuxième tentative échoue aussi, on garde l'erreur
+                console.log('Deuxième tentative de géolocalisation échouée');
+              },
+              {
+                enableHighAccuracy: false,
+                timeout: 15000,
+                maximumAge: 600000 // 10 minutes
+              }
+            );
+          }, 2000);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
         }
       );
     } else {
@@ -244,12 +288,52 @@ export default function ReservationPage() {
           setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           setGeoError(null);
         },
-        () => {
-          setGeoError("Géolocalisation refusée ou indisponible");
+        (error) => {
+          let errorMessage = "Géolocalisation refusée ou indisponible";
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Géolocalisation refusée. Veuillez autoriser l'accès à votre position dans les paramètres du navigateur.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Position indisponible. Vérifiez votre connexion internet.";
+              break;
+            case error.TIMEOUT:
+              errorMessage = "Délai d'attente dépassé. Veuillez réessayer.";
+              break;
+          }
+          setGeoError(errorMessage);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0 // Force une nouvelle position
         }
       );
     } else {
       setGeoError("Géolocalisation non supportée par ce navigateur");
+    }
+  };
+
+  // Fonction pour gérer la saisie manuelle de la ville
+  const handleManualLocation = async () => {
+    if (!manualLocation.trim()) return;
+    
+    try {
+      // Géocodage via API adresse.data.gouv.fr
+      const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(manualLocation)}&limit=1`);
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        const { coordinates } = data.features[0].geometry; // [lng, lat]
+        setPosition({ lat: coordinates[1], lng: coordinates[0] });
+        setGeoError(null);
+        setShowManualInput(false);
+        setManualLocation('');
+      } else {
+        setGeoError("Ville non trouvée. Veuillez vérifier l'orthographe.");
+      }
+    } catch (error) {
+      setGeoError("Erreur lors de la recherche de la ville. Veuillez réessayer.");
     }
   };
 
@@ -319,14 +403,78 @@ export default function ReservationPage() {
                   )}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={refreshPosition}
-                className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-              >
-                Actualiser
-              </button>
+              {!showManualInput ? (
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={refreshPosition}
+                    className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                  >
+                    Actualiser
+                  </button>
+                  {geoError && (
+                    <button
+                      type="button"
+                      onClick={() => setShowManualInput(true)}
+                      className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
+                    >
+                      Ville
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex gap-1">
+                  <input
+                    type="text"
+                    value={manualLocation}
+                    onChange={(e) => setManualLocation(e.target.value)}
+                    placeholder="Ville..."
+                    className="px-2 py-1 border border-gray-300 rounded text-xs w-20"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleManualLocation}
+                    className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualInput(false)}
+                    className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
+            {showManualInput && (
+              <div className="mt-2 pt-2 border-t border-gray-200">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={manualLocation}
+                    onChange={(e) => setManualLocation(e.target.value)}
+                    placeholder="Entrez votre ville..."
+                    className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleManualLocation}
+                    className="px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                  >
+                    Valider
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualInput(false)}
+                    className="px-3 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -342,17 +490,54 @@ export default function ReservationPage() {
             {position ? (
               <span className="text-sm text-green-700">Position : {position.lat.toFixed(4)}, {position.lng.toFixed(4)}</span>
             ) : geoError ? (
+              <div className="flex flex-col items-center gap-2">
               <span className="text-sm text-red-600">{geoError}</span>
+                {!showManualInput ? (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={refreshPosition}
+                      className="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                    >
+                      Actualiser
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowManualInput(true)}
+                      className="px-3 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
+                    >
+                      Saisir ville
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={manualLocation}
+                      onChange={(e) => setManualLocation(e.target.value)}
+                      placeholder="Entrez votre ville..."
+                      className="px-2 py-1 border border-gray-300 rounded text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleManualLocation}
+                      className="px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                    >
+                      Valider
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowManualInput(false)}
+                      className="px-3 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <span className="text-sm text-gray-500">Recherche de votre position...</span>
             )}
-            <button
-              type="button"
-              onClick={refreshPosition}
-              className="ml-2 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-            >
-              Actualiser
-            </button>
           </div>
         </div>
 
@@ -383,18 +568,18 @@ export default function ReservationPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
-                  <div className="w-5 h-5 text-blue-500">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                    </svg>
-                  </div>
-                  <h2 className="text-lg font-bold text-gray-900">Carte des événements</h2>
+                <div className="w-5 h-5 text-blue-500">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
                 </div>
+                <h2 className="text-lg font-bold text-gray-900">Carte des événements</h2>
+              </div>
                 
               </div>
               
               {/* Carte avec dynamic import et SSR désactivé */}
-                <div style={{ height: 300, width: "100%", zIndex: 1, borderRadius: '8px', overflow: 'hidden' }}>
+              <div style={{ height: 300, width: "100%", zIndex: 1, borderRadius: '8px', overflow: 'hidden' }}>
                   {mapCenter ? (
                     <Map
                       mapCenter={mapCenter}
@@ -418,7 +603,7 @@ export default function ReservationPage() {
                       </div>
                     </div>
                   )}
-                </div>
+              </div>
             </div>
           </div>
         )}
