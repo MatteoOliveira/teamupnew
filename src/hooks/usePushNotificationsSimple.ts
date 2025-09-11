@@ -13,6 +13,7 @@ interface PushNotificationState {
   isSubscribed: boolean;
   isLoading: boolean;
   error: string | null;
+  debugLogs: string[];
 }
 
 export function usePushNotificationsSimple() {
@@ -24,17 +25,29 @@ export function usePushNotificationsSimple() {
     isSubscribed: false,
     isLoading: false,
     error: null,
+    debugLogs: [],
   });
+
+  // Fonction pour ajouter des logs visibles
+  const addDebugLog = useCallback((message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const logMessage = `[${timestamp}] ${message}`;
+    console.log(logMessage); // Log dans la console aussi
+    setState(prev => ({
+      ...prev,
+      debugLogs: [...prev.debugLogs.slice(-9), logMessage] // Garde les 10 derniers logs
+    }));
+  }, []);
 
   // Vérifier le support des notifications
   useEffect(() => {
     const checkSupport = async () => {
       try {
         const supported = await isSupported();
-        console.log('📱 Support des notifications:', supported);
+        addDebugLog(`📱 Support des notifications: ${supported}`);
         setState(prev => ({ ...prev, isSupported: supported }));
       } catch (error) {
-        console.error('Erreur vérification support:', error);
+        addDebugLog(`❌ Erreur vérification support: ${error}`);
         setState(prev => ({ ...prev, isSupported: false }));
       }
     };
@@ -104,15 +117,16 @@ export function usePushNotificationsSimple() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      console.log('🚀 === DÉBUT SUBSCRIPTION SIMPLIFIÉE ===');
-      console.log('👤 Utilisateur:', user.uid);
-      console.log('📱 Support:', state.isSupported);
-      console.log('📝 Permission:', Notification.permission);
+      addDebugLog('🚀 === DÉBUT SUBSCRIPTION SIMPLIFIÉE ===');
+      addDebugLog(`👤 Utilisateur: ${user.uid}`);
+      addDebugLog(`📱 Support: ${state.isSupported}`);
+      addDebugLog(`📝 Permission: ${Notification.permission}`);
       
       // Vérifier la permission
       if (Notification.permission !== 'granted') {
-        console.log('📝 Demande de permission...');
+        addDebugLog('📝 Demande de permission...');
         const granted = await requestPermission();
+        addDebugLog(`📝 Permission accordée: ${granted}`);
         if (!granted) {
           setState(prev => ({ ...prev, isLoading: false, error: 'Permission refusée' }));
           return false;
@@ -121,19 +135,19 @@ export function usePushNotificationsSimple() {
 
       // Attendre le service worker
       if ('serviceWorker' in navigator) {
-        console.log('🔧 Attente du service worker...');
+        addDebugLog('🔧 Attente du service worker...');
         const registration = await navigator.serviceWorker.ready;
-        console.log('🔧 Service Worker prêt:', registration.active?.scriptURL);
+        addDebugLog(`🔧 Service Worker prêt: ${registration.active?.scriptURL}`);
         await new Promise(resolve => setTimeout(resolve, 2000)); // Attendre 2 secondes
       }
 
       // Obtenir le token FCM
-      console.log('🔑 Génération du token FCM...');
+      addDebugLog('🔑 Génération du token FCM...');
       const messaging = getMessaging();
       
       const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-      console.log('🔑 Clé VAPID disponible:', !!vapidKey);
-      console.log('🔑 Clé VAPID (début):', vapidKey?.substring(0, 10) + '...');
+      addDebugLog(`🔑 Clé VAPID disponible: ${!!vapidKey}`);
+      addDebugLog(`🔑 Clé VAPID (début): ${vapidKey?.substring(0, 10)}...`);
       
       if (!vapidKey) {
         throw new Error('Clé VAPID manquante');
@@ -145,21 +159,21 @@ export function usePushNotificationsSimple() {
         throw new Error('Token FCM vide');
       }
 
-      console.log('🔑 Token FCM obtenu:', token.substring(0, 20) + '...');
-      console.log('🔑 Token FCM complet:', token);
+      addDebugLog(`🔑 Token FCM obtenu: ${token.substring(0, 20)}...`);
+      addDebugLog(`🔑 Token FCM complet: ${token}`);
 
       // Sauvegarder dans Firestore
-      console.log('💾 Sauvegarde dans Firestore...');
+      addDebugLog('💾 Sauvegarde dans Firestore...');
       await setDoc(doc(db, 'users', user.uid), {
         fcmToken: token,
         pushNotificationsEnabled: true,
         lastTokenUpdate: new Date(),
       }, { merge: true });
 
-      console.log('💾 Sauvegarde réussie');
+      addDebugLog('💾 Sauvegarde réussie');
 
       // Mettre à jour l'état
-      console.log('🔄 Mise à jour de l\'état local...');
+      addDebugLog('🔄 Mise à jour de l\'état local...');
       setState(prev => ({
         ...prev,
         isSubscribed: true,
@@ -168,23 +182,18 @@ export function usePushNotificationsSimple() {
         error: null,
       }));
 
-      console.log('✅ === SUBSCRIPTION RÉUSSIE ===');
-      console.log('📊 État final:', {
-        isSubscribed: true,
-        token: token ? 'Présent' : 'Absent',
-        isLoading: false,
-        error: null
-      });
+      addDebugLog('✅ === SUBSCRIPTION RÉUSSIE ===');
+      addDebugLog(`📊 État final: isSubscribed=true, token=${token ? 'Présent' : 'Absent'}`);
       return true;
       
     } catch (error) {
-      console.error('❌ === ERREUR SUBSCRIPTION ===');
-      console.error('❌ Erreur:', error);
+      addDebugLog('❌ === ERREUR SUBSCRIPTION ===');
+      addDebugLog(`❌ Erreur: ${error}`);
       
       let errorMessage = 'Erreur lors de l\'abonnement';
       if (error instanceof Error) {
         errorMessage = `${error.name}: ${error.message}`;
-        console.error('❌ Stack:', error.stack);
+        addDebugLog(`❌ Stack: ${error.stack}`);
       }
       
       setState(prev => ({
@@ -287,5 +296,6 @@ export function usePushNotificationsSimple() {
     unsubscribe,
     requestPermission,
     checkPermission,
+    addDebugLog,
   };
 }

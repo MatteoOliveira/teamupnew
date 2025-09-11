@@ -14,6 +14,8 @@ export default function PushNotificationManager() {
     unsubscribe,
     subscribe,
     token,
+    debugLogs,
+    addDebugLog,
   } = usePushNotificationsSimple();
 
   const [message, setMessage] = useState('');
@@ -218,26 +220,16 @@ export default function PushNotificationManager() {
                {(!permission.granted || !isSubscribed) && (
                  <Button
                    onClick={async () => {
-                     console.log('🖱️ === CLIC BOUTON ACTIVATION ===');
-                     console.log('📊 État avant activation:', {
-                       isSupported,
-                       permission: permission.granted ? 'Accordée' : permission.denied ? 'Refusée' : 'Non demandée',
-                       isSubscribed,
-                       isLoading,
-                       token: token ? 'Présent' : 'Absent'
-                     });
+                     addDebugLog('🖱️ === CLIC BOUTON ACTIVATION ===');
+                     addDebugLog(`📊 État avant: support=${isSupported}, permission=${permission.granted ? 'Accordée' : permission.denied ? 'Refusée' : 'Non demandée'}, abonnement=${isSubscribed}, token=${token ? 'Présent' : 'Absent'}`);
                      
                      setMessage('');
                      setMessageType('');
                      
                      const success = await subscribe();
                      
-                     console.log('📊 Résultat activation:', success);
-                     console.log('📊 État après activation:', {
-                       isSubscribed,
-                       token: token ? 'Présent' : 'Absent',
-                       error
-                     });
+                     addDebugLog(`📊 Résultat activation: ${success}`);
+                     addDebugLog(`📊 État après: abonnement=${isSubscribed}, token=${token ? 'Présent' : 'Absent'}, erreur=${error || 'Aucune'}`);
                      
                      if (success) {
                        setMessage('Notifications activées avec succès !');
@@ -313,6 +305,25 @@ export default function PushNotificationManager() {
               <div>• Support: {isSupported ? '✅ Oui' : '❌ Non'}</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Panneau de Debug Visible */}
+      <div className="mt-6 bg-gray-100 rounded-lg p-4">
+        <h4 className="text-sm font-semibold text-gray-900 mb-3">🔍 Debug Logs (Visible)</h4>
+        <div className="bg-black text-green-400 p-3 rounded text-xs font-mono max-h-60 overflow-y-auto">
+          {debugLogs.length === 0 ? (
+            <div className="text-gray-500">Aucun log pour le moment...</div>
+          ) : (
+            debugLogs.map((log, index) => (
+              <div key={index} className="mb-1">
+                {log}
+              </div>
+            ))
+          )}
+        </div>
+        <div className="mt-2 text-xs text-gray-600">
+          📱 Ces logs sont visibles directement sur la page pour le debug mobile
         </div>
       </div>
     </div>
