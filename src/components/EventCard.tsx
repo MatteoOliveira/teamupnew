@@ -27,7 +27,8 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
     });
   };
 
-  const getSportColor = (sport: string) => {
+  const getSportColor = (sport: string | undefined) => {
+    if (!sport) return 'bg-gray-500';
     const colors: Record<string, string> = {
       'Football': 'bg-green-500',
       'Basketball': 'bg-orange-500',
@@ -62,13 +63,13 @@ export default function EventCard({ event, showActions = true }: EventCardProps)
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className={`w-12 h-12 ${getSportColor(event.sport)} rounded-lg flex items-center justify-center`}>
-                  <span className="text-2xl">{event.sportEmoji}</span>
+                  <span className="text-2xl">{event.sportEmoji || '🏃'}</span>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-lg leading-tight">
                     {event.name}
                   </h3>
-                  <p className="text-sm text-gray-600">{event.sport}</p>
+                  <p className="text-sm text-gray-600">{event.sport || 'Sport non défini'}</p>
                 </div>
               </div>
               

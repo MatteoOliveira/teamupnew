@@ -34,7 +34,8 @@ export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDe
     });
   };
 
-  const getSportColor = (sport: string) => {
+  const getSportColor = (sport: string | undefined) => {
+    if (!sport) return 'bg-gray-500';
     const colors: Record<string, string> = {
       'Football': 'bg-green-500',
       'Basketball': 'bg-orange-500',
@@ -93,15 +94,15 @@ export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDe
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className={`w-12 h-12 ${getSportColor(event.sport)} rounded-lg flex items-center justify-center`}>
-              <span className="text-2xl">{event.sportEmoji}</span>
+            <div className="flex items-center space-x-3">
+              <div className={`w-12 h-12 ${getSportColor(event.sport)} rounded-lg flex items-center justify-center`}>
+                <span className="text-2xl">{event.sportEmoji || '🏃'}</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">{event.name}</h1>
+                <p className="text-sm text-gray-600">{event.sport || 'Sport non défini'}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">{event.name}</h1>
-              <p className="text-sm text-gray-600">{event.sport}</p>
-            </div>
-          </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full"
