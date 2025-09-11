@@ -26,9 +26,9 @@ export function usePushNotifications() {
   const { user } = useAuth();
   const [state, setState] = useState<PushNotificationState>({
     isSupported: false,
-    permission: { granted: true, denied: false, default: false }, // Permission accordée par défaut
+    permission: { granted: false, denied: false, default: true }, // Permission par défaut
     token: null,
-    isSubscribed: true, // Activé par défaut
+    isSubscribed: false, // Pas activé par défaut
     isLoading: false,
     error: null,
   });
@@ -79,7 +79,9 @@ export function usePushNotifications() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
+      console.log('📝 Demande de permission en cours...');
       const permission = await Notification.requestPermission();
+      console.log('📝 Permission obtenue:', permission);
       
       setState(prev => ({
         ...prev,
@@ -91,9 +93,10 @@ export function usePushNotifications() {
         isLoading: false,
       }));
 
+      console.log('📝 Permission accordée:', permission === 'granted');
       return permission === 'granted';
     } catch (error) {
-      console.error('Erreur demande permission:', error);
+      console.error('❌ Erreur demande permission:', error);
       setState(prev => ({
         ...prev,
         isLoading: false,
@@ -371,18 +374,35 @@ export function usePushNotifications() {
           // Auto-activer les notifications si l'utilisateur n'a pas encore de préférence définie OU si les notifications sont désactivées
           if ((!userData.hasOwnProperty('pushNotificationsEnabled') || userData.pushNotificationsEnabled === false)) {
             console.log('🚀 Auto-activation des notifications pour utilisateur');
-            // Demander la permission automatiquement
-            const granted = await requestPermission();
-            if (granted) {
-              await subscribe(); // Activation immédiate après permission
+            // Vérifier la permission actuelle avant de demander
+            if (Notification.permission === 'default') {
+              console.log('📝 Permission par défaut - demande automatique');
+              const granted = await requestPermission();
+              if (granted) {
+                await subscribe(); // Activation immédiate après permission
+              }
+            } else if (Notification.permission === 'granted') {
+              console.log('✅ Permission déjà accordée - activation directe');
+              await subscribe();
+            } else {
+              console.log('❌ Permission refusée - pas d\'auto-activation');
             }
           }
         } else {
           // Nouvel utilisateur - auto-activer les notifications
           console.log('🚀 Auto-activation des notifications pour nouvel utilisateur');
-          const granted = await requestPermission();
-          if (granted) {
-            await subscribe(); // Activation immédiate après permission
+          // Vérifier la permission actuelle avant de demander
+          if (Notification.permission === 'default') {
+            console.log('📝 Permission par défaut - demande automatique');
+            const granted = await requestPermission();
+            if (granted) {
+              await subscribe(); // Activation immédiate après permission
+            }
+          } else if (Notification.permission === 'granted') {
+            console.log('✅ Permission déjà accordée - activation directe');
+            await subscribe();
+          } else {
+            console.log('❌ Permission refusée - pas d\'auto-activation');
           }
         }
       } catch (error) {
