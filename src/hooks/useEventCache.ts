@@ -55,6 +55,7 @@ export function useEventCache() {
 
   const cacheEvent = useCallback((event: Event) => {
     console.log('🔄 Tentative de cache pour l\'événement:', event.id, event.name);
+    console.log('📅 Date de l\'événement:', event.date);
     
     // Vérifier que l'événement est futur
     if (!event.date) {
@@ -63,7 +64,12 @@ export function useEventCache() {
     }
     
     const eventDate = typeof event.date === 'string' ? new Date(event.date) : new Date(event.date.seconds * 1000);
-    if (eventDate <= new Date()) {
+    const now = new Date();
+    console.log('📅 Date de l\'événement:', eventDate);
+    console.log('📅 Date actuelle:', now);
+    console.log('📅 Événement futur?', eventDate > now);
+    
+    if (eventDate <= now) {
       console.log('❌ Événement passé, pas de cache');
       return false;
     }

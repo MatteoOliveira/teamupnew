@@ -15,8 +15,11 @@ export default function OfflineEventDetails({ eventId, onClose }: OfflineEventDe
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🔍 OfflineEventDetails - Recherche événement:', eventId);
     const cachedEvent = getCachedEvent(eventId);
+    console.log('🔍 OfflineEventDetails - Événement trouvé?', !!cachedEvent);
     if (cachedEvent) {
+      console.log('🔍 OfflineEventDetails - Événement:', cachedEvent.name);
       setEvent(cachedEvent);
     }
     setLoading(false);
