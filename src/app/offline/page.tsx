@@ -86,7 +86,7 @@ export default function OfflinePage() {
           
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-blue-800 text-xs">
-              💡 <strong>Astuce :</strong> Installez l'application TeamUp sur votre écran d'accueil pour une meilleure expérience hors ligne.
+              💡 <strong>Astuce :</strong> Installez l&apos;application TeamUp sur votre écran d&apos;accueil pour une meilleure expérience hors ligne.
             </p>
           </div>
         </div>

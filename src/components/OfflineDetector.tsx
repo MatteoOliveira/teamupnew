@@ -4,23 +4,19 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function OfflineDetector() {
-  const [isOnline, setIsOnline] = useState(true);
   const [showOfflineBanner, setShowOfflineBanner] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const handleOnline = () => {
-      setIsOnline(true);
       setShowOfflineBanner(false);
     };
 
     const handleOffline = () => {
-      setIsOnline(false);
       setShowOfflineBanner(true);
     };
 
     // Vérifier l'état initial
-    setIsOnline(navigator.onLine);
     setShowOfflineBanner(!navigator.onLine);
 
     window.addEventListener('online', handleOnline);
