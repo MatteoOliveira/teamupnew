@@ -3,21 +3,20 @@
 import { useState, useEffect } from 'react';
 
 export default function OfflineIndicator() {
-  const [isOffline, setIsOffline] = useState(false);
   const [showIndicator, setShowIndicator] = useState(false);
 
   useEffect(() => {
     // Vérifier l'état initial
-    setIsOffline(!navigator.onLine);
+    if (!navigator.onLine) {
+      setShowIndicator(true);
+    }
 
     // Écouter les changements de connectivité
     const handleOnline = () => {
-      setIsOffline(false);
       setShowIndicator(false);
     };
 
     const handleOffline = () => {
-      setIsOffline(true);
       setShowIndicator(true);
     };
 
