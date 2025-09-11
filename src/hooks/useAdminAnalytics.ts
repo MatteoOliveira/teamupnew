@@ -35,7 +35,11 @@ export const useAdminAnalytics = () => {
       const users = usersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as Array<{
+        id: string;
+        lastActiveAt?: Date | string | { seconds: number };
+        [key: string]: unknown;
+      }>;
 
       // Charger tous les événements
       const eventsQuery = query(collection(db, 'events'), orderBy('date', 'desc'));
@@ -99,9 +103,10 @@ export const useAdminAnalytics = () => {
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       const activeUsers = users.filter(user => {
-        const lastActive = user.lastActiveAt ? 
-          (user.lastActiveAt instanceof Date ? user.lastActiveAt : new Date(user.lastActiveAt)) : 
-          new Date(0);
+        if (!user.lastActiveAt) return false;
+        const lastActive = user.lastActiveAt instanceof Date ? user.lastActiveAt : 
+          typeof user.lastActiveAt === 'string' ? new Date(user.lastActiveAt) :
+          new Date(user.lastActiveAt.seconds * 1000);
         return lastActive >= weekAgo;
       }).length;
 
