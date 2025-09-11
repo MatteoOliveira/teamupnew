@@ -640,7 +640,7 @@ export default function ProfilePage() {
                 <Input 
                   type="number" 
                   placeholder="Votre âge" 
-                  value={age} 
+                  value={age === '' ? '' : age.toString()} 
                   onChange={e => setAge(e.target.value ? parseInt(e.target.value) : '')} 
                   aria-label="Âge"
                   className="w-full"
