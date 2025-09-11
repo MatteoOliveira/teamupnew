@@ -376,7 +376,7 @@ export default function EventEditPage() {
     }
   };
 
-  const notifyParticipants = async (eventId: string, changeSummary: string[]) => {
+  const notifyParticipants = async (eventId: string, changeSummary: string[], eventData: Event) => {
     try {
       console.log('🔔 === DÉBUT NOTIFICATIONS ===');
       console.log('🔔 EventId:', eventId);
@@ -517,7 +517,7 @@ export default function EventEditPage() {
       console.log('🔔 Changements détectés:', changeSummary);
       if (changeSummary.length > 0) {
         console.log('🔔 Envoi des notifications aux participants...');
-        await notifyParticipants(event.id, changeSummary);
+        await notifyParticipants(event.id, changeSummary, editedEvent);
         console.log('🔔 Notifications envoyées !');
       } else {
         console.log('🔔 Aucun changement détecté, pas de notification');
